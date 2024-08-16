@@ -17,6 +17,10 @@ velox_link_libraries(velox_connector velox_config velox_vector)
 
 add_subdirectory(fuzzer)
 
+if(${VELOX_ENABLE_CLP_CONNECTOR})
+  add_subdirectory(clp)
+endif()
+
 if(${VELOX_ENABLE_HIVE_CONNECTOR})
   add_subdirectory(hive)
 endif()
