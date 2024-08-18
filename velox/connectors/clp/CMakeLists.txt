@@ -1,3 +1,8 @@
 add_library(
         velox_clp_connector OBJECT
-        ClpConnector.cpp)
+        ClpColumnHandle.cpp
+        ClpConfig.cpp
+        ClpConnector.cpp
+        ClpDataSource.cpp
+        ClpTableHandle.cpp
+)
