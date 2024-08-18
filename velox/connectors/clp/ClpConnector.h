@@ -34,7 +34,7 @@ class ClpConnector : public Connector {
       RowTypePtr inputType,
       std::shared_ptr<ConnectorInsertTableHandle> connectorInsertTableHandle,
       ConnectorQueryCtx* connectorQueryCtx,
-      CommitStrategy commitStrategy) override final;
+      CommitStrategy commitStrategy) override;
 
   folly::Executor* executor() const override {
     return executor_;
@@ -43,5 +43,21 @@ class ClpConnector : public Connector {
  private:
   std::shared_ptr<const Config> config_;
   folly::Executor* executor_;
+};
+
+class ClpConnectorFactory : public ConnectorFactory {
+ public:
+  static constexpr const char* kClpConnectorName = "clp";
+
+  ClpConnectorFactory() : ConnectorFactory(kClpConnectorName) {}
+  explicit ClpConnectorFactory(const char* connectorName)
+      : ConnectorFactory(connectorName) {}
+
+  std::shared_ptr<Connector> newConnector(
+      const std::string& id,
+      std::shared_ptr<const Config> config,
+      folly::Executor* executor = nullptr) override {
+    return std::make_shared<ClpConnector>(id, config, executor);
+  }
 };
 } // namespace facebook::velox::connector::clp
