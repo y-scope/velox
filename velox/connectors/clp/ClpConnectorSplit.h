@@ -5,7 +5,21 @@
 namespace facebook::velox::connector::clp {
 class ClpConnectorSplit : public connector::ConnectorSplit {
  public:
-  ClpConnectorSplit() = default;
-  ~ClpConnectorSplit() override = default;
+  ClpConnectorSplit(
+      const std::string& connectorId,
+      const std::string& schemaName,
+      const std::string& tableName,
+      const std::shared_ptr<std::string>& query)
+      : connector::ConnectorSplit(connectorId),
+        schemaName_(schemaName),
+        tableName_(tableName),
+        query_(query) {}
+
+  std::string toString() const override;
+
+ private:
+  const std::string schemaName_;
+  const std::string tableName_;
+  const std::shared_ptr<std::string> query_;
 };
 } // namespace facebook::velox::connector::clp

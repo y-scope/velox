@@ -1,32 +1,31 @@
 #pragma once
 
 #include "velox/connectors/Connector.h"
-#include "velox/type/Subfield.h"
 
 namespace facebook::velox::connector::clp {
 class ClpColumnHandle : public ColumnHandle {
  public:
   ClpColumnHandle(
-      const std::string& name,
-      const TypePtr& type,
-      const std::vector<common::Subfield>& requiredSubfields = {})
-      : name_(name), type_(type), requiredSubfields_(requiredSubfields) {}
+      const std::string& columnName,
+      const TypePtr& columnType,
+      bool nullable)
+      : columnName_(columnName), columnType_(columnType), nullable_(nullable) {}
 
-  const std::string& name() const {
-    return name_;
+  const std::string& columnName() const {
+    return columnName_;
   }
 
-  const TypePtr& type() const {
-    return type_;
+  const TypePtr& columnType() const {
+    return columnType_;
   }
 
-  const std::vector<common::Subfield>& requiredSubfields() const {
-    return requiredSubfields_;
+  bool nullable() const {
+    return nullable_;
   }
 
  private:
-  const std::string name_;
-  const TypePtr type_;
-  const std::vector<common::Subfield> requiredSubfields_;
+  const std::string columnName_;
+  const TypePtr columnType_;
+  const bool nullable_;
 };
 } // namespace facebook::velox::connector::clp

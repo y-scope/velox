@@ -6,11 +6,15 @@ namespace facebook::velox::connector::clp {
 class ClpTableHandle : public ConnectorTableHandle {
  public:
   ClpTableHandle(std::string connectorId, const std::string& tableName)
-      : ConnectorTableHandle(connectorId), tableName_(tableName){}
+      : ConnectorTableHandle(connectorId), tableName_(tableName) {}
 
-  const std::string& name() const {
+  [[nodiscard]] const std::string& name() const {
     return tableName_;
   }
+
+  std::string toString() const override;
+
+  folly::dynamic serialize() const override;
 
  private:
   const std::string tableName_;
