@@ -8,7 +8,7 @@ class ClpTableHandle : public ConnectorTableHandle {
   ClpTableHandle(std::string connectorId, const std::string& tableName)
       : ConnectorTableHandle(connectorId), tableName_(tableName) {}
 
-  [[nodiscard]] const std::string& name() const {
+  [[nodiscard]] const std::string& tableName() const {
     return tableName_;
   }
 
