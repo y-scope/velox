@@ -1,6 +1,6 @@
 #include "velox/connectors/clp/ClpTableHandle.h"
-namespace facebook::velox::connector::clp {
 
+namespace facebook::velox::connector::clp {
 std::string ClpTableHandle::toString() const {
   return ConnectorTableHandle::toString();
 }
