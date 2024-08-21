@@ -15,7 +15,9 @@ class ClpConnectorSplit : public connector::ConnectorSplit {
         tableName_(tableName),
         query_(query) {}
 
-  std::string toString() const override;
+  [[nodiscard]] std::string toString() const override {
+    return fmt::format("CLP: {}.{}", schemaName_, tableName_);
+  }
 
  private:
   const std::string schemaName_;

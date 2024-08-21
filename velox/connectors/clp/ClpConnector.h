@@ -1,6 +1,7 @@
 #pragma once
 
 #include "velox/connectors/Connector.h"
+#include "velox/connectors/clp/ClpConfig.h"
 
 namespace facebook::velox::connector::clp {
 class ClpConnector : public Connector {
@@ -10,11 +11,12 @@ class ClpConnector : public Connector {
       std::shared_ptr<const Config> config,
       folly::Executor* executor);
 
-  const std::shared_ptr<const Config>& connectorConfig() const override {
-    return config_;
+  [[nodiscard]] const std::shared_ptr<const Config>& connectorConfig()
+      const override {
+    return config_->config();
   }
 
-  bool canAddDynamicFilter() const override {
+  [[nodiscard]] bool canAddDynamicFilter() const override {
     return false;
   }
 
@@ -36,12 +38,12 @@ class ClpConnector : public Connector {
       ConnectorQueryCtx* connectorQueryCtx,
       CommitStrategy commitStrategy) override;
 
-  folly::Executor* executor() const override {
+  [[nodiscard]] folly::Executor* executor() const override {
     return executor_;
   }
 
  private:
-  std::shared_ptr<const Config> config_;
+  std::shared_ptr<const ClpConfig> config_;
   folly::Executor* executor_;
 };
 
@@ -56,7 +58,7 @@ class ClpConnectorFactory : public ConnectorFactory {
   std::shared_ptr<Connector> newConnector(
       const std::string& id,
       std::shared_ptr<const Config> config,
-      folly::Executor* executor = nullptr) override {
+      folly::Executor* executor) override {
     return std::make_shared<ClpConnector>(id, config, executor);
   }
 };
