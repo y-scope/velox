@@ -8,20 +8,25 @@ class ClpConnectorSplit : public connector::ConnectorSplit {
   ClpConnectorSplit(
       const std::string& connectorId,
       const std::string& schemaName,
-      const std::string& tableName,
-      const std::shared_ptr<std::string>& query)
+      const std::string& tableName)
       : connector::ConnectorSplit(connectorId),
         schemaName_(schemaName),
-        tableName_(tableName),
-        query_(query) {}
+        tableName_(tableName){}
 
   [[nodiscard]] std::string toString() const override {
     return fmt::format("CLP: {}.{}", schemaName_, tableName_);
   }
 
+  [[nodiscard]] std::string schemaName() const {
+    return schemaName_;
+  }
+
+  [[nodiscard]] std::string tableName() const {
+    return tableName_;
+  }
+
  private:
   const std::string schemaName_;
   const std::string tableName_;
-  const std::shared_ptr<std::string> query_;
 };
 } // namespace facebook::velox::connector::clp

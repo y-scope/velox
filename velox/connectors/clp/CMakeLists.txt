@@ -6,3 +6,10 @@ velox_add_library(
         ClpDataSource.cpp
         ClpTableHandle.cpp
 )
+
+velox_link_libraries(
+        velox_clp_connector
+        velox_connector
+        simdjson::simdjson
+        Boost::filesystem
+)
