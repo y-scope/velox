@@ -17,7 +17,12 @@ std::unique_ptr<DataSource> ClpConnector::createDataSource(
         std::string,
         std::shared_ptr<connector::ColumnHandle>>& columnHandles,
     ConnectorQueryCtx* connectorQueryCtx) {
-  return std::make_unique<ClpDataSource>();
+  return std::make_unique<ClpDataSource>(
+      outputType,
+      tableHandle,
+      columnHandles,
+      connectorQueryCtx->memoryPool(),
+      config_);
 }
 
 std::unique_ptr<DataSink> ClpConnector::createDataSink(
