@@ -42,7 +42,9 @@ class ClpDataSource : public DataSource {
   }
 
  private:
-  static std::string getTypedColumnName(std::string& name, std::string suffix) {
+  static std::string getTypedColumnName(
+      const std::string& name,
+      const std::string& suffix) {
     return name + "_" + suffix;
   }
 
@@ -59,6 +61,7 @@ class ClpDataSource : public DataSource {
   velox::memory::MemoryPool* pool_;
   boost::process::ipstream resultsStream_;
   RowTypePtr outputType_;
+  std::vector<std::string> columnUntypedNames_;
   std::map<std::string, size_t> columnIndices_;
   std::map<std::string, size_t> arrayOffsets_;
   uint64_t completedRows_{0};
