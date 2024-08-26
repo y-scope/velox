@@ -1,3 +1,4 @@
+#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
 #include "velox/connectors/clp/ClpColumnHandle.h"
@@ -46,7 +47,29 @@ ClpDataSource::ClpDataSource(
         clpColumnHandle,
         "ColumnHandle must be an instance of ClpColumnHandle for output name: {}",
         outputNames[i]);
-    columnIndices_[clpColumnHandle->columnName()] = i;
+    auto columnName = clpColumnHandle->columnName();
+    columnIndices_[columnName] = i;
+    if (polymorphicTypeEnabled_) {
+      static const std::vector<std::string> suffixes = {
+          "_varchar", "_double", "_bigint", "_boolean"};
+      bool suffixFound = false;
+
+      for (const auto& suffix : suffixes) {
+        if (boost::algorithm::ends_with(columnName, suffix)) {
+          // Strip the type suffix
+          columnUntypedNames_.push_back(
+              columnName.substr(0, columnName.size() - suffix.size()));
+          suffixFound = true;
+          break;
+        }
+      }
+
+      if (!suffixFound) {
+        columnUntypedNames_.push_back(columnName);
+      }
+    } else {
+      columnUntypedNames_.push_back(columnName);
+    }
   }
 }
 
@@ -54,8 +77,12 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
   auto clpSplit = std::dynamic_pointer_cast<ClpConnectorSplit>(split);
   auto tableName = clpSplit->tableName();
   VELOX_CHECK(!tableName.empty(), "Table name must be set");
-  std::vector<std::string> commands = {"s", archiveDir_, kqlQuery_};
+  std::vector<std::string> commands = {
+      "s", archiveDir_, kqlQuery_, "--projection"};
+  commands.insert(
+      commands.end(), columnUntypedNames_.begin(), columnUntypedNames_.end());
   resultsStream_.clear();
+  arrayOffsets_.clear();
   boost::process::child search_process(
       executablePath_, commands, boost::process::std_out > resultsStream_);
 }
