@@ -85,6 +85,7 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
   arrayOffsets_.clear();
   boost::process::child search_process(
       executablePath_, commands, boost::process::std_out > resultsStream_);
+  search_process.wait();
 }
 
 std::optional<RowVectorPtr> ClpDataSource::next(
@@ -92,8 +93,12 @@ std::optional<RowVectorPtr> ClpDataSource::next(
     ContinueFuture& future) {
   std::vector<VectorPtr> vectors;
   vectors.reserve(outputType_->size());
+  auto nulls = AlignedBuffer::allocate<bool>(size, pool_, bits::kNull);
   for (const auto& childType : outputType_->children()) {
-    vectors.emplace_back(BaseVector::create(childType, size, pool_));
+    // Create a vector with NULL values
+    auto vector = BaseVector::create(childType, size, pool_);
+    vector->setNulls(nulls);
+    vectors.emplace_back(vector);
   }
 
   uint64_t localCompletedRows = 0;
@@ -113,7 +118,7 @@ std::optional<RowVectorPtr> ClpDataSource::next(
     }
   }
   if (localCompletedRows == 0) {
-    return std::nullopt;
+    return nullptr;
   }
   completedRows_ += localCompletedRows;
   return std::make_shared<RowVector>(
@@ -136,83 +141,34 @@ void ClpDataSource::parseJsonLine(
       }
       break;
     case simdjson::ondemand::json_type::string: {
-      if (auto iter = columnIndices_.find(path); iter != columnIndices_.end()) {
-        vectors[iter->second]->asFlatVector<StringView>()->set(
-            index, StringView(element.get_string().value()));
-      } else if (polymorphicTypeEnabled_) {
-        auto typedPath = getTypedColumnName(path, "varchar");
-        if (iter = columnIndices_.find(typedPath);
-            iter != columnIndices_.end()) {
-          vectors[iter->second]->asFlatVector<StringView>()->set(
-              index, StringView(element.get_string().value()));
-        }
-      }
+      setValue(
+          vectors,
+          path,
+          index,
+          StringView(element.get_string().value()),
+          "varchar");
       break;
     }
     case simdjson::ondemand::json_type::number: {
       simdjson::ondemand::number elementNumber = element.get_number();
       if (elementNumber.is_double()) {
-        if (auto iter = columnIndices_.find(path);
-            iter != columnIndices_.end()) {
-          vectors[iter->second]->asFlatVector<double>()->set(
-              index, elementNumber.get_double());
-        } else if (polymorphicTypeEnabled_) {
-          auto typedPath = getTypedColumnName(path, "double");
-          if (iter = columnIndices_.find(typedPath);
-              iter != columnIndices_.end()) {
-            vectors[iter->second]->asFlatVector<double>()->set(
-                index, elementNumber.get_double());
-          }
-        }
+        setValue(vectors, path, index, elementNumber.get_double(), "double");
       } else {
-        if (auto iter = columnIndices_.find(path);
-            iter != columnIndices_.end()) {
-          vectors[iter->second]->asFlatVector<int64_t>()->set(
-              index, elementNumber.get_int64());
-        } else if (polymorphicTypeEnabled_) {
-          auto typedPath = getTypedColumnName(path, "bigint");
-          if (iter = columnIndices_.find(typedPath);
-              iter != columnIndices_.end()) {
-            vectors[iter->second]->asFlatVector<int64_t>()->set(
-                index, elementNumber.get_int64());
-          }
-        }
+        setValue(vectors, path, index, elementNumber.get_int64(), "bigint");
       }
       break;
     }
     case simdjson::ondemand::json_type::boolean: {
-      if (auto iter = columnIndices_.find(path); iter != columnIndices_.end()) {
-        vectors[iter->second]->asFlatVector<bool>()->set(
-            index, element.get_bool());
-      } else if (polymorphicTypeEnabled_) {
-        auto typedPath = getTypedColumnName(path, "boolean");
-        if (iter = columnIndices_.find(typedPath);
-            iter != columnIndices_.end()) {
-          vectors[iter->second]->asFlatVector<bool>()->set(
-              index, element.get_bool());
-        }
-      }
+      setValue(vectors, path, index, element.get_bool().value(), "boolean");
       break;
     }
-    case simdjson::ondemand::json_type::null:
-      if (auto iter = columnIndices_.find(path); iter != columnIndices_.end()) {
-        vectors[iter->second]->asFlatVector<StringView>()->setNull(index, true);
-      } else if (polymorphicTypeEnabled_) {
-        auto typedPath = getTypedColumnName(path, "varchar");
-        if (iter = columnIndices_.find(typedPath);
-            iter != columnIndices_.end()) {
-          vectors[iter->second]->asFlatVector<StringView>()->setNull(
-              index, true);
-        }
-      }
-      break;
     case simdjson::ondemand::json_type::array: {
       std::shared_ptr<ArrayVector> arrayVector;
       if (auto iter = columnIndices_.find(path); iter != columnIndices_.end()) {
         arrayVector =
             std::dynamic_pointer_cast<ArrayVector>(vectors[iter->second]);
       } else if (polymorphicTypeEnabled_) {
-        auto typedPath = getTypedColumnName(path, "varchar");
+        auto typedPath = path + "_varchar";
         if (iter = columnIndices_.find(typedPath);
             iter != columnIndices_.end()) {
           arrayVector =
@@ -240,6 +196,8 @@ void ClpDataSource::parseJsonLine(
           index, arrayBeginOffset, arrayEndOffset - arrayBeginOffset);
       break;
     }
+    case simdjson::ondemand::json_type::null:
+      break;
   }
 }
 } // namespace facebook::velox::connector::clp
