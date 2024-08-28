@@ -83,9 +83,8 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
       commands.end(), columnUntypedNames_.begin(), columnUntypedNames_.end());
   resultsStream_.clear();
   arrayOffsets_.clear();
-  boost::process::child search_process(
+  process_ = boost::process::child(
       executablePath_, commands, boost::process::std_out > resultsStream_);
-  search_process.wait();
 }
 
 std::optional<RowVectorPtr> ClpDataSource::next(
@@ -114,6 +113,9 @@ std::optional<RowVectorPtr> ClpDataSource::next(
       completedBytes_ += line.size();
     } else {
       // No more data to read
+      if (process_.running()) {
+        process_.wait();
+      }
       break;
     }
   }
@@ -182,18 +184,26 @@ void ClpDataSource::parseJsonLine(
       }
       auto arrayBeginOffset = arrayOffsets_[path];
       auto arrayEndOffset = arrayBeginOffset;
-      auto elements = arrayVector->elements();
+      auto elements = arrayVector->elements()->asFlatVector<StringView>();
+      std::vector<std::string_view> arrayElements;
       for (auto arrayElement : element.get_array()) {
         // Get each array element as a string
-        auto elementString = simdjson::to_json_string(arrayElement).value();
+        auto elementStringWithQuotes =
+            simdjson::to_json_string(arrayElement).value();
+        auto elementString = elementStringWithQuotes.substr(
+            1, elementStringWithQuotes.size() - 2);
+        arrayElements.emplace_back(elementString);
+      }
+      elements->resize(arrayEndOffset + arrayElements.size());
+
+      for (auto& arrayElement : arrayElements) {
         // Set the element in the array vector
-        elements->asFlatVector<StringView>()->set(
-            arrayEndOffset, StringView(elementString));
-        arrayEndOffset++;
+        elements->set(arrayEndOffset++, StringView(arrayElement));
       }
       arrayOffsets_[path] = arrayEndOffset;
       arrayVector->setOffsetAndSize(
           index, arrayBeginOffset, arrayEndOffset - arrayBeginOffset);
+      arrayVector->setNull(index, false);
       break;
     }
     case simdjson::ondemand::json_type::null:
