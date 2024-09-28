@@ -15,6 +15,7 @@
  */
 #include <string>
 #include "velox/functions/prestosql/UuidFunctions.h"
+#include "velox/functions/prestosql/IpFunctions.h"
 
 namespace facebook::velox::functions {
 
@@ -32,6 +33,7 @@ extern void registerJsonFunctions(const std::string& prefix);
 extern void registerMapFunctions(const std::string& prefix);
 extern void registerStringFunctions(const std::string& prefix);
 extern void registerBinaryFunctions(const std::string& prefix);
+extern void registerIpFunctions(const std::string& prefix);
 extern void registerURLFunctions(const std::string& prefix);
 extern void registerMapAllowingDuplicates(
     const std::string& name,
@@ -93,6 +95,10 @@ void registerBitwiseFunctions(const std::string& prefix) {
   functions::registerBitwiseFunctions(prefix);
 }
 
+void registerIpFunctions(const std::string& prefix) {
+  functions::registerIpFunctions(prefix);
+}
+
 void registerAllScalarFunctions(const std::string& prefix) {
   registerArithmeticFunctions(prefix);
   registerCheckedArithmeticFunctions(prefix);
@@ -108,6 +114,7 @@ void registerAllScalarFunctions(const std::string& prefix) {
   registerBinaryFunctions(prefix);
   registerBitwiseFunctions(prefix);
   registerUuidFunctions(prefix);
+  registerIpFunctions(prefix);
 }
 
 void registerMapAllowingDuplicates(
