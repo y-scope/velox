@@ -34,6 +34,6 @@ class ClpConnectorSplit : public connector::ConnectorSplit {
  private:
   const std::string schemaName_;
   const std::string tableName_;
-  const std::string archiveId_
+  const std::string archiveId_;
 };
 } // namespace facebook::velox::connector::clp
