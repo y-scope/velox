@@ -114,13 +114,16 @@ std::optional<RowVectorPtr> ClpDataSource::next(
   for (uint64_t i = 0; i < size; ++i) {
     std::string line;
     if (std::getline(resultsStream_, line)) {
+      localCompletedRows++;
+      completedBytes_ += line.size();
+      if (0 == outputType_->size()) {
+        continue;
+      }
       // Parse the line and return the RowVectorPtr
       simdjson::ondemand::parser parser;
       auto doc = parser.iterate(line);
       std::string path;
       parseJsonLine(doc, path, vectors, i);
-      localCompletedRows++;
-      completedBytes_ += line.size();
     } else {
       // No more data to read
       if (process_.running()) {
