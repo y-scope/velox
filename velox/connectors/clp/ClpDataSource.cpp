@@ -73,14 +73,24 @@ ClpDataSource::ClpDataSource(
   }
 }
 
+ClpDataSource::~ClpDataSource() {
+  if (process_.running()) {
+    process_.terminate();
+  }
+}
+
 void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
   auto clpSplit = std::dynamic_pointer_cast<ClpConnectorSplit>(split);
   auto tableName = clpSplit->tableName();
+  auto archiveId = clpSplit->archiveId();
   VELOX_CHECK(!tableName.empty(), "Table name must be set");
   std::vector<std::string> commands = {
-      "s", archiveDir_, kqlQuery_, "--projection"};
-  commands.insert(
-      commands.end(), columnUntypedNames_.begin(), columnUntypedNames_.end());
+      "s", archiveDir_, "--archive-id", archiveId, kqlQuery_};
+  if (!columnUntypedNames_.empty()) {
+    commands.emplace_back("--projection");
+    commands.insert(
+        commands.end(), columnUntypedNames_.begin(), columnUntypedNames_.end());
+  }
   resultsStream_.clear();
   arrayOffsets_.clear();
   process_ = boost::process::child(

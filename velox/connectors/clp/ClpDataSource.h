@@ -1,6 +1,8 @@
 #pragma once
 
+#include <boost/filesystem.hpp>
 #include <boost/process.hpp>
+
 #include "velox/connectors/Connector.h"
 #include "velox/connectors/clp/ClpConfig.h"
 
@@ -17,6 +19,8 @@ class ClpDataSource : public DataSource {
           std::shared_ptr<connector::ColumnHandle>>& columnHandles,
       velox::memory::MemoryPool* pool,
       std::shared_ptr<const ClpConfig>& clpConfig);
+
+  ~ClpDataSource() override;
 
   void addSplit(std::shared_ptr<ConnectorSplit> split) override;
 
