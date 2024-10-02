@@ -1,12 +1,12 @@
 #include "velox/functions/Registerer.h"
-#include "velox/functions/prestosql/IpFunctions.h"
+#include "velox/functions/prestosql/IPFunctions.h"
 
 namespace facebook::velox::functions {
 void registerIpFunctions(const std::string& prefix) {
-  registerIpPrefixType();
-  registerIpAddressType();
+  registerIPPrefixType();
+  registerIPAddressType();
 
-  registerFunction<IsSubnetOfFunction, bool, IpPrefix , IpAddress>(
+  registerFunction<IPSubnetOfFunction, bool, IPPrefix , IPAddress>(
       {prefix + "is_subnet_of"});
 }
 } // namespace facebook::velox::functions

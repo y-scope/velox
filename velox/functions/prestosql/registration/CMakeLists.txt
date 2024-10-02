@@ -24,7 +24,7 @@ velox_add_library(
   DateTimeFunctionsRegistration.cpp
   GeneralFunctionsRegistration.cpp
   HyperLogFunctionsRegistration.cpp
-  IpFunctionsRegistration.cpp
+  IPFunctionsRegistration.cpp
   JsonFunctionsRegistration.cpp
   MapFunctionsRegistration.cpp
   MathematicalFunctionsRegistration.cpp

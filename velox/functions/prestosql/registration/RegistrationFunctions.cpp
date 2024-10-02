@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 #include <string>
+#include "velox/functions/prestosql/IPFunctions.h"
 #include "velox/functions/prestosql/UuidFunctions.h"
-#include "velox/functions/prestosql/IpFunctions.h"
 
 namespace facebook::velox::functions {
 
