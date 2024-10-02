@@ -86,8 +86,10 @@ class WindowFuzzerRunner {
         options.customVerificationFunctions,
         options.customInputGenerators,
         options.orderDependentFunctions,
+        options.functionDataSpec,
         options.timestampPrecision,
         options.queryConfigs,
+        options.hiveConfigs,
         options.orderableGroupKeys,
         planPath,
         std::move(referenceQueryRunner));

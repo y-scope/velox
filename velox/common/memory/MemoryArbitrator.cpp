@@ -45,7 +45,7 @@ class FactoryRegistry {
     VELOX_USER_CHECK(
         map_.find(kind) != map_.end(),
         "Arbitrator factory for kind {} not registered",
-        kind)
+        kind);
     return map_[kind];
   }
 
@@ -54,7 +54,7 @@ class FactoryRegistry {
     VELOX_USER_CHECK(
         map_.find(kind) != map_.end(),
         "Arbitrator factory for kind {} not registered",
-        kind)
+        kind);
     return map_.erase(kind);
   }
 
@@ -180,6 +180,7 @@ std::unique_ptr<MemoryReclaimer> MemoryReclaimer::create() {
 uint64_t MemoryReclaimer::run(
     const std::function<int64_t()>& func,
     Stats& stats) {
+  VELOX_CHECK(underMemoryArbitration());
   uint64_t execTimeUs{0};
   int64_t reclaimedBytes{0};
   {
@@ -480,21 +481,22 @@ ScopedMemoryArbitrationContext::ScopedMemoryArbitrationContext(
   arbitrationCtx = &currentArbitrationCtx_;
 }
 
-ScopedMemoryArbitrationContext::ScopedMemoryArbitrationContext(
-    const MemoryArbitrationContext* contextToRestore)
-    : savedArbitrationCtx_(arbitrationCtx) {
-  if (contextToRestore != nullptr) {
-    currentArbitrationCtx_ = *contextToRestore;
-    arbitrationCtx = &currentArbitrationCtx_;
-  }
-}
-
 ScopedMemoryArbitrationContext::~ScopedMemoryArbitrationContext() {
   arbitrationCtx = savedArbitrationCtx_;
 }
 
 const MemoryArbitrationContext* memoryArbitrationContext() {
   return arbitrationCtx;
+}
+
+ScopedMemoryPoolArbitrationCtx::ScopedMemoryPoolArbitrationCtx(MemoryPool* pool)
+    : pool_(pool) {
+  VELOX_CHECK_NOT_NULL(pool_);
+  pool_->enterArbitration();
+}
+
+ScopedMemoryPoolArbitrationCtx::~ScopedMemoryPoolArbitrationCtx() {
+  pool_->leaveArbitration();
 }
 
 bool underMemoryArbitration() {
@@ -515,20 +517,11 @@ void testingRunArbitration(
     MemoryPool* pool,
     uint64_t targetBytes,
     bool allowSpill) {
-  pool->enterArbitration();
-  // Seraliazes the testing arbitration injection to make sure that the previous
-  // op has left arbitration section before starting the next one. This is
-  // guaranteed by the production code for operation triggered arbitration.
-  static std::mutex lock;
   {
-    std::lock_guard<std::mutex> l(lock);
+    ScopedMemoryPoolArbitrationCtx arbitrationCtx{pool};
     static_cast<MemoryPoolImpl*>(pool)->testingManager()->shrinkPools(
         targetBytes, allowSpill);
-    pool->leaveArbitration();
   }
-  // This function is simulating an operator triggered arbitration which
-  // would check if the query has been aborted after finish arbitration by the
-  // memory pool capacity grow path.
   static_cast<MemoryPoolImpl*>(pool)->testingCheckIfAborted();
 }
 
