@@ -15,9 +15,9 @@
 */
 
 #include "velox/functions/prestosql/types/IPAddressType.h"
+#include "velox/functions/prestosql/types/IPPrefixType.h"
 #include <folly/IPAddress.h>
 #include "velox/expression/CastExpr.h"
-#include "velox/functions/prestosql/types/IPPrefixType.h"
 
 static constexpr int kIPV4AddressBytes = 4;
 static constexpr int kIPV4ToV6FFIndex = 10;

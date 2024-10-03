@@ -1,9 +1,9 @@
 #pragma once
 
-#include "velox/core/Config.h"
+#include "velox/common/config/Config.h"
 
-namespace facebook::velox {
-class Config;
+namespace facebook::velox::config {
+class ConfigBase;
 }
 
 namespace facebook::velox::connector::clp {
@@ -26,16 +26,16 @@ class ClpConfig {
     return config_->get<bool>(kPolymorphicTypeEnabled, false);
   }
 
-  explicit ClpConfig(std::shared_ptr<const Config> config) {
+  explicit ClpConfig(std::shared_ptr<const config::ConfigBase> config) {
     VELOX_CHECK_NOT_NULL(config, "Config is null for CLP initialization");
     config_ = std::move(config);
   }
 
-  [[nodiscard]] const std::shared_ptr<const Config>& config() const {
+  [[nodiscard]] const std::shared_ptr<const config::ConfigBase>& config() const {
     return config_;
   }
 
  private:
-  std::shared_ptr<const Config> config_;
+  std::shared_ptr<const config::ConfigBase> config_;
 };
 } // namespace facebook::velox::connector::clp

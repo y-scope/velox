@@ -4,7 +4,7 @@
 namespace facebook::velox::connector::clp {
 ClpConnector::ClpConnector(
     const std::string& id,
-    std::shared_ptr<const Config> config,
+    std::shared_ptr<const config::ConfigBase> config,
     folly::Executor* executor)
     : Connector(id),
       config_(std::make_shared<ClpConfig>(config)),

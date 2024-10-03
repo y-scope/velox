@@ -8,10 +8,10 @@ class ClpConnector : public Connector {
  public:
   ClpConnector(
       const std::string& id,
-      std::shared_ptr<const Config> config,
+      std::shared_ptr<const config::ConfigBase> config,
       folly::Executor* executor);
 
-  [[nodiscard]] const std::shared_ptr<const Config>& connectorConfig()
+  [[nodiscard]] const std::shared_ptr<const config::ConfigBase>& connectorConfig()
       const override {
     return config_->config();
   }
@@ -57,7 +57,7 @@ class ClpConnectorFactory : public ConnectorFactory {
 
   std::shared_ptr<Connector> newConnector(
       const std::string& id,
-      std::shared_ptr<const Config> config,
+      std::shared_ptr<const config::ConfigBase> config,
       folly::Executor* executor) override {
     return std::make_shared<ClpConnector>(id, config, executor);
   }
