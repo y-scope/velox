@@ -57,7 +57,7 @@ ClpDataSource::ClpDataSource(
       for (const auto& suffix : suffixes) {
         if (boost::algorithm::ends_with(columnName, suffix)) {
           // Strip the type suffix
-          columnUntypedNames_.push_back(
+          columnUntypedNames_.insert(
               columnName.substr(0, columnName.size() - suffix.size()));
           suffixFound = true;
           break;
@@ -65,10 +65,10 @@ ClpDataSource::ClpDataSource(
       }
 
       if (!suffixFound) {
-        columnUntypedNames_.push_back(columnName);
+        columnUntypedNames_.insert(columnName);
       }
     } else {
-      columnUntypedNames_.push_back(columnName);
+      columnUntypedNames_.insert(columnName);
     }
   }
 }
@@ -91,8 +91,11 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
     commands.insert(
         commands.end(), columnUntypedNames_.begin(), columnUntypedNames_.end());
   }
-  resultsStream_.clear();
+  resultsStream_ = boost::process::ipstream();
   arrayOffsets_.clear();
+  if (process_.running()) {
+    process_.terminate();
+  }
   process_ = boost::process::child(
       executablePath_, commands, boost::process::std_out > resultsStream_);
 }
@@ -127,7 +130,7 @@ std::optional<RowVectorPtr> ClpDataSource::next(
     } else {
       // No more data to read
       if (process_.running()) {
-        process_.wait();
+        process_.terminate();
       }
       break;
     }
