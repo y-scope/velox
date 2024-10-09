@@ -74,8 +74,9 @@ ClpDataSource::ClpDataSource(
 }
 
 ClpDataSource::~ClpDataSource() {
-  if (process_.running()) {
-    process_.terminate();
+  if (process_ && process_->running()) {
+    process_->terminate();
+    process_->wait();
   }
 }
 
@@ -91,18 +92,28 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
     commands.insert(
         commands.end(), columnUntypedNames_.begin(), columnUntypedNames_.end());
   }
-  resultsStream_ = boost::process::ipstream();
   arrayOffsets_.clear();
-  if (process_.running()) {
-    process_.terminate();
+  if (resultsStream_ && resultsStream_->is_open()) {
+    resultsStream_->close();
   }
-  process_ = boost::process::child(
-      executablePath_, commands, boost::process::std_out > resultsStream_);
+  resultsStream_ = std::make_unique<boost::process::ipstream>();
+  if (process_ && process_->running()) {
+    process_->terminate();
+    process_->wait();
+  }
+  process_ = std::make_unique<boost::process::child>(
+      executablePath_, commands, boost::process::std_out > *resultsStream_);
 }
 
 std::optional<RowVectorPtr> ClpDataSource::next(
     uint64_t size,
     ContinueFuture& future) {
+  if (!process_) {
+    return nullptr;
+  } else if (!process_->running()) {
+    process_.reset();
+    return nullptr;
+  }
   std::vector<VectorPtr> vectors;
   vectors.reserve(outputType_->size());
   auto nulls = AlignedBuffer::allocate<bool>(size, pool_, bits::kNull);
@@ -116,7 +127,8 @@ std::optional<RowVectorPtr> ClpDataSource::next(
   uint64_t localCompletedRows = 0;
   for (uint64_t i = 0; i < size; ++i) {
     std::string line;
-    if (std::getline(resultsStream_, line)) {
+    if (process_ && process_->running() &&
+        std::getline(*resultsStream_, line)) {
       localCompletedRows++;
       completedBytes_ += line.size();
       if (0 == outputType_->size()) {
@@ -129,8 +141,10 @@ std::optional<RowVectorPtr> ClpDataSource::next(
       parseJsonLine(doc, path, vectors, i);
     } else {
       // No more data to read
-      if (process_.running()) {
-        process_.terminate();
+      if (process_ && process_->running()) {
+        process_->terminate();
+        process_->wait();
+        process_.reset();
       }
       break;
     }
