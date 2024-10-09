@@ -80,13 +80,13 @@ class ClpDataSource : public DataSource {
   std::string kqlQuery_;
   bool polymorphicTypeEnabled_;
   velox::memory::MemoryPool* pool_;
-  boost::process::ipstream resultsStream_;
   RowTypePtr outputType_;
   std::set<std::string> columnUntypedNames_;
   std::map<std::string, size_t> columnIndices_;
   std::map<std::string, size_t> arrayOffsets_;
   uint64_t completedRows_{0};
   uint64_t completedBytes_{0};
-  boost::process::child process_;
+  std::unique_ptr<boost::process::ipstream> resultsStream_;
+  std::unique_ptr<boost::process::child> process_;
 };
 } // namespace facebook::velox::connector::clp
