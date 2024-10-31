@@ -7,6 +7,8 @@
 #include "velox/connectors/clp/ClpTableHandle.h"
 #include "velox/vector/FlatVector.h"
 
+#include "search_lib/search/Cursor.hpp"
+
 namespace facebook::velox::connector::clp {
 
 ClpDataSource::ClpDataSource(
@@ -74,13 +76,34 @@ ClpDataSource::ClpDataSource(
 }
 
 ClpDataSource::~ClpDataSource() {
-  if (process_ && process_->running()) {
-    process_->terminate();
-    process_->wait();
+//  stopThread_ = true;
+//  if (t_.joinable()) {
+//    t_.join();
+//  }
+  if (pid_ > 0) {
+    // Send SIGTERM to the process to terminate it gracefully
+    kill(pid_, SIGTERM);
+    // Wait for the process to terminate
+    int status;
+    if (waitpid(pid_, &status, 0) == -1) {
+      out_file_ << std::this_thread::get_id()
+                << " Error waiting for process termination: " << strerror(errno)
+                << std::endl;
+    } else {
+      out_file_ << std::this_thread::get_id() << "Destructor Process " << pid_
+                << " terminated with status: " << status << std::endl;
+    }
+
+    // Reset the PID to indicate that no process is running
+    pid_ = -1;
   }
+  out_file_.close();
 }
 
 void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  out_file_ << std::this_thread::get_id() << " ClpDataSource addSplit"
+            << std::endl;
   auto clpSplit = std::dynamic_pointer_cast<ClpConnectorSplit>(split);
   auto tableName = clpSplit->tableName();
   auto archiveId = clpSplit->archiveId();
@@ -93,27 +116,92 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
         commands.end(), columnUntypedNames_.begin(), columnUntypedNames_.end());
   }
   arrayOffsets_.clear();
-  if (resultsStream_ && resultsStream_->is_open()) {
-    resultsStream_->close();
+  line_buffer_.clear();
+  if (pid_ > 0) {
+    // Send SIGTERM to the process to terminate it gracefully
+    kill(pid_, SIGTERM);
+    // Wait for the process to terminate
+    int status;
+    if (waitpid(pid_, &status, 0) == -1) {
+      out_file_ << std::this_thread::get_id()
+                << " Error waiting for process termination: " << strerror(errno)
+                << std::endl;
+    } else {
+      out_file_ << std::this_thread::get_id()
+                << " Process terminated with status: " << status << std::endl;
+    }
+
+    // Reset the PID to indicate that no process is running
+    pid_ = -1;
   }
-  resultsStream_ = std::make_unique<boost::process::ipstream>();
-  if (process_ && process_->running()) {
-    process_->terminate();
-    process_->wait();
+
+  // Create a pipe for communication
+  if (pipe(pipeFd_) == -1) {
+    out_file_ << std::this_thread::get_id()
+              << " Pipe failed: " << strerror(errno) << std::endl;
+    return;
   }
-  process_ = std::make_unique<boost::process::child>(
-      executablePath_, commands, boost::process::std_out > *resultsStream_);
+
+  // Fork the process
+  pid_ = fork();
+  if (pid_ < 0) {
+    out_file_ << std::this_thread::get_id()
+              << " Fork failed: " << strerror(errno) << std::endl;
+    return;
+  }
+
+  if (pid_ == 0) { // Child process
+    // Redirect stdout to the write end of the pipe
+    close(pipeFd_[0]); // Close the read end
+    dup2(pipeFd_[1], STDOUT_FILENO); // Redirect stdout to pipe
+    close(pipeFd_[1]); // Close the original write end after dup
+
+    // Convert args to char* array for execvp
+    std::vector<char*> exec_args;
+    exec_args.push_back(const_cast<char*>(executablePath_.c_str()));
+    for (const auto& arg : commands) {
+      exec_args.push_back(const_cast<char*>(arg.c_str()));
+    }
+    exec_args.push_back(nullptr); // execvp expects a null-terminated array
+
+    // Replace the child process with the new executable
+    execvp(executablePath_.c_str(), exec_args.data());
+
+    // If execvp fails
+    out_file_ << std::this_thread::get_id()
+              << " execvp failed: " << strerror(errno) << std::endl;
+    _exit(1);
+  } else { // Parent process
+    out_file_ << std::this_thread::get_id()
+              << " ClpDataSource addSplit pid:" << pid_ << std::endl;
+    // Close the write end of the pipe
+    close(pipeFd_[1]);
+//    t_ = std::thread([this]() {
+//      size_t count = 0;
+//      while (!stopThread_ && count < 30) {
+//        std::this_thread::sleep_for((std::chrono::seconds(1)));
+//        count++;
+//      }
+//      close(pipeFd_[0]);
+//    });
+    auto flags = fcntl(pipeFd_[0], F_GETFL, 0);
+    fcntl(pipeFd_[0], F_SETFL, flags | O_NONBLOCK);
+  }
 }
 
 std::optional<RowVectorPtr> ClpDataSource::next(
     uint64_t size,
     ContinueFuture& future) {
-  if (!process_) {
-    return nullptr;
-  } else if (!process_->running()) {
-    process_.reset();
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (pid_ <= 0) {
+    out_file_ << std::this_thread::get_id() << " ClpDataSource next pid_ <= 0"
+              << std::endl;
     return nullptr;
   }
+  out_file_ << std::this_thread::get_id() << " ClpDataSource next: " << size
+            << ", pid: " << pid_ << std::endl;
+
+  //  std::lock_guard<std::mutex> lock(stream_mutex_);
   std::vector<VectorPtr> vectors;
   vectors.reserve(outputType_->size());
   auto nulls = AlignedBuffer::allocate<bool>(size, pool_, bits::kNull);
@@ -125,30 +213,54 @@ std::optional<RowVectorPtr> ClpDataSource::next(
   }
 
   uint64_t localCompletedRows = 0;
+
+  char buffer[4096];
+  ssize_t count;
+  size_t completedRead = 0;
   for (uint64_t i = 0; i < size; ++i) {
-    std::string line;
-    if (process_ && process_->running() &&
-        std::getline(*resultsStream_, line)) {
-      localCompletedRows++;
-      completedBytes_ += line.size();
-      if (0 == outputType_->size()) {
+    size_t pos = std::string::npos;
+    while (pid_ > 0 && fcntl(pipeFd_[0], F_GETFD) != -1 && (pos = line_buffer_.find('\n')) == std::string::npos) {
+      if ((count = read(pipeFd_[0], buffer, sizeof(buffer))) > 0) {
+        line_buffer_.append(buffer, count);
+        completedRead += 1;
+      } else if (count == -1 && (errno == EINTR || errno == EAGAIN)) {
         continue;
+      } else {
+        break;
       }
-      // Parse the line and return the RowVectorPtr
-      simdjson::ondemand::parser parser;
+    }
+
+    if (pos == std::string::npos) {
+      break;
+    }
+
+    std::string line = line_buffer_.substr(0, pos + 1);
+    localCompletedRows++;
+    completedBytes_ += line.size();
+    if (0 == outputType_->size()) {
+      continue;
+    }
+
+    // Parse the line and return the RowVectorPtr
+    simdjson::ondemand::parser parser;
+    try {
       auto doc = parser.iterate(line);
       std::string path;
       parseJsonLine(doc, path, vectors, i);
-    } else {
-      // No more data to read
-      if (process_ && process_->running()) {
-        process_->terminate();
-        process_->wait();
-        process_.reset();
-      }
-      break;
+      line_buffer_.erase(0, pos + 1);
+    } catch (simdjson::simdjson_error& e) {
+      out_file_ << i << " Error parsing JSON:" << e.what() << std::endl;
+      out_file_ << line << std::endl;
+      out_file_ << "line buffer: " << line_buffer_ << std::endl;
+      out_file_ << "buffer: " << buffer << std::endl;
+      exit(1);
     }
   }
+
+  out_file_ << std::this_thread::get_id() << " ClpDataSource next: " << size
+            << ", pid: " << pid_ << " Completed rows: " << localCompletedRows
+            << " Completed read: " << completedRead << " fd: " << pipeFd_[0]
+            << std::endl;
   if (localCompletedRows == 0) {
     return nullptr;
   }
