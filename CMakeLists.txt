@@ -123,6 +123,7 @@ set(VELOX_GFLAGS_TYPE
 )
 option(VELOX_ENABLE_EXEC "Build exec." ON)
 option(VELOX_ENABLE_AGGREGATES "Build aggregates." ON)
+option(VELOX_ENABLE_CLP_CONNECTOR "Build CLP connector." ON)
 option(VELOX_ENABLE_HIVE_CONNECTOR "Build Hive connector." ON)
 option(VELOX_ENABLE_TPCH_CONNECTOR "Build TPC-H connector." ON)
 option(VELOX_ENABLE_PRESTO_FUNCTIONS "Build Presto SQL functions." ON)
@@ -168,6 +169,7 @@ if(${VELOX_BUILD_MINIMAL} OR ${VELOX_BUILD_MINIMAL_WITH_DWIO})
   set(VELOX_ENABLE_EXPRESSION ON)
   set(VELOX_ENABLE_EXEC OFF)
   set(VELOX_ENABLE_AGGREGATES OFF)
+  set(VELOX_ENABLE_CLP_CONNECTOR OFF)
   set(VELOX_ENABLE_HIVE_CONNECTOR OFF)
   set(VELOX_ENABLE_TPCH_CONNECTOR OFF)
   set(VELOX_ENABLE_SPARK_FUNCTIONS OFF)
@@ -224,18 +226,6 @@ endif()
 # We look for OpenSSL here to cache the result enforce the version across our
 # dependencies.
 find_package(OpenSSL REQUIRED)
-
-find_package(spdlog REQUIRED)
-if(spdlog_FOUND)
-  message(STATUS "Found spdlog ${spdlog_VERSION}")
-else()
-  if (CLP_USE_STATIC_LIBS)
-    message(FATAL_ERROR "Could not find static libraries for spdlog. You may want to re-run
-            `components/core/tools/scripts/lib_install/<dist>/install-packages-from-source.sh`")
-  else()
-    message(FATAL_ERROR "Could not find libraries for spdlog.")
-  endif()
-endif()
 
 find_package(ANTLR REQUIRED)
 if (ANTLR_FOUND)
@@ -501,6 +491,18 @@ endif()
 
 velox_set_source(re2)
 velox_resolve_dependency(re2)
+if (${VELOX_ENABLE_CLP_CONNECTOR})
+  set(spdlog_SOURCE BUNDLED)
+  resolve_dependency(spdlog 1.12.0)
+endif()
+
+if (${VELOX_ENABLE_CLP_CONNECTOR} OR ${VELOX_BUILD_TESTING})
+  set_source(absl)
+  resolve_dependency(absl)
+endif()
+
+set_source(re2)
+resolve_dependency(re2)
 
 if(${VELOX_BUILD_PYTHON_PACKAGE})
   velox_set_source(pybind11)
