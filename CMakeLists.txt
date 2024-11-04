@@ -208,6 +208,25 @@ endif()
 # dependencies.
 find_package(OpenSSL REQUIRED)
 
+find_package(spdlog REQUIRED)
+if(spdlog_FOUND)
+  message(STATUS "Found spdlog ${spdlog_VERSION}")
+else()
+  if (CLP_USE_STATIC_LIBS)
+    message(FATAL_ERROR "Could not find static libraries for spdlog. You may want to re-run
+            `components/core/tools/scripts/lib_install/<dist>/install-packages-from-source.sh`")
+  else()
+    message(FATAL_ERROR "Could not find libraries for spdlog.")
+  endif()
+endif()
+
+find_package(ANTLR REQUIRED)
+if (ANTLR_FOUND)
+  message(STATUS "Found ANTLR ${ANTLR_VERSION}")
+else()
+  message(FATAL_ERROR "Could not find libraries for ANTLR ${ANTLR4_TAG}")
+endif()
+
 if(VELOX_ENABLE_CCACHE
    AND NOT CMAKE_C_COMPILER_LAUNCHER
    AND NOT CMAKE_CXX_COMPILER_LAUNCHER)

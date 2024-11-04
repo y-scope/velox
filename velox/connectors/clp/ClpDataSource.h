@@ -1,12 +1,18 @@
 #pragma once
 
+#include <unistd.h>     // For pipe, fork, exec
+#include <sys/wait.h>   // For waitpid
 #include <set>
+#include <mutex>
+#include <fstream>
+#include <thread>
 
 #include <boost/filesystem.hpp>
-#include <boost/process.hpp>
 
 #include "velox/connectors/Connector.h"
 #include "velox/connectors/clp/ClpConfig.h"
+
+#include "search_lib/search/Cursor.hpp"
 
 #include "simdjson.h"
 
@@ -21,8 +27,6 @@ class ClpDataSource : public DataSource {
           std::shared_ptr<connector::ColumnHandle>>& columnHandles,
       velox::memory::MemoryPool* pool,
       std::shared_ptr<const ClpConfig>& clpConfig);
-
-  ~ClpDataSource() override;
 
   void addSplit(std::shared_ptr<ConnectorSplit> split) override;
 
@@ -86,7 +90,9 @@ class ClpDataSource : public DataSource {
   std::map<std::string, size_t> arrayOffsets_;
   uint64_t completedRows_{0};
   uint64_t completedBytes_{0};
-  std::unique_ptr<boost::process::ipstream> resultsStream_;
-  std::unique_ptr<boost::process::child> process_;
+
+  std::vector<clp_s::search::Field> fields_;
+
+  std::unique_ptr<clp_s::search::Cursor> cursor_;
 };
 } // namespace facebook::velox::connector::clp
