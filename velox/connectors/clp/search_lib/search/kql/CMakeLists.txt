@@ -33,5 +33,5 @@ velox_add_library(
 
 target_compile_features(kql PRIVATE cxx_std_20)
 velox_include_directories(kql PRIVATE ${ANTLR_KqlParser_OUTPUT_DIR})
-velox_link_libraries(kql PRIVATE absl::flat_hash_map antlr4_static Boost::filesystem)
+velox_link_libraries(kql PRIVATE spdlog::spdlog absl::flat_hash_map antlr4_static Boost::filesystem)
 

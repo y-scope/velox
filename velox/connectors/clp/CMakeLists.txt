@@ -18,13 +18,14 @@ velox_link_libraries(
         clp-s-search
         velox_connector
         simdjson::simdjson
+        spdlog::spdlog
+        absl::flat_hash_map
         Boost::filesystem
 )
 
 velox_include_directories(
         velox_clp_connector
         PRIVATE
-        "search_lib/submodules/abseil-cpp"
 )
 
 target_compile_features(velox_clp_connector PRIVATE cxx_std_20)

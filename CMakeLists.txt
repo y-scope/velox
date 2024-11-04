@@ -208,18 +208,6 @@ endif()
 # dependencies.
 find_package(OpenSSL REQUIRED)
 
-find_package(spdlog REQUIRED)
-if(spdlog_FOUND)
-  message(STATUS "Found spdlog ${spdlog_VERSION}")
-else()
-  if (CLP_USE_STATIC_LIBS)
-    message(FATAL_ERROR "Could not find static libraries for spdlog. You may want to re-run
-            `components/core/tools/scripts/lib_install/<dist>/install-packages-from-source.sh`")
-  else()
-    message(FATAL_ERROR "Could not find libraries for spdlog.")
-  endif()
-endif()
-
 find_package(ANTLR REQUIRED)
 if (ANTLR_FOUND)
   message(STATUS "Found ANTLR ${ANTLR_VERSION}")
@@ -466,6 +454,16 @@ if(${VELOX_BUILD_MINIMAL_WITH_DWIO} OR ${VELOX_ENABLE_HIVE_CONNECTOR})
   endif()
 endif()
 
+if (${VELOX_ENABLE_CLP_CONNECTOR})
+  set(spdlog_SOURCE BUNDLED)
+  resolve_dependency(spdlog 1.12.0)
+endif()
+
+if (${VELOX_ENABLE_CLP_CONNECTOR} OR ${VELOX_BUILD_TESTING})
+  set_source(absl)
+  resolve_dependency(absl)
+endif()
+
 set_source(re2)
 resolve_dependency(re2)
 
@@ -497,9 +495,6 @@ resolve_dependency(folly)
 
 if(${VELOX_BUILD_TESTING})
   # Spark qury runner depends on absl, gRPC.
-  set_source(absl)
-  resolve_dependency(absl)
-
   # 'gRPC_CARES_PROVIDER' is set as 'package', which means c-ares library needs
   # to be installed on the system, instead of being built by gRPC.
   set_source(c-ares)

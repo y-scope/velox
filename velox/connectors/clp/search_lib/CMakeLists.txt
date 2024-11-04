@@ -1,13 +1,10 @@
 add_subdirectory(search/kql)
-add_subdirectory(submodules/abseil-cpp EXCLUDE_FROM_ALL)
-add_subdirectory(submodules/yaml-cpp EXCLUDE_FROM_ALL)
 
 string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
 add_definitions("-DSOURCE_PATH_SIZE=${SOURCE_PATH_SIZE}")
 
 set(
         CLP_S_SEARCH_LIB_SOURCES
-        "submodules/date/include/date/date.h"
         archive_constants.hpp
         ArchiveReader.cpp
         ArchiveReader.hpp
@@ -124,17 +121,14 @@ velox_add_library(
 )
 
 target_compile_features(clp-s-search PRIVATE cxx_std_20)
-target_compile_definitions(clp-s-search PRIVATE SPDLOG_FMT_EXTERNAL)
 velox_link_libraries(
         clp-s-search
         PRIVATE kql
         Boost::filesystem Boost::iostreams Boost::program_options
         absl::flat_hash_map
-        simdjson
-        yaml-cpp::yaml-cpp
+        simdjson::simdjson
         zstd::zstd
         spdlog::spdlog
         velox_vector
+        velox_external_date
 )
-#velox_include_directories(clp-s-search PRIVATE "/root/presto/presto-native-execution/cmake-build-debug/_deps/xsimd-src/include")
-velox_include_directories(clp-s-search PRIVATE "submodules")
