@@ -6,14 +6,18 @@
 #include <cstring>
 #include <vector>
 
-#include <date/include/date/date.h>
+#include <date/date.h>
 #include <spdlog/spdlog.h>
+
+#include <velox/external/date/date.h>
 
 #include "Utils.hpp"
 
 using std::string;
 using std::to_string;
 using std::vector;
+
+namespace date = facebook::velox::date;
 
 namespace clp_s {
 // Static member default initialization
