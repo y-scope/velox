@@ -1,0 +1,140 @@
+add_subdirectory(search/kql)
+add_subdirectory(submodules/abseil-cpp EXCLUDE_FROM_ALL)
+add_subdirectory(submodules/yaml-cpp EXCLUDE_FROM_ALL)
+
+string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
+add_definitions("-DSOURCE_PATH_SIZE=${SOURCE_PATH_SIZE}")
+
+set(
+        CLP_S_SEARCH_LIB_SOURCES
+        "submodules/date/include/date/date.h"
+        archive_constants.hpp
+        ArchiveReader.cpp
+        ArchiveReader.hpp
+        BufferViewReader.hpp
+        ColumnReader.cpp
+        ColumnReader.hpp
+        ColumnReader.cpp
+        ColumnWriter.hpp
+        Compressor.hpp
+        Decompressor.hpp
+        Defs.hpp
+        DictionaryEntry.cpp
+        DictionaryEntry.hpp
+        DictionaryReader.hpp
+        DictionaryWriter.cpp
+        DictionaryWriter.hpp
+        ErrorCode.hpp
+        FileReader.cpp
+        FileReader.hpp
+        FileWriter.cpp
+        FileWriter.hpp
+        JsonSerializer.hpp
+        ParsedMessage.hpp
+        ReaderUtils.cpp
+        ReaderUtils.hpp
+        Schema.cpp
+        Schema.hpp
+        SchemaMap.cpp
+        SchemaMap.hpp
+        SchemaReader.cpp
+        SchemaReader.hpp
+        SchemaTree.cpp
+        SchemaTree.hpp
+        TimestampDictionaryReader.cpp
+        TimestampDictionaryReader.hpp
+        TimestampDictionaryWriter.cpp
+        TimestampDictionaryWriter.hpp
+        TimestampEntry.cpp
+        TimestampEntry.hpp
+        TimestampPattern.cpp
+        TimestampPattern.hpp
+        TraceableException.hpp
+        type_utils.hpp
+        Utils.cpp
+        Utils.hpp
+        VariableEncoder.cpp
+        VariableEncoder.hpp
+        VariableDecoder.cpp
+        VariableDecoder.hpp
+        ZstdCompressor.cpp
+        ZstdCompressor.hpp
+        ZstdDecompressor.cpp
+        ZstdDecompressor.hpp
+        search/AddTimestampConditions.cpp
+        search/AddTimestampConditions.hpp
+        search/AndExpr.cpp
+        search/AndExpr.hpp
+        search/BooleanLiteral.cpp
+        search/BooleanLiteral.hpp
+        search/Cursor.cpp
+        search/Cursor.hpp
+        search/clp_search/EncodedVariableInterpreter.cpp
+        search/clp_search/EncodedVariableInterpreter.hpp
+        search/clp_search/Grep.cpp
+        search/clp_search/Grep.hpp
+        search/clp_search/Query.cpp
+        search/clp_search/Query.hpp
+        search/ColumnDescriptor.cpp
+        search/ColumnDescriptor.hpp
+        search/ConstantProp.cpp
+        search/ConstantProp.hpp
+        search/ConvertToExists.cpp
+        search/ConvertToExists.hpp
+        search/DateLiteral.cpp
+        search/DateLiteral.hpp
+        search/EmptyExpr.cpp
+        search/EmptyExpr.hpp
+        search/EvaluateTimestampIndex.cpp
+        search/EvaluateTimestampIndex.hpp
+        search/Expression.cpp
+        search/Expression.hpp
+        search/FilterExpr.cpp
+        search/FilterExpr.hpp
+        search/FilterOperation.hpp
+        search/Integral.cpp
+        search/Integral.hpp
+        search/Literal.hpp
+        search/NarrowTypes.cpp
+        search/NarrowTypes.hpp
+        search/NullLiteral.cpp
+        search/NullLiteral.hpp
+        search/OrExpr.cpp
+        search/OrExpr.hpp
+        search/OrOfAndForm.cpp
+        search/OrOfAndForm.hpp
+        search/Projection.cpp
+        search/Projection.hpp
+        search/QueryRunner.cpp
+        search/QueryRunner.hpp
+        search/SchemaMatch.cpp
+        search/SchemaMatch.hpp
+        search/SearchUtils.cpp
+        search/SearchUtils.hpp
+        search/StringLiteral.cpp
+        search/StringLiteral.hpp
+        search/Transformation.hpp
+        search/Value.hpp
+)
+
+velox_add_library(
+        clp-s-search
+        STATIC
+        ${CLP_S_SEARCH_LIB_SOURCES}
+)
+
+target_compile_features(clp-s-search PRIVATE cxx_std_20)
+target_compile_definitions(clp-s-search PRIVATE SPDLOG_FMT_EXTERNAL)
+velox_link_libraries(
+        clp-s-search
+        PRIVATE kql
+        Boost::filesystem Boost::iostreams Boost::program_options
+        absl::flat_hash_map
+        simdjson
+        yaml-cpp::yaml-cpp
+        zstd::zstd
+        spdlog::spdlog
+        velox_vector
+)
+#velox_include_directories(clp-s-search PRIVATE "/root/presto/presto-native-execution/cmake-build-debug/_deps/xsimd-src/include")
+velox_include_directories(clp-s-search PRIVATE "submodules")
