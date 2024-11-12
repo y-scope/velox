@@ -100,7 +100,10 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
   VELOX_CHECK(!tableName.empty(), "Table name must be set");
 
   cursor_ = std::make_unique<clp_s::search::Cursor>(
-      archiveDir_, std::vector<std::string>{archiveId}, false);
+      archiveDir_,
+      clp_s::InputOption{.source = clp_s::InputSource::Filesystem},
+      std::vector<std::string>{archiveId},
+      false);
   cursor_->execute_query(kqlQuery_, fields_);
 }
 

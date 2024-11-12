@@ -1,4 +1,5 @@
 add_subdirectory(search/kql)
+add_subdirectory(clp_native/string_utils)
 
 string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
 add_definitions("-DSOURCE_PATH_SIZE=${SOURCE_PATH_SIZE}")
@@ -8,6 +9,8 @@ set(
         archive_constants.hpp
         ArchiveReader.cpp
         ArchiveReader.hpp
+        ArchiveReaderAdaptor.cpp
+        ArchiveReaderAdaptor.hpp
         BufferViewReader.hpp
         ColumnReader.cpp
         ColumnReader.hpp
@@ -27,6 +30,8 @@ set(
         FileWriter.cpp
         FileWriter.hpp
         JsonSerializer.hpp
+        PackedStreamReader.cpp
+        PackedStreamReader.hpp
         ParsedMessage.hpp
         ReaderUtils.cpp
         ReaderUtils.hpp
@@ -112,6 +117,30 @@ set(
         search/StringLiteral.hpp
         search/Transformation.hpp
         search/Value.hpp
+        clp_native/aws/AwsAuthenticationSigner.cpp
+        clp_native/aws/AwsAuthenticationSigner.hpp
+        clp_native/CheckpointReader.cpp
+        clp_native/CheckpointReader.hpp
+        clp_native/CurlDownloadHandler.cpp
+        clp_native/CurlDownloadHandler.hpp
+        clp_native/CurlEasyHandle.hpp
+        clp_native/CurlGlobalInstance.cpp
+        clp_native/CurlGlobalInstance.hpp
+        clp_native/CurlOperationFailed.hpp
+        clp_native/CurlStringList.hpp
+        clp_native/Defs.h
+        clp_native/ErrorCode.hpp
+        clp_native/FileReader.cpp
+        clp_native/FileReader.hpp
+        clp_native/hash_utils.cpp
+        clp_native/hash_utils.hpp
+        clp_native/NetworkReader.cpp
+        clp_native/NetworkReader.hpp
+        clp_native/ReaderInterface.cpp
+        clp_native/ReaderInterface.hpp
+        clp_native/Thread.cpp
+        clp_native/Thread.hpp
+        clp_native/TraceableException.hpp
 )
 
 velox_add_library(
@@ -126,6 +155,9 @@ velox_link_libraries(
         PRIVATE kql
         Boost::filesystem Boost::iostreams Boost::program_options
         absl::flat_hash_map
+        clp::string_utils
+        ${CURL_LIBRARIES}
+        OpenSSL::Crypto
         simdjson::simdjson
         zstd::zstd
         spdlog::spdlog

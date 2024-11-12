@@ -39,6 +39,13 @@ struct Field {
   std::string name;
 };
 
+enum class ArchiveReadStage {
+    None,
+    Opened,
+    DictionariesRead,
+    TablesInitialized,
+};
+
 class Cursor {
 public:
     // Types
@@ -49,16 +56,10 @@ public:
                 : TraceableException(error_code, filename, line_number) {}
     };
 
-    enum class ArchiveReadStage {
-      None,
-      Opened,
-      OtherDictionariesRead,
-      ArrayDictionaryRead,
-    };
-
     // Constructors
     explicit Cursor(
             std::string archive_path,
+            InputOption const& input_option,
             std::optional<std::vector<std::string>> archive_ids,
             bool m_ignore_case
     );
@@ -71,12 +72,12 @@ public:
      */
     ErrorCode execute_query(std::string& query, std::vector<Field>& output_columns);
 
-    /**
-     * Fetches the next set of rows from the cursor.
-     * @param num_rows The number of rows to fetch.
-     * @param column_vectors The column vectors to fill.
-     * @return The number of rows fetched.
-     */
+    //    /**
+    //     * Fetches the next set of rows from the cursor.
+    //     * @param num_rows The number of rows to fetch.
+    //     * @param column_vectors The column vectors to fill.
+    //     * @return The number of rows fetched.
+    //     */
     size_t fetch_next(size_t num_rows, std::vector<facebook::velox::VectorPtr>& column_vectors);
 
     size_t fetch_next(size_t num_rows, std::vector<ColumnData>& column_vectors);
@@ -101,6 +102,7 @@ private:
     bool m_ignore_case;
 
     std::string m_archive_path;
+    InputOption m_input_config;
     std::vector<std::string> m_archive_ids;
     size_t m_current_archive_index;
     size_t m_end_archive_index;
