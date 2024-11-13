@@ -22,15 +22,22 @@ ClpDataSource::ClpDataSource(
     velox::memory::MemoryPool* pool,
     std::shared_ptr<const ClpConfig>& clpConfig)
     : pool_(pool), outputType_(outputType) {
-  executablePath_ = clpConfig->executablePath();
-  VELOX_CHECK(!executablePath_.empty(), "Executable path must be set");
   polymorphicTypeEnabled_ = clpConfig->polymorphicTypeEnabled();
   auto archiveRootDir = clpConfig->archiveDir();
+  inputSource_ = clpConfig->inputSource();
+  boost::algorithm::to_lower(inputSource_);
   VELOX_CHECK(!archiveRootDir.empty(), "Archive directory must be set");
   auto clpTableHandle = std::dynamic_pointer_cast<ClpTableHandle>(tableHandle);
-  auto archiveDir =
-      boost::filesystem::path(archiveRootDir) / clpTableHandle->tableName();
-  archiveDir_ = archiveDir.string();
+  if (inputSource_ == "filesystem") {
+    auto archiveDir =
+        boost::filesystem::path(archiveRootDir) / clpTableHandle->tableName();
+    archiveDir_ = archiveDir.string();
+  } else if (inputSource_ == "terrablob") {
+    archiveDir_ = archiveRootDir + '/' + clpTableHandle->tableName();
+  } else {
+    VELOX_USER_FAIL("Illegal input source: {}", inputSource_);
+  }
+
   auto query = clpTableHandle->query();
   if (query && !query->empty()) {
     kqlQuery_ = *query;
@@ -99,11 +106,20 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
   auto archiveId = clpSplit->archiveId();
   VELOX_CHECK(!tableName.empty(), "Table name must be set");
 
-  cursor_ = std::make_unique<clp_s::search::Cursor>(
-      archiveDir_,
-      clp_s::InputOption{.source = clp_s::InputSource::Filesystem},
-      std::vector<std::string>{archiveId},
-      false);
+  if (inputSource_ == "filesystem") {
+    cursor_ = std::make_unique<clp_s::search::Cursor>(
+        archiveDir_,
+        clp_s::InputOption{.source = clp_s::InputSource::Filesystem},
+        std::vector<std::string>{archiveId},
+        false);
+  } else if (inputSource_ == "terrablob") {
+    cursor_ = std::make_unique<clp_s::search::Cursor>(
+        archiveDir_ + "/" + archiveId,
+        clp_s::InputOption{.source = clp_s::InputSource::Url},
+        std::vector<std::string>{},
+        false);
+  }
+
   cursor_->execute_query(kqlQuery_, fields_);
 }
 

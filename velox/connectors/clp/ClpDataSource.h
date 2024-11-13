@@ -52,35 +52,9 @@ class ClpDataSource : public DataSource {
   }
 
  private:
-  void parseJsonLine(
-      simdjson::ondemand::value element,
-      std::string& path,
-      std::vector<VectorPtr>& vectors,
-      uint64_t index);
-
-  template <typename T>
-  void setValue(
-      std::vector<VectorPtr>& vectors,
-      std::string& path,
-      uint64_t index,
-      T value,
-      std::string typeSuffix) {
-    if (auto iter = columnIndices_.find(path); iter != columnIndices_.end()) {
-      auto vector = vectors[iter->second]->asFlatVector<T>();
-      vector->set(index, value);
-      vector->setNull(index, false);
-    } else if (polymorphicTypeEnabled_) {
-      auto typedPath = path + "_" + typeSuffix;
-      if (iter = columnIndices_.find(typedPath); iter != columnIndices_.end()) {
-        auto vector = vectors[iter->second]->asFlatVector<T>();
-        vector->set(index, value);
-        vector->setNull(index, false);
-      }
-    }
-  }
-
   std::string executablePath_;
   std::string archiveDir_;
+  std::string inputSource_;
   std::string kqlQuery_;
   bool polymorphicTypeEnabled_;
   velox::memory::MemoryPool* pool_;

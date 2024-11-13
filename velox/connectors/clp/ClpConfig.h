@@ -9,14 +9,10 @@ class ConfigBase;
 namespace facebook::velox::connector::clp {
 class ClpConfig {
  public:
-  static constexpr const char* kExecutablePath = "executable-path";
   static constexpr const char* kArchiveDir = "archive-dir";
   static constexpr const char* kPolymorphicTypeEnabled =
       "polymorphic-type-enabled";
-
-  [[nodiscard]] std::string executablePath() const {
-    return config_->get<std::string>(kExecutablePath, "");
-  }
+  static constexpr const char* kInputSource = "input-source";
 
   [[nodiscard]] std::string archiveDir() const {
     return config_->get<std::string>(kArchiveDir, "");
@@ -24,6 +20,10 @@ class ClpConfig {
 
   [[nodiscard]] bool polymorphicTypeEnabled() const {
     return config_->get<bool>(kPolymorphicTypeEnabled, false);
+  }
+
+  [[nodiscard]] std::string inputSource() const {
+    return config_->get<std::string>(kInputSource, "");
   }
 
   explicit ClpConfig(std::shared_ptr<const config::ConfigBase> config) {
