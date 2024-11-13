@@ -236,10 +236,7 @@ ReaderUtils::try_create_reader(std::string const& path, InputOption const& confi
     return try_create_network_reader(path, config);
   } else if (InputSource::Url == config.source) {
     return try_create_network_reader(
-        path,
-        std::unordered_map<std::string, std::string>{
-            {"Authorization", std::getenv("BEARER_TOKEN")}
-        }
+        path
     );
   } else {
     return nullptr;
