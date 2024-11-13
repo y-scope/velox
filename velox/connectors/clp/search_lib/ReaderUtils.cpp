@@ -230,12 +230,19 @@ try_create_network_reader(std::string const& url, InputOption const& config) {
 
 std::shared_ptr<clp::ReaderInterface>
 ReaderUtils::try_create_reader(std::string const& path, InputOption const& config) {
-    if (InputSource::Filesystem == config.source) {
-        return try_create_file_reader(path);
-    } else if (InputSource::S3 == config.source) {
-        return try_create_network_reader(path, config);
-    } else {
-        return nullptr;
-    }
+  if (InputSource::Filesystem == config.source) {
+    return try_create_file_reader(path);
+  } else if (InputSource::S3 == config.source) {
+    return try_create_network_reader(path, config);
+  } else if (InputSource::Url == config.source) {
+    return try_create_network_reader(
+        path,
+        std::unordered_map<std::string, std::string>{
+            {"Authorization", std::getenv("BEARER_TOKEN")}
+        }
+    );
+  } else {
+    return nullptr;
+  }
 }
 }  // namespace clp_s
