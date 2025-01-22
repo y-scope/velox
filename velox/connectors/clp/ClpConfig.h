@@ -9,14 +9,12 @@ class ConfigBase;
 namespace facebook::velox::connector::clp {
 class ClpConfig {
  public:
-  static constexpr const char* kArchiveDir = "archive-dir";
   static constexpr const char* kPolymorphicTypeEnabled =
-      "polymorphic-type-enabled";
-  static constexpr const char* kInputSource = "input-source";
-
-  [[nodiscard]] std::string archiveDir() const {
-    return config_->get<std::string>(kArchiveDir, "");
-  }
+      "clp.polymorphic-type-enabled";
+  static constexpr const char* kInputSource = "clp.input-source";
+  static constexpr const char* kArchiveDir = "clp.archive-dir";
+  static constexpr const char* kS3Bucket = "clp.s3-bucket";
+  static constexpr const char* kS3KeyPrefix = "clp.s3-key-prefix";
 
   [[nodiscard]] bool polymorphicTypeEnabled() const {
     return config_->get<bool>(kPolymorphicTypeEnabled, false);
@@ -24,6 +22,18 @@ class ClpConfig {
 
   [[nodiscard]] std::string inputSource() const {
     return config_->get<std::string>(kInputSource, "");
+  }
+
+  [[nodiscard]] std::string archiveDir() const {
+    return config_->get<std::string>(kArchiveDir, "");
+  }
+
+  [[nodiscard]] std::string s3Bucket() const {
+    return config_->get<std::string>(kS3Bucket, "");
+  }
+
+  [[nodiscard]] std::string s3KeyPrefix() const {
+    return config_->get<std::string>(kS3KeyPrefix, "");
   }
 
   explicit ClpConfig(std::shared_ptr<const config::ConfigBase> config) {

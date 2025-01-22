@@ -23,17 +23,19 @@ ClpDataSource::ClpDataSource(
     std::shared_ptr<const ClpConfig>& clpConfig)
     : pool_(pool), outputType_(outputType) {
   polymorphicTypeEnabled_ = clpConfig->polymorphicTypeEnabled();
-  auto archiveRootDir = clpConfig->archiveDir();
   inputSource_ = clpConfig->inputSource();
   boost::algorithm::to_lower(inputSource_);
-  VELOX_CHECK(!archiveRootDir.empty(), "Archive directory must be set");
   auto clpTableHandle = std::dynamic_pointer_cast<ClpTableHandle>(tableHandle);
   if (inputSource_ == "filesystem") {
+    auto archiveRootDir = clpConfig->archiveDir();
+    VELOX_CHECK(!archiveRootDir.empty(), "Archive directory must be set");
     auto archiveDir =
         boost::filesystem::path(archiveRootDir) / clpTableHandle->tableName();
     archiveDir_ = archiveDir.string();
-  } else if (inputSource_ == "terrablob") {
-    archiveDir_ = archiveRootDir + '/' + clpTableHandle->tableName();
+  } else if (inputSource_ == "s3") {
+    auto s3Bucket = clpConfig->s3Bucket();
+    VELOX_CHECK(!s3Bucket.empty(), "S3 bucket must be set");
+    archiveDir_ = s3Bucket + '/' + clpConfig->s3KeyPrefix();
   } else {
     VELOX_USER_FAIL("Illegal input source: {}", inputSource_);
   }
@@ -112,10 +114,14 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
         clp_s::InputOption{.source = clp_s::InputSource::Filesystem},
         std::vector<std::string>{archiveId},
         false);
-  } else if (inputSource_ == "terrablob") {
+  } else if (inputSource_ == "s3") {
     cursor_ = std::make_unique<clp_s::search::Cursor>(
-        archiveDir_ + "/" + archiveId,
-        clp_s::InputOption{.source = clp_s::InputSource::Url},
+        archiveDir_ + archiveId,
+        clp_s::InputOption{
+            .source = clp_s::InputSource::S3,
+            .s3_config =
+                {.access_key_id = std::getenv("AWS_ACCESS_KEY_ID"),
+                 .secret_access_key = std::getenv("AWS_SECRET_ACCESS_KEY")}},
         std::vector<std::string>{},
         false);
   }
