@@ -83,6 +83,12 @@ void Projection::resolve_column(
      */
     std::vector<int32_t> local_matching_node_list;
     auto cur_node_id = tree->get_root_node_id();
+    for (auto const& node: tree->get_nodes()) {
+      if (-1 == node.get_parent_id() && NodeType::Metadata != node.get_type()) {
+        cur_node_id = node.get_id();
+        break;
+      }
+    }
     auto it = column->descriptor_begin();
     while (it != column->descriptor_end()) {
         bool matched_any{false};
