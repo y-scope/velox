@@ -21,6 +21,7 @@ enum class NodeType : uint8_t {
     NullValue,
     DateString,
     StructuredArray,
+    Metadata,
     Unknown = std::underlying_type<NodeType>::type(~0ULL)
 };
 
