@@ -74,7 +74,9 @@ function install_build_prerequisites {
     ninja-build \
     checkinstall \
     git \
-    wget
+    wget \
+    openjdk-11-jdk \
+    libmsgpack-dev
 
   # Install to /usr/local to make it available to all users.
   ${SUDO} pip3 install cmake==3.28.3
