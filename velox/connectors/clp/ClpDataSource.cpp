@@ -118,10 +118,12 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
     cursor_ = std::make_unique<clp_s::search::Cursor>(
         archiveDir_ + archiveId,
         clp_s::InputOption{
-            .source = clp_s::InputSource::S3,
-            .s3_config =
-                {.access_key_id = std::getenv("AWS_ACCESS_KEY_ID"),
-                 .secret_access_key = std::getenv("AWS_SECRET_ACCESS_KEY")}},
+            .s3_config = {
+                .access_key_id = std::getenv("AWS_ACCESS_KEY_ID"),
+                .secret_access_key = std::getenv("AWS_SECRET_ACCESS_KEY")
+            },
+            .source = clp_s::InputSource::S3
+        },
         std::vector<std::string>{},
         false);
   }
