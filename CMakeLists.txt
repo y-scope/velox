@@ -439,6 +439,7 @@ set(BOOST_INCLUDE_LIBRARIES
     program_options
     regex
     system
+    url
     thread)
 
 velox_set_source(Boost)
