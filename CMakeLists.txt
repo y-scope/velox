@@ -403,6 +403,7 @@ set(BOOST_INCLUDE_LIBRARIES
     program_options
     regex
     system
+    url
     thread)
 
 set_source(Boost)

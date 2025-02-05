@@ -1,15 +1,14 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
-
+#include <iostream>
 #include <optional>
 
 #include "velox/connectors/clp/ClpColumnHandle.h"
 #include "velox/connectors/clp/ClpConnectorSplit.h"
 #include "velox/connectors/clp/ClpDataSource.h"
 #include "velox/connectors/clp/ClpTableHandle.h"
+#include "velox/connectors/clp/search_lib/Cursor.h"
 #include "velox/vector/FlatVector.h"
-
-#include "search_lib/search/Cursor.hpp"
 
 namespace facebook::velox::connector::clp {
 
@@ -62,25 +61,25 @@ ClpDataSource::ClpDataSource(
         "ColumnHandle must be an instance of ClpColumnHandle for output name: {}",
         outputName);
     auto columnName = clpColumnHandle->columnName();
-    clp_s::search::ColumnType clpColumnType;
+    search_lib::ColumnType clpColumnType;
     switch (clpColumnHandle->columnType()->kind()) {
       case TypeKind::BOOLEAN:
-        clpColumnType = clp_s::search::ColumnType::Boolean;
+        clpColumnType = search_lib::ColumnType::Boolean;
         break;
       case TypeKind::INTEGER:
       case TypeKind::BIGINT:
       case TypeKind::TINYINT:
-        clpColumnType = clp_s::search::ColumnType::Integer;
+        clpColumnType = search_lib::ColumnType::Integer;
         break;
       case TypeKind::ARRAY:
-        clpColumnType = clp_s::search::ColumnType::Array;
+        clpColumnType = search_lib::ColumnType::Array;
         break;
       case TypeKind::DOUBLE:
       case TypeKind::REAL:
-        clpColumnType = clp_s::search::ColumnType::Float;
+        clpColumnType = search_lib::ColumnType::Float;
         break;
       case TypeKind::VARCHAR:
-        clpColumnType = clp_s::search::ColumnType::String;
+        clpColumnType = search_lib::ColumnType::String;
         break;
       default:
         VELOX_USER_FAIL(
@@ -98,7 +97,7 @@ ClpDataSource::ClpDataSource(
       }
     }
     fields_.emplace_back(
-        clp_s::search::Field{clpColumnType, processedColumnName});
+        search_lib::Field{clpColumnType, processedColumnName});
   }
 }
 
@@ -109,21 +108,15 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
   VELOX_CHECK(!tableName.empty(), "Table name must be set");
 
   if (inputSource_ == "filesystem") {
-    cursor_ = std::make_unique<clp_s::search::Cursor>(
+    cursor_ = std::make_unique<search_lib::Cursor>(
         archiveDir_,
-        clp_s::InputOption{.source = clp_s::InputSource::Filesystem},
+        clp_s::InputSource::Filesystem,
         std::vector<std::string>{archiveId},
         false);
   } else if (inputSource_ == "s3") {
-    cursor_ = std::make_unique<clp_s::search::Cursor>(
+    cursor_ = std::make_unique<search_lib::Cursor>(
         archiveDir_ + archiveId,
-        clp_s::InputOption{
-            .s3_config = {
-                .access_key_id = std::getenv("AWS_ACCESS_KEY_ID"),
-                .secret_access_key = std::getenv("AWS_SECRET_ACCESS_KEY")
-            },
-            .source = clp_s::InputSource::S3
-        },
+        clp_s::InputSource::Network,
         std::vector<std::string>{},
         false);
   }
@@ -145,6 +138,7 @@ std::optional<RowVectorPtr> ClpDataSource::next(
   }
 
   size_t rowsFetched = cursor_->fetch_next(size, vectors);
+  std::cout << "rowsFetched" << rowsFetched << std::endl;
   if (rowsFetched == 0) {
     return nullptr;
   }
