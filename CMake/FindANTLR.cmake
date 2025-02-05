@@ -47,16 +47,21 @@ if(ANTLR_EXECUTABLE AND Java_JAVA_EXECUTABLE)
                 "${ANTLR_ONE_VALUE_ARGS}"
                 "${ANTLR_MULTI_VALUE_ARGS}"
                 ${ARGN})
-
         set(ANTLR_${Name}_INPUT ${InputFile})
 
         get_filename_component(ANTLR_INPUT ${InputFile} NAME_WE)
+        get_filename_component(ANTLR_INPUT_PARENT_DIR "${InputFile}" DIRECTORY)
 
         if(ANTLR_TARGET_OUTPUT_DIRECTORY)
             set(ANTLR_${Name}_OUTPUT_DIR ${ANTLR_TARGET_OUTPUT_DIRECTORY})
         else()
             set(ANTLR_${Name}_OUTPUT_DIR
                     ${CMAKE_CURRENT_BINARY_DIR}/antlr4cpp_generated_src/${ANTLR_INPUT})
+        endif()
+
+        set(ANTLR_${Name}_ORIGINAL_OUTPUT_DIR ${ANTLR_${Name}_OUTPUT_DIR})
+        if(ANTLR_INPUT_PARENT_DIR)
+            set(ANTLR_${Name}_OUTPUT_DIR "${ANTLR_${Name}_OUTPUT_DIR}/${ANTLR_INPUT_PARENT_DIR}")
         endif()
 
         unset(ANTLR_${Name}_CXX_OUTPUTS)
@@ -116,11 +121,22 @@ if(ANTLR_EXECUTABLE AND Java_JAVA_EXECUTABLE)
             endif()
         endif()
 
+        message(STATUS "====== ANTLR Debug Variables ======")
+        message(STATUS "ANTLR Executable: ${ANTLR_EXECUTABLE}")
+        message(STATUS "Java Executable: ${Java_JAVA_EXECUTABLE}")
+        message(STATUS "ANTLR Version: ${ANTLR_VERSION}")
+        message(STATUS "ANTLR Input File: ${ANTLR_${Name}_INPUT}")
+        message(STATUS "ANTLR Output Directory: ${ANTLR_${Name}_OUTPUT_DIR}")
+        message(STATUS "ANTLR Output Files: ${ANTLR_${Name}_OUTPUTS}")
+        message(STATUS "ANTLR Target depend: ${InputFile}")
+        message(STATUS "===================================")
+
+
         add_custom_command(
                 OUTPUT ${ANTLR_${Name}_OUTPUTS}
                 COMMAND ${Java_JAVA_EXECUTABLE} -jar ${ANTLR_EXECUTABLE}
                 ${InputFile}
-                -o ${ANTLR_${Name}_OUTPUT_DIR}
+                -o ${ANTLR_${Name}_ORIGINAL_OUTPUT_DIR}
                 -no-listener
                 -Dlanguage=Cpp
                 ${ANTLR_TARGET_COMPILE_FLAGS}
@@ -136,4 +152,5 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
         ANTLR
         REQUIRED_VARS ANTLR_EXECUTABLE Java_JAVA_EXECUTABLE
-        VERSION_VAR ANTLR_VERSION)
+        VERSION_VAR ANTLR_VERSION
+)
