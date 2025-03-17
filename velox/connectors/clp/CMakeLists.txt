@@ -6,8 +6,6 @@ add_definitions("-DSOURCE_PATH_SIZE=${SOURCE_PATH_SIZE}")
 velox_add_library(
   velox_clp_connector
   OBJECT
-  ClpColumnHandle.cpp
-  ClpConfig.cpp
   ClpConnector.cpp
   ClpDataSource.cpp
   ClpTableHandle.cpp)

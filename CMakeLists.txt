@@ -231,13 +231,6 @@ endif()
 # dependencies.
 find_package(OpenSSL REQUIRED)
 
-find_package(ANTLR REQUIRED)
-if (ANTLR_FOUND)
-  message(STATUS "Found ANTLR ${ANTLR_VERSION}")
-else()
-  message(FATAL_ERROR "Could not find libraries for ANTLR ${ANTLR4_TAG}")
-endif()
-
 if(VELOX_ENABLE_CCACHE
    AND NOT CMAKE_C_COMPILER_LAUNCHER
    AND NOT CMAKE_CXX_COMPILER_LAUNCHER)
@@ -507,13 +500,12 @@ if (${VELOX_ENABLE_CLP_CONNECTOR})
     message(FATAL_ERROR "Could not find ${CLP_LIBS_STRING} libraries for CURL")
   endif()
 
-  # Find OpenSSL
-  find_package(OpenSSL REQUIRED)
-  if (OPENSSL_FOUND)
-    message(STATUS "Found OpenSSL (${OPENSSL_VERSION})")
-  else ()
-    message(FATAL_ERROR "OpenSSL not found")
-  endif ()
+  find_package(ANTLR REQUIRED)
+  if (ANTLR_FOUND)
+    message(STATUS "Found ANTLR ${ANTLR_VERSION}")
+  else()
+    message(FATAL_ERROR "Could not find libraries for ANTLR ${ANTLR4_TAG}")
+  endif()
 endif()
 
 if (${VELOX_ENABLE_CLP_CONNECTOR} OR ${VELOX_BUILD_TESTING})
