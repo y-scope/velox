@@ -20,7 +20,7 @@ string(CONCAT VELOX_MSGPACK_SOURCE_URL
 "https://github.com/msgpack/msgpack-c/archive/refs/tags/"
 "${VELOX_MSGPACK_BUILD_VERSION}.tar.gz")
 
-resolve_dependency_url(MSGPACK)
+velox_resolve_dependency_url(MSGPACK)
 
 message(STATUS "Building msgpack-cxx from source")
 

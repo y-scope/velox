@@ -20,7 +20,7 @@ string(CONCAT VELOX_SPDLOG_SOURCE_URL
         "https://github.com/gabime/spdlog/archive/refs/tags/"
         "v${VELOX_SPDLOG_BUILD_VERSION}.tar.gz")
 
-resolve_dependency_url(SPDLOG)
+velox_resolve_dependency_url(SPDLOG)
 
 message(STATUS "Building spdlog from source")
 
