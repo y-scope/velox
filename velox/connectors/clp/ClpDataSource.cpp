@@ -25,17 +25,7 @@ ClpDataSource::ClpDataSource(
   inputSource_ = clpConfig->inputSource();
   boost::algorithm::to_lower(inputSource_);
   auto clpTableHandle = std::dynamic_pointer_cast<ClpTableHandle>(tableHandle);
-  if (inputSource_ == "filesystem") {
-    auto archiveRootDir = clpConfig->archiveDir();
-    VELOX_CHECK(!archiveRootDir.empty(), "Archive directory must be set");
-    auto archiveDir =
-        boost::filesystem::path(archiveRootDir) / clpTableHandle->tableName();
-    archiveDir_ = archiveDir.string();
-  } else if (inputSource_ == "s3") {
-    auto s3Bucket = clpConfig->s3Bucket();
-    VELOX_CHECK(!s3Bucket.empty(), "S3 bucket must be set");
-    archiveDir_ = s3Bucket + '/' + clpConfig->s3KeyPrefix();
-  } else {
+  if ("local" != inputSource_ && "s3" != inputSource_) {
     VELOX_USER_FAIL("Illegal input source: {}", inputSource_);
   }
 
@@ -103,11 +93,8 @@ ClpDataSource::ClpDataSource(
 
 void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
   auto clpSplit = std::dynamic_pointer_cast<ClpConnectorSplit>(split);
-  auto tableName = clpSplit->tableName();
-  auto archiveId = clpSplit->archiveId();
-  VELOX_CHECK(!tableName.empty(), "Table name must be set");
 
-  if (inputSource_ == "filesystem") {
+  if (inputSource_ == "local") {
     cursor_ = std::make_unique<search_lib::Cursor>(
         archiveDir_,
         clp_s::InputSource::Filesystem,
