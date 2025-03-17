@@ -85,8 +85,6 @@ std::string typeName(const TypePtr& type) {
     case TypeKind::VARBINARY:
       if (isHyperLogLogType(type)) {
         return "HyperLogLog";
-      } else if (isIPPrefixType(type)) {
-        return "ipprefix";
       }
       if (isGeometryType(type)) {
         return "geometry";
