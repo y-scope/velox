@@ -4,11 +4,9 @@
 namespace facebook::velox::connector::clp {
 ClpConnector::ClpConnector(
     const std::string& id,
-    std::shared_ptr<const config::ConfigBase> config,
-    folly::Executor* executor)
+    std::shared_ptr<const config::ConfigBase> config)
     : Connector(id),
-      config_(std::make_shared<ClpConfig>(config)),
-      executor_(executor) {}
+      config_(std::make_shared<ClpConfig>(config)) {}
 
 std::unique_ptr<DataSource> ClpConnector::createDataSource(
     const RowTypePtr& outputType,
@@ -33,5 +31,4 @@ std::unique_ptr<DataSink> ClpConnector::createDataSink(
   VELOX_NYI("createDataSink for ClpConnector is not implemented!");
 }
 
-VELOX_REGISTER_CONNECTOR_FACTORY(std::make_shared<ClpConnectorFactory>());
 } // namespace facebook::velox::connector::clp
