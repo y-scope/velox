@@ -18,13 +18,12 @@ using namespace clp_s::search;
 
 namespace facebook::velox::connector::clp::search_lib {
 Cursor::Cursor(
-    std::string archive_path,
     InputSource input_source,
-    std::optional<std::vector<std::string>> archive_ids,
+    std::vector<std::string> archive_paths,
     bool ignore_case)
     : m_error_code(ErrorCode::QueryNotInitialized),
       m_ignore_case(ignore_case),
-      m_archive_path(std::move(archive_path)),
+      m_archive_paths(std::move(archive_paths)),
       m_input_source(input_source),
       m_current_archive_index(0),
       m_end_archive_index(0),
@@ -34,36 +33,12 @@ Cursor::Cursor(
       m_completed_schema_cycles(false),
       m_current_schema_id(-1),
       m_archive_read_stage(ArchiveReadStage::None),
-      m_current_schema_table_loaded(false) {
-  // Validate archive_path
-  if (m_input_source == InputSource::Filesystem) {
-    if (false == std::filesystem::exists(m_archive_path)) {
-      throw std::invalid_argument("archive_path does not exist");
-    }
-
-    if (false == archive_ids.has_value() || archive_ids.value().empty()) {
-      for (auto const& entry :
-           std::filesystem::directory_iterator(m_archive_path)) {
-        m_archive_ids.push_back(entry.path().filename().string());
-      }
-      if (m_archive_ids.empty()) {
-        throw std::invalid_argument("no archive found in archive_path");
-      }
-    } else {
-      m_archive_ids = archive_ids.value();
-    }
-    m_end_archive_index = m_archive_ids.size();
-  } else {
-    m_archive_ids = {""};
-  }
-
-  TimestampPattern::init();
-}
+      m_current_schema_table_loaded(false) {}
 
 void Cursor::move_to_next_archive() {
   m_archive_reader.close();
   m_current_archive_index =
-      (m_current_archive_index + 1) % m_archive_ids.size();
+      (m_current_archive_index + 1) % m_archive_paths.size();
   m_completed_archive_cycles = m_current_archive_index == m_end_archive_index;
   m_archive_read_stage = ArchiveReadStage::None;
   m_current_schema_id = -1;
@@ -73,8 +48,7 @@ void Cursor::move_to_next_archive() {
 ErrorCode Cursor::load_archive() {
   if (m_archive_read_stage < ArchiveReadStage::Opened) {
     // TODO: fix it
-    auto archive_path =
-        m_archive_path + '/' + m_archive_ids[m_current_archive_index];
+    auto archive_path = m_archive_paths[m_current_archive_index];
     auto networkAuthOption = m_input_source == InputSource::Filesystem
         ? NetworkAuthOption{.method = AuthMethod::None}
         : NetworkAuthOption{.method = AuthMethod::S3PresignedUrlV4};

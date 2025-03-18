@@ -1,5 +1,6 @@
 #pragma once
 
+#include "search_lib/clp_src/components/core/src/clp_s/TimestampPattern.hpp"
 #include "velox/connectors/Connector.h"
 #include "velox/connectors/clp/ClpConfig.h"
 
@@ -8,8 +9,7 @@ class ClpConnector : public Connector {
  public:
   ClpConnector(
       const std::string& id,
-      std::shared_ptr<const config::ConfigBase> config,
-      folly::Executor* executor);
+      std::shared_ptr<const config::ConfigBase> config);
 
   [[nodiscard]] const std::shared_ptr<const config::ConfigBase>& connectorConfig()
       const override {
@@ -38,13 +38,8 @@ class ClpConnector : public Connector {
       ConnectorQueryCtx* connectorQueryCtx,
       CommitStrategy commitStrategy) override;
 
-  [[nodiscard]] folly::Executor* executor() const override {
-    return executor_;
-  }
-
  private:
   std::shared_ptr<const ClpConfig> config_;
-  folly::Executor* executor_;
 };
 
 class ClpConnectorFactory : public ConnectorFactory {
@@ -53,13 +48,16 @@ class ClpConnectorFactory : public ConnectorFactory {
 
   ClpConnectorFactory() : ConnectorFactory(kClpConnectorName) {}
   explicit ClpConnectorFactory(const char* connectorName)
-      : ConnectorFactory(connectorName) {}
+      : ConnectorFactory(connectorName) {
+    clp_s::TimestampPattern::init();
+  }
 
   std::shared_ptr<Connector> newConnector(
       const std::string& id,
       std::shared_ptr<const config::ConfigBase> config,
-      folly::Executor* executor) override {
-    return std::make_shared<ClpConnector>(id, config, executor);
+      folly::Executor* ioExecutor,
+      folly::Executor* cpuExecutor) override {
+    return std::make_shared<ClpConnector>(id, config);
   }
 };
 } // namespace facebook::velox::connector::clp

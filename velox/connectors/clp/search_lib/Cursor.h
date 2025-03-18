@@ -56,9 +56,8 @@ class Cursor {
 
   // Constructors
   explicit Cursor(
-      std::string archive_path,
       clp_s::InputSource input_source,
-      std::optional<std::vector<std::string>> archive_ids,
+      std::vector<std::string> archive_paths,
       bool m_ignore_case);
 
   /**
@@ -72,12 +71,12 @@ class Cursor {
       std::string& query,
       std::vector<Field>& output_columns);
 
-  //    /**
-  //     * Fetches the next set of rows from the cursor.
-  //     * @param num_rows The number of rows to fetch.
-  //     * @param column_vectors The column vectors to fill.
-  //     * @return The number of rows fetched.
-  //     */
+  /**
+   * Fetches the next set of rows from the cursor.
+   * @param num_rows The number of rows to fetch.
+   * @param column_vectors The column vectors to fill.
+   * @return The number of rows fetched.
+   */
   size_t fetch_next(
       size_t num_rows,
       std::vector<facebook::velox::VectorPtr>& column_vectors);
@@ -103,9 +102,8 @@ class Cursor {
   ErrorCode m_error_code;
   bool m_ignore_case;
 
-  std::string m_archive_path;
   clp_s::InputSource m_input_source;
-  std::vector<std::string> m_archive_ids;
+  std::vector<std::string> m_archive_paths;
   size_t m_current_archive_index;
   size_t m_end_archive_index;
   bool m_completed_archive_cycles;

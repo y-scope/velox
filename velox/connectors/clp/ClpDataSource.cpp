@@ -96,15 +96,13 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
 
   if (inputSource_ == "local") {
     cursor_ = std::make_unique<search_lib::Cursor>(
-        archiveDir_,
         clp_s::InputSource::Filesystem,
-        std::vector<std::string>{archiveId},
+        std::vector<std::string>{clpSplit->archivePath_},
         false);
   } else if (inputSource_ == "s3") {
     cursor_ = std::make_unique<search_lib::Cursor>(
-        archiveDir_ + archiveId,
         clp_s::InputSource::Network,
-        std::vector<std::string>{},
+        std::vector<std::string>{clpSplit->archivePath_},
         false);
   }
 
