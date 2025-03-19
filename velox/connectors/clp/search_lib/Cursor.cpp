@@ -23,8 +23,8 @@ Cursor::Cursor(
     bool ignore_case)
     : m_error_code(ErrorCode::QueryNotInitialized),
       m_ignore_case(ignore_case),
-      m_archive_paths(std::move(archive_paths)),
       m_input_source(input_source),
+      m_archive_paths(std::move(archive_paths)),
       m_current_archive_index(0),
       m_end_archive_index(0),
       m_completed_archive_cycles(false),
@@ -84,9 +84,12 @@ ErrorCode Cursor::load_archive() {
   try {
     for (auto const& column : m_output_columns) {
       std::vector<std::string> descriptor_tokens;
-      StringUtils::tokenize_column_descriptor(column.name, descriptor_tokens);
+      std::string descriptor_namespace;
+      StringUtils::tokenize_column_descriptor(
+          column.name, descriptor_tokens, descriptor_namespace);
       m_projection->add_ordered_column(
-          ColumnDescriptor::create_from_escaped_tokens(descriptor_tokens),
+          ColumnDescriptor::create_from_escaped_tokens(
+              descriptor_tokens, descriptor_namespace),
           column.type);
     }
   } catch (clp_s::TraceableException& e) {
