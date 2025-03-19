@@ -89,7 +89,8 @@ void OrderedProjection::resolve_column(
    * that does exactly what we need.
    */
   std::vector<int32_t> local_matching_node_list;
-  auto cur_node_id = tree->get_object_subtree_node_id();
+  auto cur_node_id =
+      tree->get_object_subtree_node_id_for_namespace(column->get_namespace());
   auto it = column->descriptor_begin();
   while (it != column->descriptor_end()) {
     bool matched_any{false};

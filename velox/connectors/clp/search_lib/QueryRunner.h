@@ -34,12 +34,13 @@ class QueryRunner : public clp_s::FilterClass {
       : m_expr(expr),
         m_match(match),
         m_ignore_case(ignore_case),
+        m_schema(-1),
         m_schemas(schemas),
-        m_projection(ordered_projection),
         m_schema_tree(m_schema_tree),
+        m_schema_reader(nullptr),
+        m_projection(ordered_projection),
         m_var_dict(m_var_dict),
-        m_log_dict(m_log_dict),
-        m_schema(-1) {}
+        m_log_dict(m_log_dict) {}
 
   /**
    * Set the schema to filter
@@ -142,17 +143,16 @@ class QueryRunner : public clp_s::FilterClass {
 
   // variables for the current schema being filtered
   int32_t m_schema;
+  std::shared_ptr<clp_s::ReaderUtils::SchemaMap> m_schemas;
+  std::shared_ptr<clp_s::SchemaTree> m_schema_tree;
   clp_s::SchemaReader* m_schema_reader;
 
   std::shared_ptr<OrderedProjection> m_projection;
   std::vector<clp_s::BaseColumnReader*> m_projected_columns;
   std::vector<clp_s::NodeType> m_projected_types;
 
-  std::shared_ptr<clp_s::SchemaTree> m_schema_tree;
   std::shared_ptr<clp_s::VariableDictionaryReader> m_var_dict;
   std::shared_ptr<clp_s::LogTypeDictionaryReader> m_log_dict;
-
-  std::shared_ptr<clp_s::ReaderUtils::SchemaMap> m_schemas;
 
   std::map<std::string, std::optional<clp_s::search::clp_search::Query>>
       m_string_query_map;

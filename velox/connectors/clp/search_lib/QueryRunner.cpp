@@ -230,6 +230,7 @@ void QueryRunner::get_message(
       }
       case NodeType::NullValue:
       case NodeType::Unknown:
+      default:
         column_vectors[i]->setNull(vector_index, true);
         break;
     }
@@ -996,10 +997,10 @@ void QueryRunner::populate_string_queries(
           }
         }
 
-        auto const* entry = m_var_dict->get_entry_matching_value(
+        auto const entries = m_var_dict->get_entry_matching_value(
             unescaped_query_string, m_ignore_case);
 
-        if (entry != nullptr) {
+        for (auto const& entry : entries) {
           matching_vars.insert(entry->get_id());
         }
       } else if (EncodedVariableInterpreter::
@@ -1196,8 +1197,8 @@ EvaluatedValue QueryRunner::constant_propagate(
           }
         }
       } else if (filter->get_operation() == FilterOperation::NEQ) {
-        if (has_clp_string && !matches_clp_string ||
-            has_var_string && !matches_var_string) {
+        if ((has_clp_string && !matches_clp_string) ||
+            (has_var_string && !matches_var_string)) {
           return filter->is_inverted() ? EvaluatedValue::False
                                        : EvaluatedValue::True;
         } else if (
