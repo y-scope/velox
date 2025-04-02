@@ -10,8 +10,8 @@
 #include "clp_s/search/EvaluateTimestampIndex.hpp"
 #include "clp_s/search/NarrowTypes.hpp"
 #include "clp_s/search/OrOfAndForm.hpp"
+#include "clp_s/search/SearchUtils.hpp"
 #include "clp_s/search/kql/kql.hpp"
-#include "velox/connectors/clp/search_lib/OrderedProjection.h"
 
 using namespace clp_s;
 using namespace clp_s::search;
@@ -25,15 +25,8 @@ Cursor::Cursor(
       m_ignore_case(ignore_case),
       m_input_source(input_source),
       m_archive_paths(std::move(archive_paths)),
-      m_current_archive_index(0),
-      m_end_archive_index(0),
-      m_completed_archive_cycles(false),
-      m_current_schema_index(0),
-      m_end_schema_index(0),
-      m_completed_schema_cycles(false),
-      m_current_schema_id(-1),
-      m_archive_read_stage(ArchiveReadStage::None),
-      m_current_schema_table_loaded(false) {}
+      m_current_schema_id(-1) {
+}
 
 void Cursor::move_to_next_archive() {
   m_archive_reader.close();
@@ -47,7 +40,6 @@ void Cursor::move_to_next_archive() {
 
 ErrorCode Cursor::load_archive() {
   if (m_archive_read_stage < ArchiveReadStage::Opened) {
-    // TODO: fix it
     auto archive_path = m_archive_paths[m_current_archive_index];
     auto networkAuthOption = m_input_source == InputSource::Filesystem
         ? NetworkAuthOption{.method = AuthMethod::None}
@@ -77,26 +69,50 @@ ErrorCode Cursor::load_archive() {
   }
 
   // Handle projection
-  m_projection = std::make_shared<OrderedProjection>(
-      m_output_columns.empty()
-          ? clp_s::search::ProjectionMode::ReturnAllColumns
-          : clp_s::search::ProjectionMode::ReturnSelectedColumns);
+  m_projection = std::make_shared<Projection>(
+      m_output_columns.empty() ? ReturnAllColumns : ReturnSelectedColumns);
   try {
     for (auto const& column : m_output_columns) {
       std::vector<std::string> descriptor_tokens;
       std::string descriptor_namespace;
-      StringUtils::tokenize_column_descriptor(
-          column.name, descriptor_tokens, descriptor_namespace);
-      m_projection->add_ordered_column(
-          ColumnDescriptor::create_from_escaped_tokens(
-              descriptor_tokens, descriptor_namespace),
-          column.type);
+      if (false ==
+          tokenize_column_descriptor(
+              column.name, descriptor_tokens, descriptor_namespace)) {
+        SPDLOG_ERROR("Can not tokenize invalid column: \"{}\"", column);
+        return ErrorCode::InternalError;
+      }
+
+      auto column_descriptor = ColumnDescriptor::create_from_escaped_tokens(
+          descriptor_tokens, descriptor_namespace);
+      switch (column.type) {
+        case ColumnType::String:
+          column_descriptor->set_matching_types(
+              LiteralType::ClpStringT | LiteralType::VarStringT |
+              LiteralType::EpochDateT);
+          break;
+        case ColumnType::Integer:
+          column_descriptor->set_matching_types(LiteralType::IntegerT);
+          break;
+        case ColumnType::Float:
+          column_descriptor->set_matching_types(LiteralType::FloatT);
+          break;
+        case ColumnType::Boolean:
+          column_descriptor->set_matching_types(LiteralType::BooleanT);
+          break;
+        case ColumnType::Array:
+          column_descriptor->set_matching_types(LiteralType::ArrayT);
+          break;
+        default:
+          break;
+      }
+
+      m_projection->add_column(column_descriptor);
     }
-  } catch (clp_s::TraceableException& e) {
+  } catch (TraceableException& e) {
     SPDLOG_ERROR("{}", e.what());
     return ErrorCode::InternalError;
   }
-  m_projection->resolve_ordered_columns(m_schema_tree);
+  m_projection->resolve_columns(m_schema_tree);
   m_archive_reader.set_projection(m_projection);
 
   m_matched_schemas.clear();
@@ -187,6 +203,7 @@ ErrorCode Cursor::execute_query(
     m_query_runner = std::make_shared<QueryRunner>(
         m_expr,
         m_schema_match,
+        m_archive_reader,
         m_ignore_case,
         m_schema_map,
         m_schema_tree,

@@ -7,12 +7,20 @@ class ClpColumnHandle : public ColumnHandle {
  public:
   ClpColumnHandle(
       const std::string& columnName,
+      const std::string& originalColumnName,
       const TypePtr& columnType,
       bool nullable)
-      : columnName_(columnName), columnType_(columnType), nullable_(nullable) {}
+      : columnName_(columnName),
+        originalColumnName_(originalColumnName),
+        columnType_(columnType),
+        nullable_(nullable) {}
 
   const std::string& columnName() const {
     return columnName_;
+  }
+
+  const std::string& originalColumnName() const {
+    return originalColumnName_;
   }
 
   const TypePtr& columnType() const {
@@ -25,6 +33,7 @@ class ClpColumnHandle : public ColumnHandle {
 
  private:
   const std::string columnName_;
+  const std::string originalColumnName_;
   const TypePtr columnType_;
   const bool nullable_;
 };

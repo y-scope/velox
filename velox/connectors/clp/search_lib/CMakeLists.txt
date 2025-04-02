@@ -155,10 +155,10 @@ velox_add_library(
   clp-s-search
   STATIC
   ${CLP_SRC_FILES}
+  ClpVectorLoader.cpp
+  ClpVectorLoader.h
   Cursor.cpp
   Cursor.h
-  OrderedProjection.cpp
-  OrderedProjection.h
   QueryRunner.cpp
   QueryRunner.h)
 target_compile_features(clp-s-search PRIVATE cxx_std_20)

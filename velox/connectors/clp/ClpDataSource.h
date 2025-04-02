@@ -1,11 +1,6 @@
 #pragma once
 
-#include <unistd.h>     // For pipe, fork, exec
-#include <sys/wait.h>   // For waitpid
 #include <set>
-#include <mutex>
-#include <fstream>
-#include <thread>
 
 #include <boost/filesystem.hpp>
 
@@ -52,6 +47,10 @@ class ClpDataSource : public DataSource {
   }
 
  private:
+  void ClpDataSource::addFieldsRecursively(
+      const TypePtr& columnType,
+      const std::string& parentName);
+
   std::string executablePath_;
   std::string archiveDir_;
   std::string inputSource_;

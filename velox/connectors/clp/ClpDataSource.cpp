@@ -36,8 +36,6 @@ ClpDataSource::ClpDataSource(
     kqlQuery_ = "*";
   }
 
-  static const std::vector<std::string> suffixes = {
-      "_varchar", "_double", "_bigint", "_boolean"};
   for (const auto& outputName : outputType->names()) {
     auto columnHandle = columnHandles.find(outputName);
     VELOX_CHECK(
@@ -50,9 +48,25 @@ ClpDataSource::ClpDataSource(
         clpColumnHandle,
         "ColumnHandle must be an instance of ClpColumnHandle for output name: {}",
         outputName);
-    auto columnName = clpColumnHandle->columnName();
-    search_lib::ColumnType clpColumnType;
-    switch (clpColumnHandle->columnType()->kind()) {
+    auto columnName = clpColumnHandle->originalColumnName();
+    auto columnType = clpColumnHandle->columnType();
+    addFieldsRecursively(columnType, columnName);
+  }
+}
+
+void ClpDataSource::addFieldsRecursively(
+    const TypePtr& columnType,
+    const std::string& parentName) {
+  if (columnType->kind() == TypeKind::ROW) {
+    const auto& rowType = columnType->asRow();
+    for (size_t i = 0; i < rowType.size(); ++i) {
+      const auto& childType = rowType.childAt(i);
+      const auto childName = parentName + "." + rowType.nameOf(i);
+      addFieldsRecursively(childType, childName);
+    }
+  } else {
+    search_lib::ColumnType clpColumnType = search_lib::ColumnType::Unknown;
+    switch (columnType->kind()) {
       case TypeKind::BOOLEAN:
         clpColumnType = search_lib::ColumnType::Boolean;
         break;
@@ -61,9 +75,6 @@ ClpDataSource::ClpDataSource(
       case TypeKind::TINYINT:
         clpColumnType = search_lib::ColumnType::Integer;
         break;
-      case TypeKind::ARRAY:
-        clpColumnType = search_lib::ColumnType::Array;
-        break;
       case TypeKind::DOUBLE:
       case TypeKind::REAL:
         clpColumnType = search_lib::ColumnType::Float;
@@ -71,23 +82,13 @@ ClpDataSource::ClpDataSource(
       case TypeKind::VARCHAR:
         clpColumnType = search_lib::ColumnType::String;
         break;
+      case TypeKind::ARRAY:
+        clpColumnType = search_lib::ColumnType::Array;
+        break;
       default:
-        VELOX_USER_FAIL(
-            "Type not supported: {}", clpColumnHandle->columnType()->name());
+        VELOX_USER_FAIL("Type not supported: {}", columnType->name());
     }
-    auto processedColumnName = columnName;
-    if (polymorphicTypeEnabled_) {
-      for (const auto& suffix : suffixes) {
-        if (boost::algorithm::ends_with(columnName, suffix)) {
-          // Strip the type suffix
-          processedColumnName =
-              columnName.substr(0, columnName.size() - suffix.size());
-          break;
-        }
-      }
-    }
-    fields_.emplace_back(
-        search_lib::Field{clpColumnType, processedColumnName});
+    fields_.emplace_back(search_lib::Field{clpColumnType, parentName});
   }
 }
 
@@ -115,6 +116,7 @@ std::optional<RowVectorPtr> ClpDataSource::next(
   std::vector<VectorPtr> vectors;
   vectors.reserve(outputType_->size());
   auto nulls = AlignedBuffer::allocate<bool>(size, pool_, bits::kNull);
+
   for (const auto& childType : outputType_->children()) {
     // Create a vector with NULL values
     auto vector = BaseVector::create(childType, size, pool_);

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <optional>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -9,9 +7,9 @@
 #include "clp_s/SchemaTree.hpp"
 #include "clp_s/TraceableException.hpp"
 #include "clp_s/search/Expression.hpp"
+#include "clp_s/search/Projection.hpp"
 #include "clp_s/search/SchemaMatch.hpp"
 
-#include "velox/connectors/clp/search_lib/OrderedProjection.h"
 #include "velox/connectors/clp/search_lib/QueryRunner.h"
 
 namespace facebook::velox::connector::clp::search_lib {
@@ -27,7 +25,7 @@ enum class ErrorCode {
   InternalError
 };
 
-enum class ColumnType { String, Integer, Float, Array, Boolean };
+enum class ColumnType { String, Integer, Float, Array, Boolean, Unknown };
 
 struct Field {
   ColumnType type;
@@ -102,34 +100,34 @@ class Cursor {
   ErrorCode m_error_code;
   bool m_ignore_case;
 
-  clp_s::InputSource m_input_source;
+  clp_s::InputSource m_input_source{clp_s::InputSource::Filesystem};
   std::vector<std::string> m_archive_paths;
-  size_t m_current_archive_index;
-  size_t m_end_archive_index;
-  bool m_completed_archive_cycles;
+  size_t m_current_archive_index{};
+  size_t m_end_archive_index{};
+  bool m_completed_archive_cycles{};
   std::vector<int32_t> m_matched_schemas;
-  size_t m_current_schema_index;
-  size_t m_end_schema_index;
-  bool m_completed_schema_cycles;
-  int32_t m_current_schema_id;
+  size_t m_current_schema_index{};
+  size_t m_end_schema_index{};
+  bool m_completed_schema_cycles{};
+  int32_t m_current_schema_id{};
 
-  ArchiveReadStage m_archive_read_stage;
+  ArchiveReadStage m_archive_read_stage{ArchiveReadStage::None};
 
   std::shared_ptr<clp_s::search::Expression> m_expr;
-  std::shared_ptr<OrderedProjection> m_projection;
+  std::shared_ptr<clp_s::search::Projection> m_projection;
   std::string m_query;
   std::vector<Field> m_output_columns;
 
-  bool m_current_schema_table_loaded;
+  bool m_current_schema_table_loaded{};
 
   std::shared_ptr<clp_s::search::SchemaMatch> m_schema_match;
 
   std::shared_ptr<QueryRunner> m_query_runner;
 
-  clp_s::EvaluatedValue m_expression_value;
+  clp_s::EvaluatedValue m_expression_value{clp_s::EvaluatedValue::Unknown};
 
   clp_s::ArchiveReader m_archive_reader;
-  clp_s::SchemaReader* m_schema_reader;
+  clp_s::SchemaReader* m_schema_reader{};
   std::shared_ptr<clp_s::SchemaTree> m_schema_tree;
   std::shared_ptr<clp_s::ReaderUtils::SchemaMap> m_schema_map;
   std::shared_ptr<clp_s::VariableDictionaryReader> m_var_dict;
