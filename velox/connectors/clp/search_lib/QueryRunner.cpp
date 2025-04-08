@@ -2,11 +2,11 @@
 
 #include "clp/type_utils.hpp"
 #include "clp_s/Utils.hpp"
-#include "clp_s/search/AndExpr.hpp"
-#include "clp_s/search/FilterExpr.hpp"
-#include "clp_s/search/Literal.hpp"
-#include "clp_s/search/OrExpr.hpp"
-#include "clp_s/search/SearchUtils.hpp"
+#include "clp_s/search/ast/AndExpr.hpp"
+#include "clp_s/search/ast/FilterExpr.hpp"
+#include "clp_s/search/ast/Literal.hpp"
+#include "clp_s/search/ast/OrExpr.hpp"
+#include "clp_s/search/ast/SearchUtils.hpp"
 #include "clp_s/search/clp_search/EncodedVariableInterpreter.hpp"
 #include "clp_s/search/clp_search/Grep.hpp"
 
@@ -17,6 +17,7 @@
 
 using namespace clp_s;
 using namespace clp_s::search;
+using namespace clp_s::search::ast;
 using namespace clp_s::search::clp_search;
 using namespace simdjson;
 
@@ -665,7 +666,7 @@ bool QueryRunner::evaluate_array_filter_value(
     } break;
     case ondemand::json_type::string: {
       if (true == m_maybe_string && unresolved_tokens.size() == cur_idx &&
-          wildcard_match(item.get_string().value(), m_array_search_string)) {
+          StringUtils::wildcard_match_unsafe(item.get_string().value(), m_array_search_string, false == m_ignore_case)) {
         match = op == FilterOperation::EQ;
       }
     } break;
@@ -798,7 +799,7 @@ bool QueryRunner::evaluate_wildcard_array_filter(
         if (false == m_maybe_string) {
           break;
         }
-        if (wildcard_match(item.get_string().value(), m_array_search_string)) {
+        if (StringUtils::wildcard_match_unsafe(item.get_string().value(), m_array_search_string, false == m_ignore_case)) {
           match |= op == FilterOperation::EQ;
         }
         break;
@@ -866,7 +867,7 @@ bool QueryRunner::evaluate_wildcard_array_filter(
         if (false == m_maybe_string) {
           break;
         }
-        if (wildcard_match(item.get_string().value(), m_array_search_string)) {
+        if (StringUtils::wildcard_match_unsafe(item.get_string().value(), m_array_search_string, false)) {
           match |= op == FilterOperation::EQ;
         }
         break;
@@ -983,7 +984,7 @@ void QueryRunner::populate_string_queries(
 
       std::unordered_set<int64_t>& matching_vars =
           m_string_var_match_map[query_string];
-      if (false == StringUtils::has_unescaped_wildcards(query_string)) {
+      if (false == has_unescaped_wildcards(query_string)) {
         std::string unescaped_query_string;
         bool escape = false;
         for (char const c : query_string) {

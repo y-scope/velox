@@ -74,57 +74,57 @@ set(CLP_SRC_FILES
     ${CLP_SRC_DIR}/clp_s/ZstdDecompressor.hpp
     ${CLP_SRC_DIR}/clp_s/search/AddTimestampConditions.cpp
     ${CLP_SRC_DIR}/clp_s/search/AddTimestampConditions.hpp
-    ${CLP_SRC_DIR}/clp_s/search/AndExpr.cpp
-    ${CLP_SRC_DIR}/clp_s/search/AndExpr.hpp
     ${CLP_SRC_DIR}/clp_s/search/antlr_common/ErrorListener.hpp
-    ${CLP_SRC_DIR}/clp_s/search/BooleanLiteral.cpp
-    ${CLP_SRC_DIR}/clp_s/search/BooleanLiteral.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/AndExpr.cpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/AndExpr.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/BooleanLiteral.cpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/BooleanLiteral.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/ColumnDescriptor.cpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/ColumnDescriptor.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/ConstantProp.cpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/ConstantProp.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/ConvertToExists.cpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/ConvertToExists.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/DateLiteral.cpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/DateLiteral.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/EmptyExpr.cpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/EmptyExpr.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/Expression.cpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/Expression.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/FilterExpr.cpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/FilterExpr.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/FilterOperation.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/Integral.cpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/Integral.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/Literal.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/NarrowTypes.cpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/NarrowTypes.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/NullLiteral.cpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/NullLiteral.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/OrExpr.cpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/OrExpr.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/OrOfAndForm.cpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/OrOfAndForm.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/SearchUtils.cpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/SearchUtils.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/StringLiteral.cpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/StringLiteral.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/Transformation.hpp
+    ${CLP_SRC_DIR}/clp_s/search/ast/Value.hpp
     ${CLP_SRC_DIR}/clp_s/search/clp_search/EncodedVariableInterpreter.cpp
     ${CLP_SRC_DIR}/clp_s/search/clp_search/EncodedVariableInterpreter.hpp
     ${CLP_SRC_DIR}/clp_s/search/clp_search/Grep.cpp
     ${CLP_SRC_DIR}/clp_s/search/clp_search/Grep.hpp
     ${CLP_SRC_DIR}/clp_s/search/clp_search/Query.cpp
     ${CLP_SRC_DIR}/clp_s/search/clp_search/Query.hpp
-    ${CLP_SRC_DIR}/clp_s/search/ColumnDescriptor.cpp
-    ${CLP_SRC_DIR}/clp_s/search/ColumnDescriptor.hpp
-    ${CLP_SRC_DIR}/clp_s/search/ConstantProp.cpp
-    ${CLP_SRC_DIR}/clp_s/search/ConstantProp.hpp
-    ${CLP_SRC_DIR}/clp_s/search/ConvertToExists.cpp
-    ${CLP_SRC_DIR}/clp_s/search/ConvertToExists.hpp
-    ${CLP_SRC_DIR}/clp_s/search/DateLiteral.cpp
-    ${CLP_SRC_DIR}/clp_s/search/DateLiteral.hpp
-    ${CLP_SRC_DIR}/clp_s/search/EmptyExpr.cpp
-    ${CLP_SRC_DIR}/clp_s/search/EmptyExpr.hpp
     ${CLP_SRC_DIR}/clp_s/search/EvaluateTimestampIndex.cpp
     ${CLP_SRC_DIR}/clp_s/search/EvaluateTimestampIndex.hpp
-    ${CLP_SRC_DIR}/clp_s/search/Expression.cpp
-    ${CLP_SRC_DIR}/clp_s/search/Expression.hpp
-    ${CLP_SRC_DIR}/clp_s/search/FilterExpr.cpp
-    ${CLP_SRC_DIR}/clp_s/search/FilterExpr.hpp
-    ${CLP_SRC_DIR}/clp_s/search/FilterOperation.hpp
-    ${CLP_SRC_DIR}/clp_s/search/Integral.cpp
-    ${CLP_SRC_DIR}/clp_s/search/Integral.hpp
     ${CLP_SRC_DIR}/clp_s/search/kql/kql.cpp
     ${CLP_SRC_DIR}/clp_s/search/kql/kql.hpp
-    ${CLP_SRC_DIR}/clp_s/search/Literal.hpp
-    ${CLP_SRC_DIR}/clp_s/search/NarrowTypes.cpp
-    ${CLP_SRC_DIR}/clp_s/search/NarrowTypes.hpp
-    ${CLP_SRC_DIR}/clp_s/search/NullLiteral.cpp
-    ${CLP_SRC_DIR}/clp_s/search/NullLiteral.hpp
-    ${CLP_SRC_DIR}/clp_s/search/OrExpr.cpp
-    ${CLP_SRC_DIR}/clp_s/search/OrExpr.hpp
-    ${CLP_SRC_DIR}/clp_s/search/OrOfAndForm.cpp
-    ${CLP_SRC_DIR}/clp_s/search/OrOfAndForm.hpp
     ${CLP_SRC_DIR}/clp_s/search/Projection.cpp
     ${CLP_SRC_DIR}/clp_s/search/Projection.hpp
     ${CLP_SRC_DIR}/clp_s/search/SchemaMatch.cpp
     ${CLP_SRC_DIR}/clp_s/search/SchemaMatch.hpp
-    ${CLP_SRC_DIR}/clp_s/search/SearchUtils.cpp
-    ${CLP_SRC_DIR}/clp_s/search/SearchUtils.hpp
-    ${CLP_SRC_DIR}/clp_s/search/StringLiteral.cpp
-    ${CLP_SRC_DIR}/clp_s/search/StringLiteral.hpp
-    ${CLP_SRC_DIR}/clp_s/search/Transformation.hpp
-    ${CLP_SRC_DIR}/clp_s/search/Value.hpp
     ${CLP_SRC_DIR}/clp/aws/AwsAuthenticationSigner.cpp
     ${CLP_SRC_DIR}/clp/aws/AwsAuthenticationSigner.hpp
     ${CLP_SRC_DIR}/clp/BoundedReader.cpp

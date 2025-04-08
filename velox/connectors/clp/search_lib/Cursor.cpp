@@ -5,16 +5,17 @@
 
 #include <spdlog/spdlog.h>
 
-#include "clp_s/search/ConvertToExists.hpp"
-#include "clp_s/search/EmptyExpr.hpp"
+#include "clp_s/search/ast/ConvertToExists.hpp"
+#include "clp_s/search/ast/EmptyExpr.hpp"
 #include "clp_s/search/EvaluateTimestampIndex.hpp"
-#include "clp_s/search/NarrowTypes.hpp"
-#include "clp_s/search/OrOfAndForm.hpp"
+#include "clp_s/search/ast/NarrowTypes.hpp"
+#include "clp_s/search/ast/OrOfAndForm.hpp"
 #include "clp_s/search/kql/kql.hpp"
 #include "velox/connectors/clp/search_lib/OrderedProjection.h"
 
 using namespace clp_s;
 using namespace clp_s::search;
+using namespace clp_s::search::ast;
 
 namespace facebook::velox::connector::clp::search_lib {
 Cursor::Cursor(
@@ -85,7 +86,7 @@ ErrorCode Cursor::load_archive() {
     for (auto const& column : m_output_columns) {
       std::vector<std::string> descriptor_tokens;
       std::string descriptor_namespace;
-      StringUtils::tokenize_column_descriptor(
+      tokenize_column_descriptor(
           column.name, descriptor_tokens, descriptor_namespace);
       m_projection->add_ordered_column(
           ColumnDescriptor::create_from_escaped_tokens(

@@ -32,7 +32,7 @@ class OrderedProjection : public clp_s::search::Projection {
    * column
    */
   void add_ordered_column(
-      std::shared_ptr<clp_s::search::ColumnDescriptor> column);
+      std::shared_ptr<clp_s::search::ast::ColumnDescriptor> column);
 
   /**
    * Adds a column to the set of columns that should be included in the
@@ -46,7 +46,7 @@ class OrderedProjection : public clp_s::search::Projection {
    * column
    */
   void add_ordered_column(
-      const std::shared_ptr<clp_s::search::ColumnDescriptor>& column,
+      const std::shared_ptr<clp_s::search::ast::ColumnDescriptor>& column,
       ColumnType node_type);
 
   /**
@@ -80,9 +80,9 @@ class OrderedProjection : public clp_s::search::Projection {
    */
   void resolve_column(
       const std::shared_ptr<clp_s::SchemaTree>& tree,
-      const std::shared_ptr<clp_s::search::ColumnDescriptor>& column);
+      const std::shared_ptr<clp_s::search::ast::ColumnDescriptor>& column);
 
-  std::vector<std::shared_ptr<clp_s::search::ColumnDescriptor>>
+  std::vector<std::shared_ptr<clp_s::search::ast::ColumnDescriptor>>
       m_selected_columns;
   std::vector<std::vector<int32_t>> m_matching_nodes_list;
   absl::flat_hash_set<int32_t> m_matching_nodes;

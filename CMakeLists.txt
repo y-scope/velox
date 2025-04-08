@@ -429,6 +429,7 @@ set(BOOST_INCLUDE_LIBRARIES
     context
     date_time
     filesystem
+    iostreams
     program_options
     regex
     system

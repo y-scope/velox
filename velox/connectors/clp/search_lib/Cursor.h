@@ -8,7 +8,7 @@
 #include "clp_s/ArchiveReader.hpp"
 #include "clp_s/SchemaTree.hpp"
 #include "clp_s/TraceableException.hpp"
-#include "clp_s/search/Expression.hpp"
+#include "clp_s/search/ast/Expression.hpp"
 #include "clp_s/search/SchemaMatch.hpp"
 
 #include "velox/connectors/clp/search_lib/OrderedProjection.h"
@@ -115,7 +115,7 @@ class Cursor {
 
   ArchiveReadStage m_archive_read_stage;
 
-  std::shared_ptr<clp_s::search::Expression> m_expr;
+  std::shared_ptr<clp_s::search::ast::Expression> m_expr;
   std::shared_ptr<OrderedProjection> m_projection;
   std::string m_query;
   std::vector<Field> m_output_columns;

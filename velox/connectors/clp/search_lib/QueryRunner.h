@@ -5,9 +5,9 @@
 #include <simdjson.h>
 
 #include "clp_s/SchemaReader.hpp"
-#include "clp_s/search/Expression.hpp"
+#include "clp_s/search/ast/Expression.hpp"
 #include "clp_s/search/SchemaMatch.hpp"
-#include "clp_s/search/StringLiteral.hpp"
+#include "clp_s/search/ast/StringLiteral.hpp"
 #include "clp_s/search/clp_search/Query.hpp"
 
 #include "velox/connectors/clp/search_lib/OrderedProjection.h"
@@ -23,7 +23,7 @@ namespace facebook::velox::connector::clp::search_lib {
 class QueryRunner : public clp_s::FilterClass {
  public:
   QueryRunner(
-      std::shared_ptr<clp_s::search::Expression> expr,
+      std::shared_ptr<clp_s::search::ast::Expression> expr,
       std::shared_ptr<clp_s::search::SchemaMatch> match,
       bool ignore_case,
       std::shared_ptr<clp_s::ReaderUtils::SchemaMap> schemas,
@@ -136,7 +136,7 @@ class QueryRunner : public clp_s::FilterClass {
  private:
   enum class ExpressionType { And, Or, Filter };
 
-  std::shared_ptr<clp_s::search::Expression> m_expr;
+  std::shared_ptr<clp_s::search::ast::Expression> m_expr;
   std::shared_ptr<clp_s::search::SchemaMatch> m_match;
 
   bool m_ignore_case;
@@ -158,10 +158,10 @@ class QueryRunner : public clp_s::FilterClass {
       m_string_query_map;
   std::map<std::string, std::unordered_set<int64_t>> m_string_var_match_map;
   std::unordered_map<
-      clp_s::search::Expression*,
+      clp_s::search::ast::Expression*,
       clp_s::search::clp_search::Query*>
       m_expr_clp_query;
-  std::unordered_map<clp_s::search::Expression*, std::unordered_set<int64_t>*>
+  std::unordered_map<clp_s::search::ast::Expression*, std::unordered_set<int64_t>*>
       m_expr_var_match_map;
   std::unordered_map<int32_t, std::vector<clp_s::ClpStringColumnReader*>>
       m_clp_string_readers;
@@ -176,14 +176,14 @@ class QueryRunner : public clp_s::FilterClass {
   uint64_t m_num_messages;
   clp_s::EvaluatedValue m_expression_value;
 
-  std::vector<clp_s::search::ColumnDescriptor*> m_wildcard_columns;
-  std::map<clp_s::search::ColumnDescriptor*, std::set<int32_t>>
+  std::vector<clp_s::search::ast::ColumnDescriptor*> m_wildcard_columns;
+  std::map<clp_s::search::ast::ColumnDescriptor*, std::set<int32_t>>
       m_wildcard_to_searched_basic_columns;
-  clp_s::search::LiteralTypeBitmask m_wildcard_type_mask{0};
+  clp_s::search::ast::LiteralTypeBitmask m_wildcard_type_mask{0};
 
   std::stack<
-      std::pair<ExpressionType, clp_s::search::OpList::iterator>,
-      std::vector<std::pair<ExpressionType, clp_s::search::OpList::iterator>>>
+      std::pair<ExpressionType, clp_s::search::ast::OpList::iterator>,
+      std::vector<std::pair<ExpressionType, clp_s::search::ast::OpList::iterator>>>
       m_expression_state;
 
   simdjson::ondemand::parser m_array_parser;
@@ -220,7 +220,7 @@ class QueryRunner : public clp_s::FilterClass {
    * @param schema
    * @return true if the expression evaluates to true, false otherwise
    */
-  bool evaluate(clp_s::search::Expression* expr, int32_t schema);
+  bool evaluate(clp_s::search::ast::Expression* expr, int32_t schema);
 
   /**
    * Evaluates a filter expression
@@ -228,7 +228,7 @@ class QueryRunner : public clp_s::FilterClass {
    * @param schema
    * @return true if the expression evaluates to true, false otherwise
    */
-  bool evaluate_filter(clp_s::search::FilterExpr* expr, int32_t schema);
+  bool evaluate_filter(clp_s::search::ast::FilterExpr* expr, int32_t schema);
 
   /**
    * Evaluates a wildcard filter expression
@@ -237,7 +237,7 @@ class QueryRunner : public clp_s::FilterClass {
    * @return true if the expression evaluates to true, false otherwise
    */
   bool evaluate_wildcard_filter(
-      clp_s::search::FilterExpr* expr,
+      clp_s::search::ast::FilterExpr* expr,
       int32_t schema);
 
   /**
@@ -248,9 +248,9 @@ class QueryRunner : public clp_s::FilterClass {
    * @return true if the expression evaluates to true, false otherwise
    */
   bool evaluate_int_filter(
-      FilterOperation op,
+      clp_s::search::ast::FilterOperation op,
       int32_t column_id,
-      std::shared_ptr<clp_s::search::Literal> const& operand);
+      std::shared_ptr<clp_s::search::ast::Literal> const& operand);
 
   /**
    * Evaluates a int filter expression
@@ -260,7 +260,7 @@ class QueryRunner : public clp_s::FilterClass {
    * @return true if the expression evaluates to true, false otherwise
    */
   static bool
-  evaluate_int_filter_core(FilterOperation op, int64_t value, int64_t operand);
+  evaluate_int_filter_core(clp_s::search::ast::FilterOperation op, int64_t value, int64_t operand);
 
   /**
    * Evaluates a float filter expression
@@ -270,9 +270,9 @@ class QueryRunner : public clp_s::FilterClass {
    * @return true if the expression evaluates to true, false otherwise
    */
   bool evaluate_float_filter(
-      FilterOperation op,
+      clp_s::search::ast::FilterOperation op,
       int32_t column_id,
-      std::shared_ptr<clp_s::search::Literal> const& operand);
+      std::shared_ptr<clp_s::search::ast::Literal> const& operand);
 
   /**
    * Evaluates the core of a float filter expression
@@ -282,7 +282,7 @@ class QueryRunner : public clp_s::FilterClass {
    * @return true if the expression evaluates to true, false otherwise
    */
   static bool
-  evaluate_float_filter_core(FilterOperation op, double value, double operand);
+  evaluate_float_filter_core(clp_s::search::ast::FilterOperation op, double value, double operand);
 
   /**
    * Evaluates a clp string filter expression
@@ -292,7 +292,7 @@ class QueryRunner : public clp_s::FilterClass {
    * @return true if the expression evaluates to true, false otherwise
    */
   bool evaluate_clp_string_filter(
-      FilterOperation op,
+      clp_s::search::ast::FilterOperation op,
       clp_s::search::clp_search::Query* q,
       std::vector<clp_s::ClpStringColumnReader*> const& readers) const;
 
@@ -304,7 +304,7 @@ class QueryRunner : public clp_s::FilterClass {
    * @return true if the expression evaluates to true, false otherwise
    */
   bool evaluate_var_string_filter(
-      FilterOperation op,
+      clp_s::search::ast::FilterOperation op,
       std::vector<clp_s::VariableStringColumnReader*> const& readers,
       std::unordered_set<int64_t>* matching_vars) const;
 
@@ -316,9 +316,9 @@ class QueryRunner : public clp_s::FilterClass {
    * @return true if the expression evaluates to true, false otherwise
    */
   bool evaluate_epoch_date_filter(
-      FilterOperation op,
+      clp_s::search::ast::FilterOperation op,
       clp_s::DateStringColumnReader* reader,
-      std::shared_ptr<clp_s::search::Literal>& operand);
+      std::shared_ptr<clp_s::search::ast::Literal>& operand);
 
   /**
    * Evaluates an array filter expression
@@ -329,10 +329,10 @@ class QueryRunner : public clp_s::FilterClass {
    * @return true if the expression evaluates to true, false otherwise
    */
   bool evaluate_array_filter(
-      FilterOperation op,
-      clp_s::search::DescriptorList const& unresolved_tokens,
+      clp_s::search::ast::FilterOperation op,
+      clp_s::search::ast::DescriptorList const& unresolved_tokens,
       std::string& value,
-      std::shared_ptr<clp_s::search::Literal> const& operand);
+      std::shared_ptr<clp_s::search::ast::Literal> const& operand);
 
   /**
    * Evaluates a filter expression on a single value for precise array search.
@@ -345,10 +345,10 @@ class QueryRunner : public clp_s::FilterClass {
    */
   inline bool evaluate_array_filter_value(
       simdjson::ondemand::value& item,
-      FilterOperation op,
-      clp_s::search::DescriptorList const& unresolved_tokens,
+      clp_s::search::ast::FilterOperation op,
+      clp_s::search::ast::DescriptorList const& unresolved_tokens,
       size_t cur_idx,
-      std::shared_ptr<clp_s::search::Literal> const& operand) const;
+      std::shared_ptr<clp_s::search::ast::Literal> const& operand) const;
 
   /**
    * Evaluates a filter expression on an array (top level or nested) for precise
@@ -362,10 +362,10 @@ class QueryRunner : public clp_s::FilterClass {
    */
   bool evaluate_array_filter_array(
       simdjson::ondemand::array& array,
-      FilterOperation op,
-      clp_s::search::DescriptorList const& unresolved_tokens,
+      clp_s::search::ast::FilterOperation op,
+      clp_s::search::ast::DescriptorList const& unresolved_tokens,
       size_t cur_idx,
-      std::shared_ptr<clp_s::search::Literal> const& operand) const;
+      std::shared_ptr<clp_s::search::ast::Literal> const& operand) const;
 
   /**
    * Evaluates a filter expression on an object inside of an array for precise
@@ -379,10 +379,10 @@ class QueryRunner : public clp_s::FilterClass {
    */
   bool evaluate_array_filter_object(
       simdjson::ondemand::object& object,
-      FilterOperation op,
-      clp_s::search::DescriptorList const& unresolved_tokens,
+      clp_s::search::ast::FilterOperation op,
+      clp_s::search::ast::DescriptorList const& unresolved_tokens,
       size_t cur_idx,
-      std::shared_ptr<clp_s::search::Literal> const& operand) const;
+      std::shared_ptr<clp_s::search::ast::Literal> const& operand) const;
 
   /**
    * Evaluates a wildcard array filter expression
@@ -392,9 +392,9 @@ class QueryRunner : public clp_s::FilterClass {
    * @return true if the expression evaluates to true, false otherwise
    */
   bool evaluate_wildcard_array_filter(
-      FilterOperation op,
+      clp_s::search::ast::FilterOperation op,
       std::string& value,
-      std::shared_ptr<clp_s::search::Literal> const& operand);
+      std::shared_ptr<clp_s::search::ast::Literal> const& operand);
 
   /**
    * The implementation of evaluate_wildcard_array_filter
@@ -405,8 +405,8 @@ class QueryRunner : public clp_s::FilterClass {
    */
   bool evaluate_wildcard_array_filter(
       simdjson::ondemand::array& array,
-      FilterOperation op,
-      std::shared_ptr<clp_s::search::Literal> const& operand) const;
+      clp_s::search::ast::FilterOperation op,
+      std::shared_ptr<clp_s::search::ast::Literal> const& operand) const;
 
   /**
    * The implementation of evaluate_wildcard_array_filter
@@ -417,8 +417,8 @@ class QueryRunner : public clp_s::FilterClass {
    */
   bool evaluate_wildcard_array_filter(
       simdjson::ondemand::object& object,
-      FilterOperation op,
-      std::shared_ptr<clp_s::search::Literal> const& operand) const;
+      clp_s::search::ast::FilterOperation op,
+      std::shared_ptr<clp_s::search::ast::Literal> const& operand) const;
 
   /**
    * Evaluates a bool filter expression
@@ -428,16 +428,16 @@ class QueryRunner : public clp_s::FilterClass {
    * @return true if the expression evaluates to true, false otherwise
    */
   bool evaluate_bool_filter(
-      FilterOperation op,
+      clp_s::search::ast::FilterOperation op,
       int32_t column_id,
-      std::shared_ptr<clp_s::search::Literal> const& operand);
+      std::shared_ptr<clp_s::search::ast::Literal> const& operand);
 
   /**
    * Populates the string queries
    * @param expr
    */
   void populate_string_queries(
-      std::shared_ptr<clp_s::search::Expression> const& expr);
+      std::shared_ptr<clp_s::search::ast::Expression> const& expr);
 
   /**
    * Constant propagates an expression
@@ -448,14 +448,14 @@ class QueryRunner : public clp_s::FilterClass {
    * EvaluatedValue::Unknown otherwise
    */
   clp_s::EvaluatedValue constant_propagate(
-      std::shared_ptr<clp_s::search::Expression> const& expr);
+      std::shared_ptr<clp_s::search::ast::Expression> const& expr);
 
   /**
    * Populates searched wildcard columns
    * @param expr
    */
   void populate_searched_wildcard_columns(
-      std::shared_ptr<clp_s::search::Expression> const& expr);
+      std::shared_ptr<clp_s::search::ast::Expression> const& expr);
 
   /**
    * Gets the cached decompressed structured array for the current message

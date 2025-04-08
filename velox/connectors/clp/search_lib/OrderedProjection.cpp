@@ -3,11 +3,12 @@
 
 #include <spdlog/spdlog.h>
 
-#include "clp_s/search/SearchUtils.hpp"
+#include "clp_s/search/ast/SearchUtils.hpp"
 #include "velox/connectors/clp/search_lib/Cursor.h"
 
 using namespace clp_s;
 using namespace clp_s::search;
+using namespace clp_s::search::ast;
 
 namespace facebook::velox::connector::clp::search_lib {
 void OrderedProjection::add_ordered_column(
