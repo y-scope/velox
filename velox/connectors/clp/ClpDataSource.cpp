@@ -86,8 +86,7 @@ ClpDataSource::ClpDataSource(
         }
       }
     }
-    fields_.emplace_back(
-        search_lib::Field{clpColumnType, processedColumnName});
+    fields_.emplace_back(search_lib::Field{clpColumnType, processedColumnName});
   }
 }
 

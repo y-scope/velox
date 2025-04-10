@@ -666,7 +666,10 @@ bool QueryRunner::evaluate_array_filter_value(
     } break;
     case ondemand::json_type::string: {
       if (true == m_maybe_string && unresolved_tokens.size() == cur_idx &&
-          StringUtils::wildcard_match_unsafe(item.get_string().value(), m_array_search_string, false == m_ignore_case)) {
+          StringUtils::wildcard_match_unsafe(
+              item.get_string().value(),
+              m_array_search_string,
+              false == m_ignore_case)) {
         match = op == FilterOperation::EQ;
       }
     } break;
@@ -799,7 +802,10 @@ bool QueryRunner::evaluate_wildcard_array_filter(
         if (false == m_maybe_string) {
           break;
         }
-        if (StringUtils::wildcard_match_unsafe(item.get_string().value(), m_array_search_string, false == m_ignore_case)) {
+        if (StringUtils::wildcard_match_unsafe(
+                item.get_string().value(),
+                m_array_search_string,
+                false == m_ignore_case)) {
           match |= op == FilterOperation::EQ;
         }
         break;
@@ -867,7 +873,8 @@ bool QueryRunner::evaluate_wildcard_array_filter(
         if (false == m_maybe_string) {
           break;
         }
-        if (StringUtils::wildcard_match_unsafe(item.get_string().value(), m_array_search_string, false)) {
+        if (StringUtils::wildcard_match_unsafe(
+                item.get_string().value(), m_array_search_string, false)) {
           match |= op == FilterOperation::EQ;
         }
         break;

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <unistd.h>     // For pipe, fork, exec
-#include <sys/wait.h>   // For waitpid
-#include <set>
-#include <mutex>
+#include <sys/wait.h> // For waitpid
+#include <unistd.h> // For pipe, fork, exec
 #include <fstream>
+#include <mutex>
+#include <set>
 #include <thread>
 
 #include <boost/filesystem.hpp>
