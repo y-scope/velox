@@ -138,10 +138,24 @@ set(CLP_SRC_FILES
     ${CLP_SRC_DIR}/clp/CurlStringList.hpp
     ${CLP_SRC_DIR}/clp/Defs.h
     ${CLP_SRC_DIR}/clp/ErrorCode.hpp
+    ${CLP_SRC_DIR}/clp/ffi/ir_stream/decoding_methods.cpp
+    ${CLP_SRC_DIR}/clp/ffi/ir_stream/decoding_methods.hpp
+    ${CLP_SRC_DIR}/clp/ffi/ir_stream/Deserializer.hpp
+    ${CLP_SRC_DIR}/clp/ffi/ir_stream/ir_search_methods.cpp
+    ${CLP_SRC_DIR}/clp/ffi/ir_stream/ir_search_methods.hpp
+    ${CLP_SRC_DIR}/clp/ffi/ir_stream/ir_unit_deserialization_methods.cpp
+    ${CLP_SRC_DIR}/clp/ffi/ir_stream/ir_unit_deserialization_methods.hpp
+    ${CLP_SRC_DIR}/clp/ffi/KeyValuePairLogEvent.cpp
+    ${CLP_SRC_DIR}/clp/ffi/KeyValuePairLogEvent.hpp
+    ${CLP_SRC_DIR}/clp/ffi/SchemaTree.cpp
+    ${CLP_SRC_DIR}/clp/ffi/SchemaTree.hpp
+    ${CLP_SRC_DIR}/clp/ffi/Value.hpp
     ${CLP_SRC_DIR}/clp/FileReader.cpp
     ${CLP_SRC_DIR}/clp/FileReader.hpp
     ${CLP_SRC_DIR}/clp/hash_utils.cpp
     ${CLP_SRC_DIR}/clp/hash_utils.hpp
+    ${CLP_SRC_DIR}/clp/ir/EncodedTextAst.cpp
+    ${CLP_SRC_DIR}/clp/ir/EncodedTextAst.hpp
     ${CLP_SRC_DIR}/clp/NetworkReader.cpp
     ${CLP_SRC_DIR}/clp/NetworkReader.hpp
     ${CLP_SRC_DIR}/clp/ReaderInterface.cpp
@@ -157,6 +171,8 @@ velox_add_library(
   ${CLP_SRC_FILES}
   Cursor.cpp
   Cursor.h
+  KVIRCursor.cpp
+  KVIRCursor.h
   OrderedProjection.cpp
   OrderedProjection.h
   QueryRunner.cpp
