@@ -5,8 +5,7 @@ namespace facebook::velox::connector::clp {
 ClpConnector::ClpConnector(
     const std::string& id,
     std::shared_ptr<const config::ConfigBase> config)
-    : Connector(id),
-      config_(std::make_shared<ClpConfig>(config)) {}
+    : Connector(id), config_(std::make_shared<ClpConfig>(config)) {}
 
 std::unique_ptr<DataSource> ClpConnector::createDataSource(
     const RowTypePtr& outputType,

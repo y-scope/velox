@@ -11,8 +11,8 @@ class ClpConnector : public Connector {
       const std::string& id,
       std::shared_ptr<const config::ConfigBase> config);
 
-  [[nodiscard]] const std::shared_ptr<const config::ConfigBase>& connectorConfig()
-      const override {
+  [[nodiscard]] const std::shared_ptr<const config::ConfigBase>&
+  connectorConfig() const override {
     return config_->config();
   }
 
