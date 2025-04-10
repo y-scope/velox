@@ -210,9 +210,7 @@ void QueryRunner::get_message(
           // Get each array element as a string
           auto elementStringWithQuotes =
               simdjson::to_json_string(arrayElement).value();
-          auto elementString = elementStringWithQuotes.substr(
-              1, elementStringWithQuotes.size() - 2);
-          arrayElements.emplace_back(elementString);
+          arrayElements.emplace_back(elementStringWithQuotes);
         }
         elements->resize(array_end_offset + arrayElements.size());
 
