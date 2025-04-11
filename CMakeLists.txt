@@ -123,6 +123,7 @@ set(VELOX_GFLAGS_TYPE
 )
 option(VELOX_ENABLE_EXEC "Build exec." ON)
 option(VELOX_ENABLE_AGGREGATES "Build aggregates." ON)
+option(VELOX_ENABLE_CLP_CONNECTOR "Build CLP connector." ON)
 option(VELOX_ENABLE_HIVE_CONNECTOR "Build Hive connector." ON)
 option(VELOX_ENABLE_TPCH_CONNECTOR "Build TPC-H connector." ON)
 option(VELOX_ENABLE_PRESTO_FUNCTIONS "Build Presto SQL functions." ON)
@@ -169,6 +170,7 @@ if(${VELOX_BUILD_MINIMAL} OR ${VELOX_BUILD_MINIMAL_WITH_DWIO})
   set(VELOX_ENABLE_EXPRESSION ON)
   set(VELOX_ENABLE_EXEC OFF)
   set(VELOX_ENABLE_AGGREGATES OFF)
+  set(VELOX_ENABLE_CLP_CONNECTOR OFF)
   set(VELOX_ENABLE_HIVE_CONNECTOR OFF)
   set(VELOX_ENABLE_TPCH_CONNECTOR OFF)
   set(VELOX_ENABLE_SPARK_FUNCTIONS OFF)
@@ -432,6 +434,7 @@ set(BOOST_INCLUDE_LIBRARIES
     program_options
     regex
     system
+    url
     thread)
 
 velox_set_source(Boost)
@@ -484,6 +487,20 @@ endif()
 
 velox_set_source(re2)
 velox_resolve_dependency(re2)
+
+if(${VELOX_ENABLE_CLP_CONNECTOR})
+  set(spdlog_SOURCE BUNDLED)
+  velox_resolve_dependency(spdlog 1.12.0)
+  velox_set_source(msgpack-cxx)
+  velox_resolve_dependency(msgpack-cxx)
+  find_package(CURL 7.68.0 REQUIRED)
+  find_package(ANTLR REQUIRED)
+endif()
+
+if(${VELOX_ENABLE_CLP_CONNECTOR})
+  velox_set_source(absl)
+  velox_resolve_dependency(absl)
+endif()
 
 if(${VELOX_BUILD_PYTHON_PACKAGE})
   find_package(

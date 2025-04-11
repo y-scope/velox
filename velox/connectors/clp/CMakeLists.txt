@@ -11,24 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-velox_add_library(velox_connector Connector.cpp)
 
-velox_link_libraries(velox_connector velox_common_config velox_vector)
+add_subdirectory(search_lib)
 
-add_subdirectory(fuzzer)
+velox_add_library(
+  velox_clp_connector
+  OBJECT
+  ClpConnector.cpp
+  ClpDataSource.cpp
+  ClpTableHandle.cpp)
 
-if(${VELOX_ENABLE_CLP_CONNECTOR})
-  add_subdirectory(clp)
-endif()
+velox_link_libraries(
+  velox_clp_connector
+  PRIVATE
+    clp-s-search
+    velox_connector
+    simdjson::simdjson
+    msgpack-cxx
+    spdlog::spdlog
+    absl::flat_hash_map
+    Boost::filesystem)
 
-if(${VELOX_ENABLE_HIVE_CONNECTOR})
-  add_subdirectory(hive)
-endif()
-
-if(${VELOX_ENABLE_TPCH_CONNECTOR})
-  add_subdirectory(tpch)
-endif()
-
-if(${VELOX_BUILD_TESTING})
-  add_subdirectory(tests)
-endif()
+target_compile_features(velox_clp_connector PRIVATE cxx_std_20)
