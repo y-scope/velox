@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <iostream>
@@ -8,8 +24,8 @@
 #include "velox/connectors/clp/ClpDataSource.h"
 
 #include "velox/connectors/clp/ClpTableHandle.h"
-#include "velox/connectors/clp/search_lib/ClpVectorLoader.h"
 #include "velox/connectors/clp/search_lib/ClpCursor.h"
+#include "velox/connectors/clp/search_lib/ClpVectorLoader.h"
 #include "velox/vector/FlatVector.h"
 
 namespace facebook::velox::connector::clp {
@@ -99,12 +115,10 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
 
   if (inputSource_ == "local") {
     cursor_ = std::make_unique<search_lib::ClpCursor>(
-        clp_s::InputSource::Filesystem,
-        clpSplit->archivePath_);
+        clp_s::InputSource::Filesystem, clpSplit->archivePath_);
   } else if (inputSource_ == "s3") {
     cursor_ = std::make_unique<search_lib::ClpCursor>(
-        clp_s::InputSource::Network,
-        clpSplit->archivePath_);
+        clp_s::InputSource::Network, clpSplit->archivePath_);
   }
 
   cursor_->executeQuery(kqlQuery_, fields_);
@@ -121,8 +135,12 @@ VectorPtr ClpDataSource::createVector(
     auto& rowType = type->as<TypeKind::ROW>();
     // Children are reserved the parent size and accessible for those rows.
     for (int32_t i = 0; i < rowType.size(); ++i) {
-      children.push_back(
-          createVector(rowType.childAt(i), size, projectedColumns, filteredRows, readerIndex));
+      children.push_back(createVector(
+          rowType.childAt(i),
+          size,
+          projectedColumns,
+          filteredRows,
+          readerIndex));
     }
     return std::make_shared<RowVector>(
         pool_, type, nullptr, size, std::move(children));
@@ -152,15 +170,15 @@ std::optional<RowVectorPtr> ClpDataSource::next(
   }
   completedRows_ += rowsFetched;
   size_t readerIndex = 0;
-  const auto & projectedColumns = cursor_->getProjectedColumns();
+  const auto& projectedColumns = cursor_->getProjectedColumns();
   if (projectedColumns.size() != fields_.size()) {
     VELOX_USER_FAIL(
         "Projected columns size {} does not match fields size {}",
         projectedColumns.size(),
         fields_.size());
   }
-  return std::dynamic_pointer_cast<RowVector>(
-      createVector(outputType_, rowsFetched, projectedColumns, filteredRows, readerIndex));
+  return std::dynamic_pointer_cast<RowVector>(createVector(
+      outputType_, rowsFetched, projectedColumns, filteredRows, readerIndex));
 }
 
 } // namespace facebook::velox::connector::clp
