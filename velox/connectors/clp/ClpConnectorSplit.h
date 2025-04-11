@@ -14,7 +14,7 @@ struct ClpConnectorSplit : public connector::ConnectorSplit {
         schemaName_(schemaName),
         tableName_(tableName),
         archivePath_(archivePath),
-        archiveType_(archiveType) {}
+        archiveType_(static_cast<ArchiveType>(archiveType)) {}
 
   [[nodiscard]] std::string toString() const override {
     return fmt::format("CLP: {}.{}", schemaName_, tableName_);
@@ -25,6 +25,6 @@ struct ClpConnectorSplit : public connector::ConnectorSplit {
   const std::string schemaName_;
   const std::string tableName_;
   const std::string archivePath_;
-  const int archiveType_;
+  const ArchiveType archiveType_;
 };
 } // namespace facebook::velox::connector::clp

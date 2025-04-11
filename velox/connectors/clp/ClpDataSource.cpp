@@ -93,19 +93,22 @@ ClpDataSource::ClpDataSource(
 void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
   auto clpSplit = std::dynamic_pointer_cast<ClpConnectorSplit>(split);
 
-  if (inputSource_ == "local") {
-    cursor_ = std::make_unique<search_lib::Cursor>(
-        clp_s::InputSource::Filesystem,
-        std::vector<std::string>{clpSplit->archivePath_},
-        false);
-  } else if (inputSource_ == "s3") {
-    cursor_ = std::make_unique<search_lib::Cursor>(
-        clp_s::InputSource::Network,
-        std::vector<std::string>{clpSplit->archivePath_},
-        false);
+  cursor_.reset(nullptr);
+  kvirCursor_.reset(nullptr);
+  auto source = clp_s::InputSource::Filesystem;
+  if (inputSource_ == "s3") {
+    source = clp_s::InputSource::Network;
   }
 
-  cursor_->execute_query(kqlQuery_, fields_);
+  if (ClpConnectorSplit::ArchiveType::kIRV2 == clpSplit->archiveType_) {
+    kvirCursor_ = std::make_unique<search_lib::KVIRCursor>(
+        source, std::vector<std::string>{clpSplit->archivePath_}, false);
+    kvirCursor_->execute_query(kqlQuery_, fields_);
+  } else {
+    cursor_ = std::make_unique<search_lib::Cursor>(
+        source, std::vector<std::string>{clpSplit->archivePath_}, false);
+    cursor_->execute_query(kqlQuery_, fields_);
+  }
 }
 
 std::optional<RowVectorPtr> ClpDataSource::next(
@@ -121,7 +124,12 @@ std::optional<RowVectorPtr> ClpDataSource::next(
     vectors.emplace_back(vector);
   }
 
-  size_t rowsFetched = cursor_->fetch_next(size, vectors);
+  size_t rowsFetched = 0ULL;
+  if (nullptr != cursor_) {
+    rowsFetched = cursor_->fetch_next(size, vectors);
+  } else if (nullptr != kvirCursor_) {
+    rowsFetched = kvirCursor_->fetch_next(size, vectors);
+  }
   std::cout << "rowsFetched" << rowsFetched << std::endl;
   if (rowsFetched == 0) {
     return nullptr;

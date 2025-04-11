@@ -13,6 +13,7 @@
 #include "velox/connectors/clp/ClpConfig.h"
 
 #include "velox/connectors/clp/search_lib/Cursor.h"
+#include "velox/connectors/clp/search_lib/KVIRCursor.h"
 
 #include "simdjson.h"
 
@@ -68,5 +69,6 @@ class ClpDataSource : public DataSource {
   std::vector<search_lib::Field> fields_;
 
   std::unique_ptr<search_lib::Cursor> cursor_;
+  std::unique_ptr<search_lib::KVIRCursor> kvirCursor_;
 };
 } // namespace facebook::velox::connector::clp

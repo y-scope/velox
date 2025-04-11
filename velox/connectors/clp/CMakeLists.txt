@@ -11,6 +11,7 @@ velox_link_libraries(
   velox_clp_connector
   PRIVATE
     clp-s-search
+    clp::string_utils
     velox_connector
     simdjson::simdjson
     msgpack-cxx
