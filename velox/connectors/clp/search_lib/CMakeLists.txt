@@ -157,10 +157,10 @@ velox_add_library(
   ${CLP_SRC_FILES}
   ClpVectorLoader.cpp
   ClpVectorLoader.h
-  Cursor.cpp
-  Cursor.h
-  QueryRunner.cpp
-  QueryRunner.h)
+  ClpCursor.cpp
+  ClpCursor.h
+  ClpQueryRunner.cpp
+  ClpQueryRunner.h)
 target_compile_features(clp-s-search PRIVATE cxx_std_20)
 target_compile_definitions(clp-s-search
                            PUBLIC SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})

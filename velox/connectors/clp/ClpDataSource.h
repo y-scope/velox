@@ -7,7 +7,7 @@
 #include "velox/connectors/Connector.h"
 #include "velox/connectors/clp/ClpConfig.h"
 
-#include "velox/connectors/clp/search_lib/Cursor.h"
+#include "velox/connectors/clp/search_lib/ClpCursor.h"
 
 #include "simdjson.h"
 
@@ -65,7 +65,8 @@ class ClpDataSource : public DataSource {
   uint64_t completedBytes_{0};
 
   std::vector<search_lib::Field> fields_;
+  std::vector<clp_s::BaseColumnReader*> projectedColumns_;
 
-  std::unique_ptr<search_lib::Cursor> cursor_;
+  std::unique_ptr<search_lib::ClpCursor> cursor_;
 };
 } // namespace facebook::velox::connector::clp

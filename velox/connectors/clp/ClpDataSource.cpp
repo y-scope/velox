@@ -6,8 +6,10 @@
 #include "velox/connectors/clp/ClpColumnHandle.h"
 #include "velox/connectors/clp/ClpConnectorSplit.h"
 #include "velox/connectors/clp/ClpDataSource.h"
+
 #include "velox/connectors/clp/ClpTableHandle.h"
-#include "velox/connectors/clp/search_lib/Cursor.h"
+#include "velox/connectors/clp/search_lib/ClpVectorLoader.h"
+#include "velox/connectors/clp/search_lib/ClpCursor.h"
 #include "velox/vector/FlatVector.h"
 
 namespace facebook::velox::connector::clp {
@@ -96,42 +98,67 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
   auto clpSplit = std::dynamic_pointer_cast<ClpConnectorSplit>(split);
 
   if (inputSource_ == "local") {
-    cursor_ = std::make_unique<search_lib::Cursor>(
+    cursor_ = std::make_unique<search_lib::ClpCursor>(
         clp_s::InputSource::Filesystem,
-        std::vector<std::string>{clpSplit->archivePath_},
+        clpSplit->archivePath_,
         false);
   } else if (inputSource_ == "s3") {
-    cursor_ = std::make_unique<search_lib::Cursor>(
+    cursor_ = std::make_unique<search_lib::ClpCursor>(
         clp_s::InputSource::Network,
-        std::vector<std::string>{clpSplit->archivePath_},
+        clpSplit->archivePath_,
         false);
   }
 
-  cursor_->execute_query(kqlQuery_, fields_);
+  cursor_->executeQuery(kqlQuery_, fields_);
+  projectedColumns_ = cursor->getProjectedColumns();
+}
+
+VectorPtr ClpDataSource::createVector(
+    const TypePtr& type,
+    size_t size,
+    const std::vector<size_t>& filteredRows,
+    size_t& readerIndex) {
+  if (type->kind() == TypeKind::ROW) {
+    std::vector<VectorPtr> children;
+    auto& rowType = type->as<TypeKind::ROW>();
+    // Children are reserved the parent size and accessible for those rows.
+    for (int32_t i = 0; i < rowType.size(); ++i) {
+      children.push_back(
+          createVector(rowType.childAt(i), size, filteredRows, readerIndex));
+    }
+    return std::make_shared<RowVector>(
+        pool_, type, nullptr, size, std::move(children));
+  }
+  auto vector = BaseVector::create(type, size, pool_);
+  vector->setNulls(allocateNulls(size, pool_, bits::kNull));
+  auto projectedColumn = projectedColumns_[readerIndex];
+  auto projectedType = fields_[readerIndex].type;
+  readerIndex++;
+  return std::make_shared<LazyVector>(
+      pool_,
+      type,
+      size,
+      std::make_unique<search_lib::ClpVectorLoader>(
+          projectedColumn, projectedType, filteredRows),
+      std::move(vector));
 }
 
 std::optional<RowVectorPtr> ClpDataSource::next(
     uint64_t size,
     ContinueFuture& future) {
-  std::vector<VectorPtr> vectors;
-  vectors.reserve(outputType_->size());
-  auto nulls = AlignedBuffer::allocate<bool>(size, pool_, bits::kNull);
-
-  for (const auto& childType : outputType_->children()) {
-    // Create a vector with NULL values
-    auto vector = BaseVector::create(childType, size, pool_);
-    vector->setNulls(nulls);
-    vectors.emplace_back(vector);
+  std::vector<size_t> filteredRows;
+  auto errorCode= cursor_->fetch_next(size, filteredRows);
+  if (errorCode != search_lib::ErrorCode::Success) {
+    SPD
   }
-
-  size_t rowsFetched = cursor_->fetch_next(size, vectors);
-  std::cout << "rowsFetched" << rowsFetched << std::endl;
+  auto rowsFetched = filteredRows.size();
   if (rowsFetched == 0) {
     return nullptr;
   }
-
   completedRows_ += rowsFetched;
-  return std::make_shared<RowVector>(
-      pool_, outputType_, BufferPtr(), rowsFetched, std::move(vectors));
+  size_t readerIndex = 0;
+  return std::dynamic_pointer_cast<RowVector>(
+      createVector(outputType_, rowsFetched, filteredRows, readerIndex));
 }
+
 } // namespace facebook::velox::connector::clp
