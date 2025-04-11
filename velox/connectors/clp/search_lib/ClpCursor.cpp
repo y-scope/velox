@@ -18,7 +18,7 @@ using namespace clp_s::search;
 using namespace clp_s::search::ast;
 
 namespace facebook::velox::connector::clp::search_lib {
-ClpCursor::ClpCursor(InputSource inputSource, std::string& archivePath)
+ClpCursor::ClpCursor(InputSource inputSource, const std::string& archivePath)
     : errorCode_(ErrorCode::QueryNotInitialized),
       inputSource_(inputSource),
       archivePath_(std::move(archivePath)) {}
@@ -36,14 +36,14 @@ ErrorCode ClpCursor::loadArchive(const std::vector<Field>& outputColumns) {
 
   EvaluateTimestampIndex timestampIndex(timestampDict);
   if (clp_s::EvaluatedValue::False == timestampIndex.run(expr_)) {
-    SPDLOG_INFO("No matching timestamp ranges for query '{}'", query_);
+    SPDLOG_DEBUG("No matching timestamp ranges for query '{}'", query_);
     return ErrorCode::InvalidTimestampRange;
   }
 
   auto schemaMatch = std::make_shared<SchemaMatch>(schemaTree, schemaMap);
   if (expr_ = schemaMatch->run(expr_);
       std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    SPDLOG_INFO("No matching schemas for query '{}'", query_);
+    SPDLOG_ERROR("No matching schemas for query '{}'", query_);
     return ErrorCode::SchemaNotFound;
   }
 
@@ -130,28 +130,28 @@ ErrorCode ClpCursor::preprocessQuery() {
   }
 
   if (std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    SPDLOG_ERROR("Query '{}' is logically false", query_);
+    SPDLOG_DEBUG("Query '{}' is logically false", query_);
     return ErrorCode::LogicalError;
   }
 
   OrOfAndForm standardizePass;
   if (expr_ = standardizePass.run(expr_);
       std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    SPDLOG_ERROR("Query '{}' is logically false", query_);
+    SPDLOG_DEBUG("Query '{}' is logically false", query_);
     return ErrorCode::LogicalError;
   }
 
   NarrowTypes narrowPass;
   if (expr_ = narrowPass.run(expr_);
       std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    SPDLOG_ERROR("Query '{}' is logically false", query_);
+    SPDLOG_DEBUG("Query '{}' is logically false", query_);
     return ErrorCode::LogicalError;
   }
 
   ConvertToExists convertPass;
   if (expr_ = convertPass.run(expr_);
       std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    SPDLOG_ERROR("Query '{}' is logically false", query_);
+    SPDLOG_DEBUG("Query '{}' is logically false", query_);
     return ErrorCode::LogicalError;
   }
 

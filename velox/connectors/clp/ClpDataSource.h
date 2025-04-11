@@ -47,9 +47,16 @@ class ClpDataSource : public DataSource {
   }
 
  private:
-  void ClpDataSource::addFieldsRecursively(
+  void addFieldsRecursively(
       const TypePtr& columnType,
       const std::string& parentName);
+
+  VectorPtr createVector(
+    const TypePtr& type,
+    size_t size,
+    const std::vector<clp_s::BaseColumnReader*>& projectedColumns,
+    const std::vector<size_t>& filteredRows,
+    size_t& readerIndex);
 
   std::string executablePath_;
   std::string archiveDir_;
@@ -65,7 +72,6 @@ class ClpDataSource : public DataSource {
   uint64_t completedBytes_{0};
 
   std::vector<search_lib::Field> fields_;
-  std::vector<clp_s::BaseColumnReader*> projectedColumns_;
 
   std::unique_ptr<search_lib::ClpCursor> cursor_;
 };

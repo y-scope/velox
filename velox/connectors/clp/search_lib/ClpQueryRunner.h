@@ -43,12 +43,15 @@ class ClpQueryRunner : public clp_s::search::QueryRunner {
    */
   void fetchNext(size_t num_rows, std::vector<size_t>& filteredRows);
 
+  std::vector<clp_s::BaseColumnReader*>& getProjectedColumns() {
+    return projectedColumns_;
+  }
+
  private:
   std::shared_ptr<clp_s::search::ast::Expression> expr_;
   std::shared_ptr<clp_s::SchemaTree> schemaTree_;
   std::shared_ptr<clp_s::search::Projection> projection_;
   std::vector<clp_s::BaseColumnReader*> projectedColumns_;
-  std::vector<clp_s::NodeType> projectedTypes_;
 
   uint64_t curMessage_{};
   uint64_t numMessages_{};

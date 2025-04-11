@@ -100,22 +100,20 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
   if (inputSource_ == "local") {
     cursor_ = std::make_unique<search_lib::ClpCursor>(
         clp_s::InputSource::Filesystem,
-        clpSplit->archivePath_,
-        false);
+        clpSplit->archivePath_);
   } else if (inputSource_ == "s3") {
     cursor_ = std::make_unique<search_lib::ClpCursor>(
         clp_s::InputSource::Network,
-        clpSplit->archivePath_,
-        false);
+        clpSplit->archivePath_);
   }
 
   cursor_->executeQuery(kqlQuery_, fields_);
-  projectedColumns_ = cursor->getProjectedColumns();
 }
 
 VectorPtr ClpDataSource::createVector(
     const TypePtr& type,
     size_t size,
+    const std::vector<clp_s::BaseColumnReader*>& projectedColumns,
     const std::vector<size_t>& filteredRows,
     size_t& readerIndex) {
   if (type->kind() == TypeKind::ROW) {
@@ -124,14 +122,14 @@ VectorPtr ClpDataSource::createVector(
     // Children are reserved the parent size and accessible for those rows.
     for (int32_t i = 0; i < rowType.size(); ++i) {
       children.push_back(
-          createVector(rowType.childAt(i), size, filteredRows, readerIndex));
+          createVector(rowType.childAt(i), size, projectedColumns, filteredRows, readerIndex));
     }
     return std::make_shared<RowVector>(
         pool_, type, nullptr, size, std::move(children));
   }
   auto vector = BaseVector::create(type, size, pool_);
   vector->setNulls(allocateNulls(size, pool_, bits::kNull));
-  auto projectedColumn = projectedColumns_[readerIndex];
+  auto projectedColumn = projectedColumns[readerIndex];
   auto projectedType = fields_[readerIndex].type;
   readerIndex++;
   return std::make_shared<LazyVector>(
@@ -147,18 +145,22 @@ std::optional<RowVectorPtr> ClpDataSource::next(
     uint64_t size,
     ContinueFuture& future) {
   std::vector<size_t> filteredRows;
-  auto errorCode= cursor_->fetch_next(size, filteredRows);
-  if (errorCode != search_lib::ErrorCode::Success) {
-    SPD
-  }
+  cursor_->fetch_next(size, filteredRows);
   auto rowsFetched = filteredRows.size();
   if (rowsFetched == 0) {
     return nullptr;
   }
   completedRows_ += rowsFetched;
   size_t readerIndex = 0;
+  const auto & projectedColumns = cursor_->getProjectedColumns();
+  if (projectedColumns.size() != fields_.size()) {
+    VELOX_USER_FAIL(
+        "Projected columns size {} does not match fields size {}",
+        projectedColumns.size(),
+        fields_.size());
+  }
   return std::dynamic_pointer_cast<RowVector>(
-      createVector(outputType_, rowsFetched, filteredRows, readerIndex));
+      createVector(outputType_, rowsFetched, projectedColumns, filteredRows, readerIndex));
 }
 
 } // namespace facebook::velox::connector::clp

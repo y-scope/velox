@@ -17,12 +17,10 @@ void ClpQueryRunner::init(
   clear_readers();
 
   projectedColumns_.clear();
-  projectedTypes_.clear();
   auto matching_nodes_list = projection_->get_ordered_matching_nodes();
   for (const auto& node_ids : matching_nodes_list) {
     if (node_ids.empty()) {
       projectedColumns_.push_back(nullptr);
-      projectedTypes_.push_back(NodeType::Unknown);
       continue;
     }
 
@@ -32,7 +30,6 @@ void ClpQueryRunner::init(
       auto column_it = column_map.find(node_id);
       if (column_it != column_map.end()) {
         projectedColumns_.push_back(column_it->second);
-        projectedTypes_.push_back(schemaTree_->get_node(node_id).get_type());
         found_reader = true;
         break;
       }
@@ -40,7 +37,6 @@ void ClpQueryRunner::init(
 
     if (!found_reader) {
       projectedColumns_.push_back(nullptr);
-      projectedTypes_.push_back(NodeType::Unknown);
     }
   }
 

@@ -80,13 +80,13 @@ class ClpVectorLoader : public VectorLoader {
           auto vectorIndex = rows.at(i);
           auto messageIndex = filteredRows_[vectorIndex];
 
-          auto jsonString = std::get<std::string>(
-              columnReader_->extract_value(messageIndex));
+          auto jsonString =
+              std::get<std::string>(columnReader_->extract_value(messageIndex));
 
           simdjson::padded_string padded(jsonString);
           simdjson::ondemand::document doc;
           try {
-            doc = arrayParser_.iterate(padded);
+            doc = arrayParser_->iterate(padded);
           } catch (const simdjson::simdjson_error& e) {
             VELOX_FAIL("JSON parse error at row {}: {}", vectorIndex, e.what());
           }
@@ -95,12 +95,14 @@ class ClpVectorLoader : public VectorLoader {
           try {
             array = doc.get_array();
           } catch (const simdjson::simdjson_error& e) {
-            VELOX_FAIL("Expected JSON array at row {}: {}", vectorIndex, e.what());
+            VELOX_FAIL(
+                "Expected JSON array at row {}: {}", vectorIndex, e.what());
           }
 
           std::vector<std::string_view> arrayElements;
           for (auto arrayElement : array) {
-            arrayElements.emplace_back(simdjson::to_json_string(arrayElement).value());
+            arrayElements.emplace_back(
+                simdjson::to_json_string(arrayElement).value());
           }
 
           if (elementIndex + arrayElements.size() > elements->size()) {
@@ -110,10 +112,10 @@ class ClpVectorLoader : public VectorLoader {
             elements->resize(newSize);
           }
 
-          arrayVector->setOffsetAndSize(vectorIndex, elementIndex, arrayElements.size());
+          arrayVector->setOffsetAndSize(
+              vectorIndex, elementIndex, arrayElements.size());
           for (auto& arrayElement : arrayElements) {
-            elements->set(
-                elementIndex++, StringView(arrayElement));
+            elements->set(elementIndex++, StringView(arrayElement));
           }
           arrayVector->setNull(vectorIndex, false);
         }
@@ -127,6 +129,7 @@ class ClpVectorLoader : public VectorLoader {
   clp_s::BaseColumnReader* columnReader_;
   ColumnType nodeType_;
   const std::vector<size_t>& filteredRows_;
-  inline static thread_local simdjson::ondemand::parser arrayParser_;
+  inline static thread_local std::unique_ptr<simdjson::ondemand::parser>
+      arrayParser_ = std::make_unique<simdjson::ondemand::parser>();
 };
 } // namespace facebook::velox::connector::clp::search_lib

@@ -32,7 +32,9 @@ struct Field {
 class ClpCursor {
  public:
   // Constructors
-  explicit ClpCursor(clp_s::InputSource inputSource, std::string& archivePath);
+  explicit ClpCursor(
+      clp_s::InputSource inputSource,
+      const std::string& archivePath);
 
   /**
    * Executes a query. This functions tries to find the first schema table with
@@ -50,7 +52,15 @@ class ClpCursor {
    * @param numRows The number of rows to fetch.
    * @return A vector of row indices that match the filter.
    */
-  ErrorCode ClpCursor::fetch_next(size_t numRows, std::vector<size_t>);
+  ErrorCode fetch_next(size_t numRows, std::vector<size_t>);
+
+  std::vector<clp_s::BaseColumnReader*>& getProjectedColumns() const {
+    if (queryRunner_) {
+      return queryRunner_->getProjectedColumns();
+    }
+    static std::vector<clp_s::BaseColumnReader*> empty;
+    return empty;
+  }
 
  private:
   /**
