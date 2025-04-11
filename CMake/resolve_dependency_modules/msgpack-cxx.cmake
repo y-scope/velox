@@ -15,19 +15,20 @@ include_guard(GLOBAL)
 
 set(VELOX_MSGPACK_BUILD_VERSION cpp-7.0.0)
 set(VELOX_MSGPACK_BUILD_SHA256_CHECKSUM
-        070881ebea9208cf7e731fd5a46a11404025b2f260ab9527e32dfcb7c689fbfc)
-string(CONCAT VELOX_MSGPACK_SOURCE_URL
-"https://github.com/msgpack/msgpack-c/archive/refs/tags/"
-"${VELOX_MSGPACK_BUILD_VERSION}.tar.gz")
+    070881ebea9208cf7e731fd5a46a11404025b2f260ab9527e32dfcb7c689fbfc)
+string(
+  CONCAT VELOX_MSGPACK_SOURCE_URL
+         "https://github.com/msgpack/msgpack-c/archive/refs/tags/"
+         "${VELOX_MSGPACK_BUILD_VERSION}.tar.gz")
 
 velox_resolve_dependency_url(MSGPACK)
 
 message(STATUS "Building msgpack-cxx from source")
 
 FetchContent_Declare(
-msgpack-cxx
-URL ${VELOX_MSGPACK_SOURCE_URL}
-URL_HASH ${VELOX_MSGPACK_BUILD_SHA256_CHECKSUM}
-OVERRIDE_FIND_PACKAGE EXCLUDE_FROM_ALL SYSTEM)
+  msgpack-cxx
+  URL ${VELOX_MSGPACK_SOURCE_URL}
+  URL_HASH ${VELOX_MSGPACK_BUILD_SHA256_CHECKSUM}
+  OVERRIDE_FIND_PACKAGE EXCLUDE_FROM_ALL SYSTEM)
 
 FetchContent_MakeAvailable(msgpack-cxx)

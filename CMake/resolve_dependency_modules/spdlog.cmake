@@ -15,20 +15,21 @@ include_guard(GLOBAL)
 
 set(VELOX_SPDLOG_BUILD_VERSION 1.12.0)
 set(VELOX_SPDLOG_BUILD_SHA256_CHECKSUM
-        4dccf2d10f410c1e2feaff89966bfc49a1abb29ef6f08246335b110e001e09a9)
-string(CONCAT VELOX_SPDLOG_SOURCE_URL
-        "https://github.com/gabime/spdlog/archive/refs/tags/"
-        "v${VELOX_SPDLOG_BUILD_VERSION}.tar.gz")
+    4dccf2d10f410c1e2feaff89966bfc49a1abb29ef6f08246335b110e001e09a9)
+string(
+  CONCAT VELOX_SPDLOG_SOURCE_URL
+         "https://github.com/gabime/spdlog/archive/refs/tags/"
+         "v${VELOX_SPDLOG_BUILD_VERSION}.tar.gz")
 
 velox_resolve_dependency_url(SPDLOG)
 
 message(STATUS "Building spdlog from source")
 
 FetchContent_Declare(
-        spdlog
-        URL ${VELOX_SPDLOG_SOURCE_URL}
-        URL_HASH ${VELOX_SPDLOG_BUILD_SHA256_CHECKSUM}
-        OVERRIDE_FIND_PACKAGE EXCLUDE_FROM_ALL SYSTEM)
+  spdlog
+  URL ${VELOX_SPDLOG_SOURCE_URL}
+  URL_HASH ${VELOX_SPDLOG_BUILD_SHA256_CHECKSUM}
+  OVERRIDE_FIND_PACKAGE EXCLUDE_FROM_ALL SYSTEM)
 
 set(SPDLOG_FMT_EXTERNAL ON)
 FetchContent_MakeAvailable(spdlog)
