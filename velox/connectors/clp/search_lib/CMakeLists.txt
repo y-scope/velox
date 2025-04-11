@@ -145,11 +145,15 @@ set(CLP_SRC_FILES
     ${CLP_SRC_DIR}/clp/ffi/ir_stream/ir_search_methods.hpp
     ${CLP_SRC_DIR}/clp/ffi/ir_stream/ir_unit_deserialization_methods.cpp
     ${CLP_SRC_DIR}/clp/ffi/ir_stream/ir_unit_deserialization_methods.hpp
+    ${CLP_SRC_DIR}/clp/ffi/ir_stream/utils.cpp
+    ${CLP_SRC_DIR}/clp/ffi/ir_stream/utils.hpp
     ${CLP_SRC_DIR}/clp/ffi/KeyValuePairLogEvent.cpp
     ${CLP_SRC_DIR}/clp/ffi/KeyValuePairLogEvent.hpp
     ${CLP_SRC_DIR}/clp/ffi/SchemaTree.cpp
     ${CLP_SRC_DIR}/clp/ffi/SchemaTree.hpp
     ${CLP_SRC_DIR}/clp/ffi/Value.hpp
+    ${CLP_SRC_DIR}/clp/FileDescriptor.cpp
+    ${CLP_SRC_DIR}/clp/FileDescriptor.hpp
     ${CLP_SRC_DIR}/clp/FileReader.cpp
     ${CLP_SRC_DIR}/clp/FileReader.hpp
     ${CLP_SRC_DIR}/clp/hash_utils.cpp
@@ -160,6 +164,10 @@ set(CLP_SRC_FILES
     ${CLP_SRC_DIR}/clp/NetworkReader.hpp
     ${CLP_SRC_DIR}/clp/ReaderInterface.cpp
     ${CLP_SRC_DIR}/clp/ReaderInterface.hpp
+    ${CLP_SRC_DIR}/clp/ReadOnlyMemoryMappedFile.cpp
+    ${CLP_SRC_DIR}/clp/ReadOnlyMemoryMappedFile.hpp
+    ${CLP_SRC_DIR}/clp/streaming_compression/zstd/Decompressor.cpp
+    ${CLP_SRC_DIR}/clp/streaming_compression/zstd/Decompressor.hpp
     ${CLP_SRC_DIR}/clp/Thread.cpp
     ${CLP_SRC_DIR}/clp/Thread.hpp
     ${CLP_SRC_DIR}/clp/type_utils.hpp
