@@ -39,7 +39,7 @@ ClpCursor::ClpCursor(InputSource inputSource, const std::string& archivePath)
       inputSource_(inputSource),
       archivePath_(std::move(archivePath)) {}
 
-ErrorCode ClpCursor::loadArchive(const std::vector<Field>& outputColumns) {
+ErrorCode ClpCursor::loadArchive() {
   auto networkAuthOption = inputSource_ == InputSource::Filesystem
       ? NetworkAuthOption{.method = AuthMethod::None}
       : NetworkAuthOption{.method = AuthMethod::S3PresignedUrlV4};
@@ -64,9 +64,9 @@ ErrorCode ClpCursor::loadArchive(const std::vector<Field>& outputColumns) {
   }
 
   projection_ = std::make_shared<Projection>(
-      outputColumns.empty() ? ReturnAllColumns : ReturnSelectedColumns);
+      outputColumns_.empty() ? ReturnAllColumns : ReturnSelectedColumns);
   try {
-    for (auto const& column : outputColumns) {
+    for (auto const& column : outputColumns_) {
       std::vector<std::string> descriptorTokens;
       std::string descriptorNamespace;
       if (false ==
@@ -184,7 +184,7 @@ ErrorCode ClpCursor::executeQuery(
 
 ErrorCode ClpCursor::fetch_next(
     size_t numRows,
-    std::vector<size_t> filteredRows) {
+    std::vector<size_t>& filteredRows) {
   if (ErrorCode::Success != errorCode_) {
     return errorCode_;
   }

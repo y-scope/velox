@@ -53,10 +53,11 @@ class ClpCursor {
       const std::string& archivePath);
 
   /**
-   * Executes a query. This functions tries to find the first schema table with
-   * potential matches
-   * @param query The query to execute.
-   * @param outputColumns The columns to output.
+   * Executes a query. This function parses, validates, and prepares the given
+   * query for execution.
+   * @param query The KQL query to execute.
+   * @param outputColumns A vector specifying the columns to be included in the
+   * query result.
    * @return The error code.
    */
   ErrorCode executeQuery(
@@ -64,12 +65,19 @@ class ClpCursor {
       const std::vector<Field>& outputColumns);
 
   /**
-   * Fetches the next set of rows from the cursor.
-   * @param numRows The number of rows to fetch.
-   * @return A vector of row indices that match the filter.
+   * Fetches the next set of rows from the cursor.If the archive and schema are
+   * not yet loaded, this function will perform the necessary loading.
+   * @param numRows The maximum number of rows to fetch.
+   * @param filteredRows A vector of row indices that match the filter.
+   * @return The error code.
    */
-  ErrorCode fetch_next(size_t numRows, std::vector<size_t>);
+  ErrorCode fetch_next(size_t numRows, std::vector<size_t>& filteredRows);
 
+  /**
+   * Retrieves the projected columns
+   * @return A vector of BaseColumnReader pointers representing the projected
+   * columns.
+   */
   std::vector<clp_s::BaseColumnReader*>& getProjectedColumns() const {
     if (queryRunner_) {
       return queryRunner_->getProjectedColumns();
@@ -80,16 +88,16 @@ class ClpCursor {
 
  private:
   /**
-   * Preprocesses the query to.
+   * Preprocesses the query, performing parsing, validation, and optimization.
+   * @return The error code.
    */
   ErrorCode preprocessQuery();
 
   /**
    * Loads the archive at the current index.
-   * @param outputColumns The columns to output.
    * @return The error code.
    */
-  ErrorCode loadArchive(const std::vector<Field>& outputColumns);
+  ErrorCode loadArchive();
 
   ErrorCode errorCode_;
 

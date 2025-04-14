@@ -169,6 +169,7 @@ velox_add_library(
   clp-s-search
   STATIC
   ${CLP_SRC_FILES}
+  ClpVectorLoader.cpp
   ClpVectorLoader.h
   ClpCursor.cpp
   ClpCursor.h

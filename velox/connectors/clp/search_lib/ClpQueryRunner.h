@@ -41,24 +41,28 @@ class ClpQueryRunner : public clp_s::search::QueryRunner {
         projection_(projection) {}
 
   /**
-   * Initializes the filter with a map
-   * @param schema_reader
-   * @param column_map
+   * Initializes the filter with schema information and column readers.
+   * @param schemaReader A pointer to the SchemaReader
+   * @param columnMap An unordered map associating column IDs with
+   * BaseColumnReader pointers.
    */
   void init(
-      clp_s::SchemaReader* schema_reader,
-      std::unordered_map<int32_t, clp_s::BaseColumnReader*> const& column_map)
+      clp_s::SchemaReader* schemaReader,
+      std::unordered_map<int32_t, clp_s::BaseColumnReader*> const& columnMap)
       override;
 
   /**
    * Fetches the next set of rows from the cursor.
-   * @param num_rows The number of rows to fetch.
+   * @param numRows The maximum number of rows to fetch.
    * @param filteredRows A vector to store the row indices that match the
    * filter.
-   * @return A vector of row indices that match the filter.
    */
-  void fetchNext(size_t num_rows, std::vector<size_t>& filteredRows);
+  void fetchNext(size_t numRows, std::vector<size_t>& filteredRows);
 
+  /**
+   * @return A reference to the vector of BaseColumnReader pointers that
+   * represent the columns involved in the scanning operation.
+   */
   std::vector<clp_s::BaseColumnReader*>& getProjectedColumns() {
     return projectedColumns_;
   }
