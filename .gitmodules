@@ -1,0 +1,3 @@
+[submodule "velox/connectors/clp/search_lib/clp_src"]
+	path = velox/connectors/clp/search_lib/clp_src
+	url = https://github.com/y-scope/clp.git
