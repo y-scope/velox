@@ -74,11 +74,8 @@ class ClpDataSource : public DataSource {
       const std::vector<size_t>& filteredRows,
       size_t& readerIndex);
 
-  std::string executablePath_;
-  std::string archiveDir_;
-  std::string inputSource_;
+  std::string archiveSource_;
   std::string kqlQuery_;
-  bool polymorphicTypeEnabled_;
   velox::memory::MemoryPool* pool_;
   RowTypePtr outputType_;
   std::set<std::string> columnUntypedNames_;

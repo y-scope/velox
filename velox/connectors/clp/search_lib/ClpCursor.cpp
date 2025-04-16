@@ -19,7 +19,7 @@
 #include <filesystem>
 #include <stdexcept>
 
-#include <spdlog/spdlog.h>
+// #include <spdlog/spdlog.h>
 
 #include "clp_s/search/EvaluateTimestampIndex.hpp"
 #include "clp_s/search/ast/ConvertToExists.hpp"
@@ -52,14 +52,14 @@ ErrorCode ClpCursor::loadArchive() {
 
   EvaluateTimestampIndex timestampIndex(timestampDict);
   if (clp_s::EvaluatedValue::False == timestampIndex.run(expr_)) {
-    SPDLOG_DEBUG("No matching timestamp ranges for query '{}'", query_);
+    // SPDLOG_DEBUG("No matching timestamp ranges for query '{}'", query_);
     return ErrorCode::InvalidTimestampRange;
   }
 
   auto schemaMatch = std::make_shared<SchemaMatch>(schemaTree, schemaMap);
   if (expr_ = schemaMatch->run(expr_);
       std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    SPDLOG_ERROR("No matching schemas for query '{}'", query_);
+    // SPDLOG_ERROR("No matching schemas for query '{}'", query_);
     return ErrorCode::SchemaNotFound;
   }
 
@@ -72,7 +72,7 @@ ErrorCode ClpCursor::loadArchive() {
       if (false ==
           tokenize_column_descriptor(
               column.name, descriptorTokens, descriptorNamespace)) {
-        SPDLOG_ERROR("Can not tokenize invalid column: \"{}\"", column);
+        // SPDLOG_ERROR("Can not tokenize invalid column: \"{}\"", column);
         return ErrorCode::InternalError;
       }
 
@@ -141,33 +141,33 @@ ErrorCode ClpCursor::preprocessQuery() {
   auto queryStream = std::istringstream(query_);
   expr_ = kql::parse_kql_expression(queryStream);
   if (nullptr == expr_) {
-    SPDLOG_ERROR("Failed to parse query '{}'", query_);
+    // SPDLOG_ERROR("Failed to parse query '{}'", query_);
     return ErrorCode::InvalidQuerySyntax;
   }
 
   if (std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    SPDLOG_DEBUG("Query '{}' is logically false", query_);
+    // SPDLOG_DEBUG("Query '{}' is logically false", query_);
     return ErrorCode::LogicalError;
   }
 
   OrOfAndForm standardizePass;
   if (expr_ = standardizePass.run(expr_);
       std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    SPDLOG_DEBUG("Query '{}' is logically false", query_);
+    // SPDLOG_DEBUG("Query '{}' is logically false", query_);
     return ErrorCode::LogicalError;
   }
 
   NarrowTypes narrowPass;
   if (expr_ = narrowPass.run(expr_);
       std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    SPDLOG_DEBUG("Query '{}' is logically false", query_);
+    // SPDLOG_DEBUG("Query '{}' is logically false", query_);
     return ErrorCode::LogicalError;
   }
 
   ConvertToExists convertPass;
   if (expr_ = convertPass.run(expr_);
       std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    SPDLOG_DEBUG("Query '{}' is logically false", query_);
+    // SPDLOG_DEBUG("Query '{}' is logically false", query_);
     return ErrorCode::LogicalError;
   }
 
@@ -190,7 +190,7 @@ ErrorCode ClpCursor::fetch_next(
   }
 
   if (false == currentArchiveLoaded_) {
-    errorCode_ = loadArchive(outputColumns_);
+    errorCode_ = loadArchive();
     if (ErrorCode::Success != errorCode_) {
       return errorCode_;
     }
@@ -199,30 +199,26 @@ ErrorCode ClpCursor::fetch_next(
     currentArchiveLoaded_ = true;
     queryRunner_ = std::make_shared<ClpQueryRunner>(
         schemaMatch_, expr_, archiveReader_, false, projection_);
-    queryRunner_->populate_string_queries();
+    queryRunner_->global_init();
   }
 
   while (currentSchemaIndex_ < matchedSchemas_.size()) {
     if (false == currentSchemaTableLoaded_) {
       currentSchemaId_ = matchedSchemas_[currentSchemaIndex_];
-      queryRunner_->setup_schema(currentSchemaId_);
-      queryRunner_->populate_searched_wildcard_columns();
-      if (auto expressionValue = queryRunner_->constant_propagate();
-          EvaluatedValue::False != expressionValue) {
-        queryRunner_->add_wildcard_columns_to_searched_columns();
-
-        auto& reader =
-            archiveReader_->read_schema_table(currentSchemaId_, false, false);
-        reader.initialize_filter_with_column_map(queryRunner_.get());
-
-        errorCode_ = ErrorCode::Success;
-        currentSchemaTableLoaded_ = true;
-      } else {
+      if (EvaluatedValue::False ==
+          queryRunner_->schema_init(currentSchemaId_)) {
         currentSchemaIndex_ += 1;
         currentSchemaTableLoaded_ = false;
         errorCode_ = ErrorCode::DictionaryNotFound;
         continue;
       }
+
+      auto& reader =
+          archiveReader_->read_schema_table(currentSchemaId_, false, false);
+      reader.initialize_filter_with_column_map(queryRunner_.get());
+
+      errorCode_ = ErrorCode::Success;
+      currentSchemaTableLoaded_ = true;
     }
 
     queryRunner_->fetchNext(numRows, filteredRows);

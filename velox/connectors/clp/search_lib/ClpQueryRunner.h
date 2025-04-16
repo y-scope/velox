@@ -16,8 +16,6 @@
 
 #pragma once
 
-#include <stack>
-
 #include <simdjson.h>
 
 #include "clp_s/SchemaReader.hpp"
@@ -29,15 +27,22 @@
 #include "velox/vector/FlatVector.h"
 
 namespace facebook::velox::connector::clp::search_lib {
+/**
+ * This class extends the generic QueryRunner to support column projection and
+ * row filtering over CLP-S archives. It is used by the Velox CLP connector to
+ * efficiently identify matching rows and project relevant columns, which are
+ * then consumed by the ClpVectorLoader.
+ */
 class ClpQueryRunner : public clp_s::search::QueryRunner {
  public:
+  // Constructor
   ClpQueryRunner(
-      std::shared_ptr<clp_s::search::SchemaMatch> match,
-      std::shared_ptr<clp_s::search::ast::Expression> expr,
-      std::shared_ptr<clp_s::ArchiveReader> archive_reader,
-      bool ignore_case,
-      std::shared_ptr<clp_s::search::Projection> projection)
-      : clp_s::search::QueryRunner(*match, expr, archive_reader, ignore_case),
+      const std::shared_ptr<clp_s::search::SchemaMatch>& match,
+      const std::shared_ptr<clp_s::search::ast::Expression>& expr,
+      const std::shared_ptr<clp_s::ArchiveReader>& archiveReader,
+      bool ignoreCase,
+      const std::shared_ptr<clp_s::search::Projection>& projection)
+      : clp_s::search::QueryRunner(match, expr, archiveReader, ignoreCase),
         projection_(projection) {}
 
   /**

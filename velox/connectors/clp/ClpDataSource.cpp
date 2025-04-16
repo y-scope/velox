@@ -39,12 +39,11 @@ ClpDataSource::ClpDataSource(
     velox::memory::MemoryPool* pool,
     std::shared_ptr<const ClpConfig>& clpConfig)
     : pool_(pool), outputType_(outputType) {
-  polymorphicTypeEnabled_ = clpConfig->polymorphicTypeEnabled();
-  inputSource_ = clpConfig->inputSource();
-  boost::algorithm::to_lower(inputSource_);
+  archiveSource_ = clpConfig->archiveSource();
+  boost::algorithm::to_lower(archiveSource_);
   auto clpTableHandle = std::dynamic_pointer_cast<ClpTableHandle>(tableHandle);
-  if ("local" != inputSource_ && "s3" != inputSource_) {
-    VELOX_USER_FAIL("Illegal input source: {}", inputSource_);
+  if ("local" != archiveSource_ && "s3" != archiveSource_) {
+    VELOX_USER_FAIL("Illegal input source: {}", archiveSource_);
   }
 
   auto query = clpTableHandle->query();
@@ -113,10 +112,10 @@ void ClpDataSource::addFieldsRecursively(
 void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
   auto clpSplit = std::dynamic_pointer_cast<ClpConnectorSplit>(split);
 
-  if (inputSource_ == "local") {
+  if (archiveSource_ == "local") {
     cursor_ = std::make_unique<search_lib::ClpCursor>(
         clp_s::InputSource::Filesystem, clpSplit->archivePath_);
-  } else if (inputSource_ == "s3") {
+  } else if (archiveSource_ == "s3") {
     cursor_ = std::make_unique<search_lib::ClpCursor>(
         clp_s::InputSource::Network, clpSplit->archivePath_);
   }

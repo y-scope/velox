@@ -45,9 +45,17 @@ struct Field {
   std::string name;
 };
 
+/**
+ * This class is a query execution interface that manages the lifecycle of a
+ * query on a CLP-S archive, including parsing and validating the query, loading
+ * the relevant schemas and archives, applying filters, and iterating over the
+ * results. It abstracts away the low-level details of archive access and schema
+ * matching while supporting projection and batch-oriented retrieval of filtered
+ * rows.
+ */
 class ClpCursor {
  public:
-  // Constructors
+  // Constructor
   explicit ClpCursor(
       clp_s::InputSource inputSource,
       const std::string& archivePath);
