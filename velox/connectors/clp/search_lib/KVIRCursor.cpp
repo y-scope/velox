@@ -84,6 +84,8 @@ size_t KVIRCursor::fetch_next(
             return num_rows_fetched;
         }
         continue;
+    } else if (results.has_error() && std::errc::no_message == result.error()) {
+        continue;
     }
     if (result.value() == ::clp::ffi::ir_stream::IrUnitType::EndOfStream) {
         if (ErrorCode::Success != load_next_kvir_stream()) {
