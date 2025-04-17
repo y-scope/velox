@@ -33,48 +33,52 @@ void ClpQueryRunner::init(
   clear_readers();
 
   projectedColumns_.clear();
-  auto matching_nodes_list = projection_->get_ordered_matching_nodes();
-  for (const auto& node_ids : matching_nodes_list) {
-    if (node_ids.empty()) {
+  auto matchingNodesList = projection_->get_ordered_matching_nodes();
+  for (const auto& nodeIds : matchingNodesList) {
+    if (nodeIds.empty()) {
       projectedColumns_.push_back(nullptr);
       continue;
     }
 
     // Try to find a matching column in m_column_map
-    bool found_reader = false;
-    for (const auto node_id : node_ids) {
+    bool foundReader = false;
+    for (const auto node_id : nodeIds) {
       auto column_it = columnMap.find(node_id);
       if (column_it != columnMap.end()) {
         projectedColumns_.push_back(column_it->second);
-        found_reader = true;
+        foundReader = true;
         break;
       }
     }
 
-    if (!found_reader) {
+    if (!foundReader) {
       projectedColumns_.push_back(nullptr);
     }
   }
 
-  for (auto& [column_id, column_reader] : columnMap) {
-    initialize_reader(column_id, column_reader);
+  for (auto& [columnId, columnReader] : columnMap) {
+    initialize_reader(columnId, columnReader);
   }
 }
 
-void ClpQueryRunner::fetchNext(
+uint64_t ClpQueryRunner::fetchNext(
     size_t numRows,
-    std::vector<size_t>& filteredRows) {
-  size_t num_rows_fetched = 0;
+    std::vector<size_t>& filteredRowIndices) {
+  size_t rowsfiltered = 0;
+  size_t rowsScanned = 0;
   while (curMessage_ < numMessages_) {
     if (filter(curMessage_)) {
-      filteredRows.emplace_back(curMessage_);
-      num_rows_fetched += 1;
+      filteredRowIndices.emplace_back(curMessage_);
+      rowsfiltered += 1;
     }
+
     curMessage_ += 1;
-    if (num_rows_fetched >= numRows) {
+    rowsScanned += 1;
+    if (rowsfiltered >= numRows) {
       break;
     }
   }
+  return rowsScanned;
 }
 
 } // namespace facebook::velox::connector::clp::search_lib

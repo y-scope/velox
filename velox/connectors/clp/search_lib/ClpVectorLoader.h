@@ -33,7 +33,7 @@ class ClpVectorLoader : public VectorLoader {
   ClpVectorLoader(
       clp_s::BaseColumnReader* columnReader,
       ColumnType nodeType,
-      const std::vector<size_t>& filteredRows);
+      const std::vector<uint64_t>& filteredRowIndices);
 
  private:
   void loadInternal(
@@ -47,7 +47,7 @@ class ClpVectorLoader : public VectorLoader {
 
   clp_s::BaseColumnReader* columnReader_;
   ColumnType nodeType_;
-  const std::vector<size_t>& filteredRows_;
+  const std::vector<uint64_t>& filteredRowIndices_;
 
   inline static thread_local std::unique_ptr<simdjson::ondemand::parser>
       arrayParser_ = std::make_unique<simdjson::ondemand::parser>();

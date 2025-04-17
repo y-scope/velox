@@ -59,10 +59,12 @@ class ClpQueryRunner : public clp_s::search::QueryRunner {
   /**
    * Fetches the next set of rows from the cursor.
    * @param numRows The maximum number of rows to fetch.
-   * @param filteredRows A vector to store the row indices that match the
+   * @param filteredRowIndices A vector to store the row indices that match the
    * filter.
    */
-  void fetchNext(size_t numRows, std::vector<size_t>& filteredRows);
+  uint64_t fetchNext(
+      uint64_t numRows,
+      std::vector<uint64_t>& filteredRowIndices);
 
   /**
    * @return A reference to the vector of BaseColumnReader pointers that

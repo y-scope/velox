@@ -161,14 +161,14 @@ VectorPtr ClpDataSource::createVector(
 std::optional<RowVectorPtr> ClpDataSource::next(
     uint64_t size,
     ContinueFuture& future) {
-  std::vector<size_t> filteredRows;
-  cursor_->fetch_next(size, filteredRows);
-  auto rowsFetched = filteredRows.size();
-  if (rowsFetched == 0) {
+  std::vector<uint64_t> filteredRows;
+  auto rowsScanned = cursor_->fetch_next(size, filteredRows);
+  auto rowsFiltered = filteredRows.size();
+  if (rowsFiltered == 0) {
     return nullptr;
   }
-  completedRows_ += rowsFetched;
-  size_t readerIndex = 0;
+  completedRows_ += rowsScanned;
+  uint64_t readerIndex = 0;
   const auto& projectedColumns = cursor_->getProjectedColumns();
   if (projectedColumns.size() != fields_.size()) {
     VELOX_USER_FAIL(
@@ -177,7 +177,7 @@ std::optional<RowVectorPtr> ClpDataSource::next(
         fields_.size());
   }
   return std::dynamic_pointer_cast<RowVector>(createVector(
-      outputType_, rowsFetched, projectedColumns, filteredRows, readerIndex));
+      outputType_, rowsFiltered, projectedColumns, filteredRows, readerIndex));
 }
 
 } // namespace facebook::velox::connector::clp

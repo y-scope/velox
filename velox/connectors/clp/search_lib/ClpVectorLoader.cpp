@@ -20,16 +20,16 @@ namespace facebook::velox::connector::clp::search_lib {
 ClpVectorLoader::ClpVectorLoader(
     clp_s::BaseColumnReader* columnReader,
     ColumnType nodeType,
-    const std::vector<size_t>& filteredRows)
+    const std::vector<uint64_t>& filteredRowIndices)
     : columnReader_(columnReader),
       nodeType_(nodeType),
-      filteredRows_(filteredRows) {}
+      filteredRowIndices_(filteredRowIndices) {}
 
 template <typename T, typename VectorPtr>
 void ClpVectorLoader::populateData(RowSet rows, VectorPtr vector) {
   for (size_t i = 0; i < rows.size(); ++i) {
     auto vectorIndex = rows.at(i);
-    auto messageIndex = filteredRows_[vectorIndex];
+    auto messageIndex = filteredRowIndices_[vectorIndex];
 
     if constexpr (std::is_same_v<T, std::string>) {
       auto string_value =
@@ -83,7 +83,7 @@ void ClpVectorLoader::loadInternal(
 
       for (size_t i = 0; i < rows.size(); ++i) {
         auto vectorIndex = rows.at(i);
-        auto messageIndex = filteredRows_[vectorIndex];
+        auto messageIndex = filteredRowIndices_[vectorIndex];
 
         auto jsonString =
             std::get<std::string>(columnReader_->extract_value(messageIndex));

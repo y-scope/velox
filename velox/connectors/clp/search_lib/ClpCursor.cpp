@@ -34,7 +34,7 @@ using namespace clp_s::search;
 using namespace clp_s::search::ast;
 
 namespace facebook::velox::connector::clp::search_lib {
-ClpCursor::ClpCursor(InputSource inputSource, const std::string& archivePath)
+ClpCursor::ClpCursor(InputSource inputSource, std::string archivePath)
     : errorCode_(ErrorCode::QueryNotInitialized),
       inputSource_(inputSource),
       archivePath_(std::move(archivePath)) {}
@@ -182,17 +182,17 @@ ErrorCode ClpCursor::executeQuery(
   return preprocessQuery();
 }
 
-ErrorCode ClpCursor::fetch_next(
-    size_t numRows,
-    std::vector<size_t>& filteredRows) {
+uint64_t ClpCursor::fetch_next(
+    uint64_t numRows,
+    std::vector<uint64_t>& filteredRowIndices) {
   if (ErrorCode::Success != errorCode_) {
-    return errorCode_;
+    return 0;
   }
 
   if (false == currentArchiveLoaded_) {
     errorCode_ = loadArchive();
     if (ErrorCode::Success != errorCode_) {
-      return errorCode_;
+      return 0;
     }
 
     archiveReader_->open_packed_streams();
@@ -221,16 +221,16 @@ ErrorCode ClpCursor::fetch_next(
       currentSchemaTableLoaded_ = true;
     }
 
-    queryRunner_->fetchNext(numRows, filteredRows);
-    if (false == filteredRows.empty()) {
-      return ErrorCode::Success;
+    auto rowsScanned = queryRunner_->fetchNext(numRows, filteredRowIndices);
+    if (false == filteredRowIndices.empty()) {
+      return rowsScanned;
     }
 
     currentSchemaIndex_ += 1;
     currentSchemaTableLoaded_ = false;
   }
 
-  return {};
+  return 0;
 }
 
 } // namespace facebook::velox::connector::clp::search_lib

@@ -56,9 +56,7 @@ struct Field {
 class ClpCursor {
  public:
   // Constructor
-  explicit ClpCursor(
-      clp_s::InputSource inputSource,
-      const std::string& archivePath);
+  explicit ClpCursor(clp_s::InputSource inputSource, std::string archivePath);
 
   /**
    * Executes a query. This function parses, validates, and prepares the given
@@ -76,10 +74,12 @@ class ClpCursor {
    * Fetches the next set of rows from the cursor.If the archive and schema are
    * not yet loaded, this function will perform the necessary loading.
    * @param numRows The maximum number of rows to fetch.
-   * @param filteredRows A vector of row indices that match the filter.
-   * @return The error code.
+   * @param filteredRowIndices A vector of row indices that match the filter.
+   * @return The number of rows scanned.
    */
-  ErrorCode fetch_next(size_t numRows, std::vector<size_t>& filteredRows);
+  uint64_t fetch_next(
+      uint64_t numRows,
+      std::vector<uint64_t>& filteredRowIndices);
 
   /**
    * Retrieves the projected columns
