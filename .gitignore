@@ -147,7 +147,6 @@ tmp/
 # Scripts
 #==============================================================================#
 *.jar
-!third-party/antlr/antlr-4.13.1-complete.jar
 scripts/PelotonTest/out
 scripts/PelotonTest/lib
 

@@ -15,17 +15,30 @@
 # NOTE: FindANTLR.cmake taken from
 # https://github.com/antlr/antlr4/blob/4.13.1/runtime/Cpp/cmake/FindANTLR.cmake
 
-# TODO: Clean up ANTLR cmake files On macOS, the way Java is installed with brew
-# doesn't also make it the default version of Java on the system. So we set
-# JAVA_HOME to the install location here.
-if(APPLE)
-  set(ENV{JAVA_HOME} "/usr/local/opt/openjdk@11/")
-endif()
-
+# Set ANTLR version
 set(ANTLR4_TAG 4.13.1)
 add_definitions(-DANTLR4CPP_STATIC)
-set(ANTLR_EXECUTABLE
-    ${PROJECT_SOURCE_DIR}/third-party/antlr/antlr-${ANTLR4_TAG}-complete.jar)
+
+# Define the JAR name and path
+set(ANTLR_JAR_NAME antlr-${ANTLR4_TAG}-complete.jar)
+set(ANTLR_EXECUTABLE ${PROJECT_SOURCE_DIR}/third_party/antlr/${ANTLR_JAR_NAME})
+
+# Ensure the output directory exists
+file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/third_party/antlr)
+
+# Download the ANTLR JAR if it does not exist
+if(NOT EXISTS ${ANTLR_EXECUTABLE})
+  message(STATUS "ANTLR JAR not found. Downloading ANTLR ${ANTLR4_TAG}...")
+  file(
+    DOWNLOAD https://www.antlr.org/download/${ANTLR_JAR_NAME}
+    ${ANTLR_EXECUTABLE}
+    SHOW_PROGRESS
+    EXPECTED_HASH
+      SHA256=bc13a9c57a8dd7d5196888211e5ede657cb64a3ce968608697e4f668251a8487
+    TLS_VERIFY ON)
+endif()
+
+# Include the ANTLR C++ runtime integration
 include(ExternalAntlr4Cpp)
 
 find_package(Java 11 REQUIRED COMPONENTS Runtime)
@@ -143,16 +156,6 @@ if(ANTLR_EXECUTABLE AND Java_JAVA_EXECUTABLE)
           SEND_ERROR "ANTLR target '${ANTLR_TARGET_DEPENDS_ANTLR}' not found")
       endif()
     endif()
-
-    message(STATUS "====== ANTLR Debug Variables ======")
-    message(STATUS "ANTLR Executable: ${ANTLR_EXECUTABLE}")
-    message(STATUS "Java Executable: ${Java_JAVA_EXECUTABLE}")
-    message(STATUS "ANTLR Version: ${ANTLR_VERSION}")
-    message(STATUS "ANTLR Input File: ${ANTLR_${Name}_INPUT}")
-    message(STATUS "ANTLR Output Directory: ${ANTLR_${Name}_OUTPUT_DIR}")
-    message(STATUS "ANTLR Output Files: ${ANTLR_${Name}_OUTPUTS}")
-    message(STATUS "ANTLR Target depend: ${InputFile}")
-    message(STATUS "===================================")
 
     add_custom_command(
       OUTPUT ${ANTLR_${Name}_OUTPUTS}

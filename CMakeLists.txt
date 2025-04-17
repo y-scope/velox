@@ -491,15 +491,15 @@ velox_resolve_dependency(re2)
 if(${VELOX_ENABLE_CLP_CONNECTOR})
   set(spdlog_SOURCE BUNDLED)
   velox_resolve_dependency(spdlog 1.12.0)
+
   velox_set_source(msgpack-cxx)
   velox_resolve_dependency(msgpack-cxx)
-  find_package(CURL 7.68.0 REQUIRED)
-  find_package(ANTLR REQUIRED)
-endif()
 
-if(${VELOX_ENABLE_CLP_CONNECTOR})
   velox_set_source(absl)
   velox_resolve_dependency(absl)
+
+  find_package(CURL 7.68.0 REQUIRED)
+  find_package(ANTLR REQUIRED)
 endif()
 
 if(${VELOX_BUILD_PYTHON_PACKAGE})
