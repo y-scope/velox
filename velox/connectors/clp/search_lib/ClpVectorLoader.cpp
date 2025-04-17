@@ -27,8 +27,7 @@ ClpVectorLoader::ClpVectorLoader(
 
 template <typename T, typename VectorPtr>
 void ClpVectorLoader::populateData(RowSet rows, VectorPtr vector) {
-  for (size_t i = 0; i < rows.size(); ++i) {
-    auto vectorIndex = rows.at(i);
+  for (int vectorIndex : rows) {
     auto messageIndex = filteredRowIndices_[vectorIndex];
 
     if constexpr (std::is_same_v<T, std::string>) {
@@ -81,8 +80,7 @@ void ClpVectorLoader::loadInternal(
       auto* rawStrings = elements->mutableRawValues();
       vector_size_t elementIndex = 0;
 
-      for (size_t i = 0; i < rows.size(); ++i) {
-        auto vectorIndex = rows.at(i);
+      for (int vectorIndex : rows) {
         auto messageIndex = filteredRowIndices_[vectorIndex];
 
         auto jsonString =
