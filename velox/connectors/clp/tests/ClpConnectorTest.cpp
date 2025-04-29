@@ -34,20 +34,20 @@ using facebook::velox::tpch::Table;
 
 class ClpConnectorTest : public exec::test::OperatorTestBase {
  public:
-  const std::string kClpConnectorId = "test-tpch";
+  const std::string kClpConnectorId = "test-clp";
 
   void SetUp() override {
     OperatorTestBase::SetUp();
     connector::registerConnectorFactory(
         std::make_shared<connector::clp::ClpConnectorFactory>());
-    auto tpchConnector =
+    auto clpConnector =
         connector::getConnectorFactory(
             connector::clp::ClpConnectorFactory::kClpConnectorName)
             ->newConnector(
                 kClpConnectorId,
                 std::make_shared<config::ConfigBase>(
                     std::unordered_map<std::string, std::string>()));
-    connector::registerConnector(tpchConnector);
+    connector::registerConnector(clpConnector);
   }
 
   void TearDown() override {
@@ -75,11 +75,19 @@ class ClpConnectorTest : public exec::test::OperatorTestBase {
 
 // Simple scan of first 5 rows of "nation".
 TEST_F(ClpConnectorTest, simple) {
-  auto plan = PlanBuilder()
-                  .tpchTableScan(
-                      Table::TBL_NATION,
-                      {"n_nationkey", "n_name", "n_regionkey", "n_comment"})
-                  .limit(0, 5, false)
+    auto plan = PlanBuilder()
+                  .startTableScan()
+                  .outputType(ROW({}, {})) // change it
+                  .tableHandle(std::make_shared<ClpTableHandle>(
+                      kClpConnectorId, Table::TBL_LINEITEM, 0.01))
+                  .assignments({
+                      {"n_nationkey", std::make_shared<ClpColumnHandle>("n_nationkey")},
+                      {"n_name", std::make_shared<ClpColumnHandle>("n_name")},
+                      {"n_regionkey", std::make_shared<ClpColumnHandle>("n_regionkey")},
+                      {"n_comment", std::make_shared<ClpColumnHandle>("n_comment")},
+                  })
+                  .endTableScan()
+                  .filter("n_nationkey < 5")
                   .planNode();
 
   auto output = getResults(plan, {makeClpSplit()});
@@ -139,10 +147,10 @@ TEST_F(ClpConnectorTest, singleColumnWithAlias) {
           .tableHandle(std::make_shared<ClpTableHandle>(
               kClpConnectorId, Table::TBL_NATION))
           .assignments({
-              {aliasedName, std::make_shared<TpchColumnHandle>("n_name")},
-              {"other_name", std::make_shared<TpchColumnHandle>("n_name")},
+              {aliasedName, std::make_shared<ClpColumnHandle>("n_name")},
+              {"other_name", std::make_shared<ClpColumnHandle>("n_name")},
               {"third_column",
-               std::make_shared<TpchColumnHandle>("n_regionkey")},
+               std::make_shared<ClpColumnHandle>("n_regionkey")},
           })
           .endTableScan()
           .limit(0, 1, false)
