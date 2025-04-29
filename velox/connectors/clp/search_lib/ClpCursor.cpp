@@ -19,8 +19,6 @@
 #include <filesystem>
 #include <stdexcept>
 
-// #include <spdlog/spdlog.h>
-
 #include "clp_s/search/EvaluateTimestampIndex.hpp"
 #include "clp_s/search/ast/ConvertToExists.hpp"
 #include "clp_s/search/ast/EmptyExpr.hpp"
@@ -52,14 +50,12 @@ ErrorCode ClpCursor::loadArchive() {
 
   EvaluateTimestampIndex timestampIndex(timestampDict);
   if (clp_s::EvaluatedValue::False == timestampIndex.run(expr_)) {
-    // SPDLOG_DEBUG("No matching timestamp ranges for query '{}'", query_);
     return ErrorCode::InvalidTimestampRange;
   }
 
   auto schemaMatch = std::make_shared<SchemaMatch>(schemaTree, schemaMap);
   if (expr_ = schemaMatch->run(expr_);
       std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    // SPDLOG_ERROR("No matching schemas for query '{}'", query_);
     return ErrorCode::SchemaNotFound;
   }
 
@@ -72,7 +68,6 @@ ErrorCode ClpCursor::loadArchive() {
       if (false ==
           tokenize_column_descriptor(
               column.name, descriptorTokens, descriptorNamespace)) {
-        // SPDLOG_ERROR("Can not tokenize invalid column: \"{}\"", column);
         return ErrorCode::InternalError;
       }
 
@@ -103,7 +98,6 @@ ErrorCode ClpCursor::loadArchive() {
       projection_->add_column(columnDescriptor);
     }
   } catch (TraceableException& e) {
-    SPDLOG_ERROR("{}", e.what());
     return ErrorCode::InternalError;
   }
   projection_->resolve_columns(schemaTree);
@@ -124,7 +118,6 @@ ErrorCode ClpCursor::loadArchive() {
 
   EvaluateTimestampIndex timestamp_index(timestampDict);
   if (EvaluatedValue::False == timestamp_index.run(expr_)) {
-    SPDLOG_INFO("No matching timestamp ranges for query '{}'", query_);
     return ErrorCode::InvalidTimestampRange;
   }
 
@@ -141,33 +134,28 @@ ErrorCode ClpCursor::preprocessQuery() {
   auto queryStream = std::istringstream(query_);
   expr_ = kql::parse_kql_expression(queryStream);
   if (nullptr == expr_) {
-    // SPDLOG_ERROR("Failed to parse query '{}'", query_);
     return ErrorCode::InvalidQuerySyntax;
   }
 
   if (std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    // SPDLOG_DEBUG("Query '{}' is logically false", query_);
     return ErrorCode::LogicalError;
   }
 
   OrOfAndForm standardizePass;
   if (expr_ = standardizePass.run(expr_);
       std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    // SPDLOG_DEBUG("Query '{}' is logically false", query_);
     return ErrorCode::LogicalError;
   }
 
   NarrowTypes narrowPass;
   if (expr_ = narrowPass.run(expr_);
       std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    // SPDLOG_DEBUG("Query '{}' is logically false", query_);
     return ErrorCode::LogicalError;
   }
 
   ConvertToExists convertPass;
   if (expr_ = convertPass.run(expr_);
       std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    // SPDLOG_DEBUG("Query '{}' is logically false", query_);
     return ErrorCode::LogicalError;
   }
 
