@@ -195,6 +195,7 @@ velox_link_libraries(
     absl::flat_hash_map
     clp::string_utils
     ${CURL_LIBRARIES}
+    glog::glog
     OpenSSL::Crypto
     simdjson::simdjson
     msgpack-cxx
