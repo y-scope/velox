@@ -137,6 +137,8 @@ set(CLP_SRC_FILES
     ${CLP_SRC_DIR}/clp_s/search/kql/kql.hpp
     ${CLP_SRC_DIR}/clp_s/search/Projection.cpp
     ${CLP_SRC_DIR}/clp_s/search/Projection.hpp
+    ${CLP_SRC_DIR}/clp_s/search/QueryRunner.cpp
+    ${CLP_SRC_DIR}/clp_s/search/QueryRunner.hpp
     ${CLP_SRC_DIR}/clp_s/search/SchemaMatch.cpp
     ${CLP_SRC_DIR}/clp_s/search/SchemaMatch.hpp
     ${CLP_SRC_DIR}/clp/aws/AwsAuthenticationSigner.cpp
