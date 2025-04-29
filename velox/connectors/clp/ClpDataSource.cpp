@@ -38,16 +38,9 @@ ClpDataSource::ClpDataSource(
         std::shared_ptr<connector::ColumnHandle>>& columnHandles,
     velox::memory::MemoryPool* pool,
     std::shared_ptr<const ClpConfig>& clpConfig)
-    : pool_(pool), outputType_(outputType) {
-  archiveSource_ = clpConfig->archiveSource();
-  boost::algorithm::to_lower(archiveSource_);
+    : splitSource_(clpConfig->splitSource()), pool_(pool), outputType_(outputType) {
   auto clpTableHandle = std::dynamic_pointer_cast<ClpTableHandle>(tableHandle);
-  if ("local" != archiveSource_ && "s3" != archiveSource_) {
-    VELOX_USER_FAIL("Illegal input source: {}", archiveSource_);
-  }
-
-  auto query = clpTableHandle->query();
-  if (query && !query->empty()) {
+  if (auto query = clpTableHandle->kqlQuery(); query && !query->empty()) {
     kqlQuery_ = *query;
   } else {
     kqlQuery_ = "*";
@@ -112,10 +105,10 @@ void ClpDataSource::addFieldsRecursively(
 void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
   auto clpSplit = std::dynamic_pointer_cast<ClpConnectorSplit>(split);
 
-  if (archiveSource_ == "local") {
+  if (splitSource_ == ClpConfig::SplitSource::kLocal) {
     cursor_ = std::make_unique<search_lib::ClpCursor>(
         clp_s::InputSource::Filesystem, clpSplit->archivePath_);
-  } else if (archiveSource_ == "s3") {
+  } else if (splitSource_ == ClpConfig::SplitSource::kS3) {
     cursor_ = std::make_unique<search_lib::ClpCursor>(
         clp_s::InputSource::Network, clpSplit->archivePath_);
   }

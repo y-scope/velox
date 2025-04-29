@@ -24,17 +24,17 @@ class ClpTableHandle : public ConnectorTableHandle {
   ClpTableHandle(
       std::string connectorId,
       const std::string& tableName,
-      std::shared_ptr<std::string> query)
+      std::shared_ptr<std::string> kqlQuery)
       : ConnectorTableHandle(connectorId),
         tableName_(tableName),
-        query_(std::move(query)) {}
+        kqlQuery_(std::move(kqlQuery)) {}
 
   [[nodiscard]] const std::string& tableName() const {
     return tableName_;
   }
 
-  [[nodiscard]] const std::shared_ptr<std::string>& query() const {
-    return query_;
+  [[nodiscard]] const std::shared_ptr<std::string>& kqlQuery() const {
+    return kqlQuery_;
   }
 
   std::string toString() const override;
@@ -43,6 +43,6 @@ class ClpTableHandle : public ConnectorTableHandle {
 
  private:
   const std::string tableName_;
-  std::shared_ptr<std::string> query_;
+  std::shared_ptr<std::string> kqlQuery_;
 };
 } // namespace facebook::velox::connector::clp

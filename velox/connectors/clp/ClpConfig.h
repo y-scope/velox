@@ -25,10 +25,23 @@ class ConfigBase;
 namespace facebook::velox::connector::clp {
 class ClpConfig {
  public:
-  static constexpr const char* kArchiveSource = "clp.archive-source";
+    enum class SplitSource {
+        kLocal,
+        kS3,
+      };
 
-  [[nodiscard]] std::string archiveSource() const {
-    return config_->get<std::string>(kArchiveSource, "");
+  static constexpr const char* kSplitSource = "clp.split-source";
+
+  [[nodiscard]] SplitSource splitSource() const {
+    auto const value = config_->get<std::string>(kSplitSource, "");
+    auto const upperValue = boost::algorithm::to_upper_copy(value);
+    if (upperValue == "LOCAL") {
+      return SplitSource::kLocal;
+    }
+    if (upperValue == "S3") {
+      return SplitSource::kS3;
+    }
+    VELOX_UNSUPPORTED("Unsupported split source: {}.", value);
   }
 
   explicit ClpConfig(std::shared_ptr<const config::ConfigBase> config) {

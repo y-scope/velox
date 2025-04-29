@@ -74,13 +74,11 @@ class ClpDataSource : public DataSource {
       const std::vector<size_t>& filteredRows,
       size_t& readerIndex);
 
-  std::string archiveSource_;
+    ClpConfig::SplitSource splitSource_;
   std::string kqlQuery_;
   velox::memory::MemoryPool* pool_;
   RowTypePtr outputType_;
   std::set<std::string> columnUntypedNames_;
-  std::map<std::string, size_t> columnIndices_;
-  std::map<std::string, size_t> arrayOffsets_;
   uint64_t completedRows_{0};
   uint64_t completedBytes_{0};
 
