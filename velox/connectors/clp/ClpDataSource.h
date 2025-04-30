@@ -63,18 +63,39 @@ class ClpDataSource : public DataSource {
   }
 
  private:
+  /**
+   * Recursively adds fields from the column type to the list of fields to be
+   * retrieved from the data source.
+   *
+   * @param columnType The type of the column.
+   * @param parentName The name of the parent field (used for nested fields).
+   */
   void addFieldsRecursively(
       const TypePtr& columnType,
       const std::string& parentName);
 
+  /**
+   * Creates a Vector of the specified type and size.
+   *
+   * This method recursively creates vectors for complex types like ROW. For
+   * primitive types, it creates a LazyVector that will load the data from the
+   * underlying data source when it is accessed.
+   *
+   * @param type The type of the Vector to create.
+   * @param size The number of elements in the Vector.
+   * @param projectedColumns The readers the projected columns.
+   * @param filteredRows The rows to be read.
+   * @param readerIndex The index of the column reader.
+   * @return A Vector of the specified type and size.
+   */
   VectorPtr createVector(
       const TypePtr& type,
       size_t size,
       const std::vector<clp_s::BaseColumnReader*>& projectedColumns,
-      const std::vector<size_t>& filteredRows,
+      const std::shared_ptr<std::vector<size_t>>& filteredRows,
       size_t& readerIndex);
 
-    ClpConfig::SplitSource splitSource_;
+  ClpConfig::SplitSource splitSource_;
   std::string kqlQuery_;
   velox::memory::MemoryPool* pool_;
   RowTypePtr outputType_;

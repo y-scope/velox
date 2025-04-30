@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <boost/algorithm/string.hpp>
+
 #include "velox/common/config/Config.h"
 
 namespace facebook::velox::config {
@@ -25,10 +27,10 @@ class ConfigBase;
 namespace facebook::velox::connector::clp {
 class ClpConfig {
  public:
-    enum class SplitSource {
-        kLocal,
-        kS3,
-      };
+  enum class SplitSource {
+    kLocal,
+    kS3,
+  };
 
   static constexpr const char* kSplitSource = "clp.split-source";
 

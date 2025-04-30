@@ -33,15 +33,133 @@ namespace facebook::velox::connector::clp::search_lib {
 ClpCursor::ClpCursor(InputSource inputSource, std::string archivePath)
     : errorCode_(ErrorCode::QueryNotInitialized),
       inputSource_(inputSource),
-      archivePath_(std::move(archivePath)) {}
+      archivePath_(std::move(archivePath)),
+      archiveReader_(std::make_shared<ArchiveReader>()) {}
+
+ClpCursor::~ClpCursor() {
+  if (currentArchiveLoaded_) {
+    archiveReader_->close();
+  }
+}
+
+ErrorCode ClpCursor::executeQuery(
+    const std::string& query,
+    const std::vector<Field>& outputColumns) {
+  query_ = query;
+  outputColumns_ = outputColumns;
+  errorCode_ = preprocessQuery();
+  return errorCode_;
+}
+
+uint64_t ClpCursor::fetch_next(
+    uint64_t numRows,
+    const std::shared_ptr<std::vector<uint64_t>>& filteredRowIndices) {
+  if (ErrorCode::Success != errorCode_) {
+    return 0;
+  }
+
+  if (false == currentArchiveLoaded_) {
+    errorCode_ = loadArchive();
+    if (ErrorCode::Success != errorCode_) {
+      return 0;
+    }
+
+    archiveReader_->open_packed_streams();
+    currentArchiveLoaded_ = true;
+    queryRunner_ = std::make_shared<ClpQueryRunner>(
+        schemaMatch_, expr_, archiveReader_, false, projection_);
+    queryRunner_->global_init();
+  }
+
+  while (currentSchemaIndex_ < matchedSchemas_.size()) {
+    if (false == currentSchemaTableLoaded_) {
+      currentSchemaId_ = matchedSchemas_[currentSchemaIndex_];
+      if (EvaluatedValue::False ==
+          queryRunner_->schema_init(currentSchemaId_)) {
+        currentSchemaIndex_ += 1;
+        currentSchemaTableLoaded_ = false;
+        errorCode_ = ErrorCode::DictionaryNotFound;
+        continue;
+      }
+
+      auto& reader =
+          archiveReader_->read_schema_table(currentSchemaId_, false, false);
+      reader.initialize_filter_with_column_map(queryRunner_.get());
+
+      errorCode_ = ErrorCode::Success;
+      currentSchemaTableLoaded_ = true;
+    }
+
+    auto rowsScanned = queryRunner_->fetchNext(numRows, filteredRowIndices);
+    if (false == filteredRowIndices->empty()) {
+      return rowsScanned;
+    }
+
+    currentSchemaIndex_ += 1;
+    currentSchemaTableLoaded_ = false;
+  }
+
+  return 0;
+}
+
+std::vector<clp_s::BaseColumnReader*>& ClpCursor::getProjectedColumns() const {
+  if (queryRunner_) {
+    return queryRunner_->getProjectedColumns();
+  }
+  static std::vector<clp_s::BaseColumnReader*> empty;
+  return empty;
+}
+
+ErrorCode ClpCursor::preprocessQuery() {
+  auto queryStream = std::istringstream(query_);
+  expr_ = kql::parse_kql_expression(queryStream);
+  if (nullptr == expr_) {
+    DLOG(ERROR) << "Failed to parse query '" << query_ << "'";
+    return ErrorCode::InvalidQuerySyntax;
+  }
+
+  if (std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
+    DLOG(INFO) << "Query '" << query_ << "' is logically false";
+    return ErrorCode::LogicalError;
+  }
+
+  OrOfAndForm standardizePass;
+  if (expr_ = standardizePass.run(expr_);
+      std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
+    DLOG(INFO) << "Query '" << query_ << "' is logically false";
+    return ErrorCode::LogicalError;
+  }
+
+  NarrowTypes narrowPass;
+  if (expr_ = narrowPass.run(expr_);
+      std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
+    DLOG(INFO) << "Query '" << query_ << "' is logically false";
+    return ErrorCode::LogicalError;
+  }
+
+  ConvertToExists convertPass;
+  if (expr_ = convertPass.run(expr_);
+      std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
+    DLOG(INFO) << "Query '" << query_ << "' is logically false";
+    return ErrorCode::LogicalError;
+  }
+
+  return ErrorCode::Success;
+}
 
 ErrorCode ClpCursor::loadArchive() {
   auto networkAuthOption = inputSource_ == InputSource::Filesystem
       ? NetworkAuthOption{.method = AuthMethod::None}
       : NetworkAuthOption{.method = AuthMethod::S3PresignedUrlV4};
 
-  archiveReader_->open(
-      get_path_object_for_raw_path(archivePath_), networkAuthOption);
+  try {
+    archiveReader_->open(
+        get_path_object_for_raw_path(archivePath_), networkAuthOption);
+  } catch (std::exception& e) {
+    DLOG(ERROR) << "Failed to open archive file: " << e.what();
+    return ErrorCode::InternalError;
+  }
+
   auto timestampDict = archiveReader_->get_timestamp_dictionary();
   auto schemaTree = archiveReader_->get_schema_tree();
   auto schemaMap = archiveReader_->get_schema_map();
@@ -52,8 +170,8 @@ ErrorCode ClpCursor::loadArchive() {
     return ErrorCode::InvalidTimestampRange;
   }
 
-  auto schemaMatch = std::make_shared<SchemaMatch>(schemaTree, schemaMap);
-  if (expr_ = schemaMatch->run(expr_);
+  schemaMatch_ = std::make_shared<SchemaMatch>(schemaTree, schemaMap);
+  if (expr_ = schemaMatch_->run(expr_);
       std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
     DLOG(ERROR) << "No matching schemas for query '" << query_ << "'";
     return ErrorCode::SchemaNotFound;
@@ -68,7 +186,8 @@ ErrorCode ClpCursor::loadArchive() {
       if (false ==
           tokenize_column_descriptor(
               column.name, descriptorTokens, descriptorNamespace)) {
-        DLOG(ERROR) << "Can not tokenize invalid column: '" << column.name << "'";
+        DLOG(ERROR) << "Can not tokenize invalid column: '" << column.name
+                    << "'";
         return ErrorCode::InternalError;
       }
 
@@ -109,7 +228,7 @@ ErrorCode ClpCursor::loadArchive() {
 
   matchedSchemas_.clear();
   for (auto schemaId : archiveReader_->get_schema_ids()) {
-    if (schemaMatch->schema_matched(schemaId)) {
+    if (schemaMatch_->schema_matched(schemaId)) {
       matchedSchemas_.push_back(schemaId);
     }
   }
@@ -131,102 +250,6 @@ ErrorCode ClpCursor::loadArchive() {
   currentSchemaIndex_ = 0;
   currentSchemaTableLoaded_ = false;
   return ErrorCode::Success;
-}
-
-ErrorCode ClpCursor::preprocessQuery() {
-  auto queryStream = std::istringstream(query_);
-  expr_ = kql::parse_kql_expression(queryStream);
-  if (nullptr == expr_) {
-    DLOG(ERROR) << "Failed to parse query '" << query_ << "'";
-    return ErrorCode::InvalidQuerySyntax;
-  }
-
-  if (std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    DLOG(INFO) << "Query '" << query_ << "' is logically false";
-    return ErrorCode::LogicalError;
-  }
-
-  OrOfAndForm standardizePass;
-  if (expr_ = standardizePass.run(expr_);
-      std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    DLOG(INFO) << "Query '" << query_ << "' is logically false";
-    return ErrorCode::LogicalError;
-  }
-
-  NarrowTypes narrowPass;
-  if (expr_ = narrowPass.run(expr_);
-      std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    DLOG(INFO) << "Query '" << query_ << "' is logically false";
-    return ErrorCode::LogicalError;
-  }
-
-  ConvertToExists convertPass;
-  if (expr_ = convertPass.run(expr_);
-      std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    DLOG(INFO) << "Query '" << query_ << "' is logically false";
-    return ErrorCode::LogicalError;
-  }
-
-  return ErrorCode::Success;
-}
-
-ErrorCode ClpCursor::executeQuery(
-    const std::string& query,
-    const std::vector<Field>& outputColumns) {
-  query_ = query;
-  outputColumns_ = outputColumns;
-  return preprocessQuery();
-}
-
-uint64_t ClpCursor::fetch_next(
-    uint64_t numRows,
-    std::vector<uint64_t>& filteredRowIndices) {
-  if (ErrorCode::Success != errorCode_) {
-    return 0;
-  }
-
-  if (false == currentArchiveLoaded_) {
-    errorCode_ = loadArchive();
-    if (ErrorCode::Success != errorCode_) {
-      return 0;
-    }
-
-    archiveReader_->open_packed_streams();
-    currentArchiveLoaded_ = true;
-    queryRunner_ = std::make_shared<ClpQueryRunner>(
-        schemaMatch_, expr_, archiveReader_, false, projection_);
-    queryRunner_->global_init();
-  }
-
-  while (currentSchemaIndex_ < matchedSchemas_.size()) {
-    if (false == currentSchemaTableLoaded_) {
-      currentSchemaId_ = matchedSchemas_[currentSchemaIndex_];
-      if (EvaluatedValue::False ==
-          queryRunner_->schema_init(currentSchemaId_)) {
-        currentSchemaIndex_ += 1;
-        currentSchemaTableLoaded_ = false;
-        errorCode_ = ErrorCode::DictionaryNotFound;
-        continue;
-      }
-
-      auto& reader =
-          archiveReader_->read_schema_table(currentSchemaId_, false, false);
-      reader.initialize_filter_with_column_map(queryRunner_.get());
-
-      errorCode_ = ErrorCode::Success;
-      currentSchemaTableLoaded_ = true;
-    }
-
-    auto rowsScanned = queryRunner_->fetchNext(numRows, filteredRowIndices);
-    if (false == filteredRowIndices.empty()) {
-      return rowsScanned;
-    }
-
-    currentSchemaIndex_ += 1;
-    currentSchemaTableLoaded_ = false;
-  }
-
-  return 0;
 }
 
 } // namespace facebook::velox::connector::clp::search_lib

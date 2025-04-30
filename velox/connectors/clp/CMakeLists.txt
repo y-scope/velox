@@ -30,6 +30,11 @@ velox_link_libraries(
     msgpack-cxx
     spdlog::spdlog
     absl::flat_hash_map
-    Boost::filesystem)
+    Boost::filesystem
+    Boost::headers)
 
 target_compile_features(velox_clp_connector PRIVATE cxx_std_20)
+
+if(${VELOX_BUILD_TESTING})
+  add_subdirectory(tests)
+endif()

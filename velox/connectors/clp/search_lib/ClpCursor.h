@@ -58,6 +58,9 @@ class ClpCursor {
   // Constructor
   explicit ClpCursor(clp_s::InputSource inputSource, std::string archivePath);
 
+  // Destructor
+  ~ClpCursor();
+
   /**
    * Executes a query. This function parses, validates, and prepares the given
    * query for execution.
@@ -79,20 +82,14 @@ class ClpCursor {
    */
   uint64_t fetch_next(
       uint64_t numRows,
-      std::vector<uint64_t>& filteredRowIndices);
+      const std::shared_ptr<std::vector<uint64_t>>& filteredRowIndices);
 
   /**
    * Retrieves the projected columns
    * @return A vector of BaseColumnReader pointers representing the projected
    * columns.
    */
-  std::vector<clp_s::BaseColumnReader*>& getProjectedColumns() const {
-    if (queryRunner_) {
-      return queryRunner_->getProjectedColumns();
-    }
-    static std::vector<clp_s::BaseColumnReader*> empty;
-    return empty;
-  }
+  std::vector<clp_s::BaseColumnReader*>& getProjectedColumns() const;
 
  private:
   /**

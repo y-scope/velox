@@ -16,19 +16,28 @@
 
 #include "ClpVectorLoader.h"
 
+#include <utility>
+
 namespace facebook::velox::connector::clp::search_lib {
 ClpVectorLoader::ClpVectorLoader(
     clp_s::BaseColumnReader* columnReader,
     ColumnType nodeType,
-    const std::vector<uint64_t>& filteredRowIndices)
+    std::shared_ptr<std::vector<uint64_t>> filteredRowIndices)
     : columnReader_(columnReader),
       nodeType_(nodeType),
-      filteredRowIndices_(filteredRowIndices) {}
+      filteredRowIndices_(std::move(filteredRowIndices)) {}
 
 template <typename T, typename VectorPtr>
 void ClpVectorLoader::populateData(RowSet rows, VectorPtr vector) {
+  if (columnReader_ == nullptr) {
+    for (int vectorIndex : rows) {
+      vector->setNull(vectorIndex, true);
+    }
+    return;
+  }
+
   for (int vectorIndex : rows) {
-    auto messageIndex = filteredRowIndices_[vectorIndex];
+    auto messageIndex = (*filteredRowIndices_)[vectorIndex];
 
     if constexpr (std::is_same_v<T, std::string>) {
       auto string_value =
@@ -77,11 +86,10 @@ void ClpVectorLoader::loadInternal(
     case ColumnType::Array: {
       auto arrayVector = std::dynamic_pointer_cast<ArrayVector>(vector);
       auto elements = arrayVector->elements()->asFlatVector<StringView>();
-      auto* rawStrings = elements->mutableRawValues();
       vector_size_t elementIndex = 0;
 
       for (int vectorIndex : rows) {
-        auto messageIndex = filteredRowIndices_[vectorIndex];
+        auto messageIndex = (*filteredRowIndices_)[vectorIndex];
 
         auto jsonString =
             std::get<std::string>(columnReader_->extract_value(messageIndex));

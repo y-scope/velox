@@ -13,6 +13,9 @@
 # limitations under the License.
 
 add_subdirectory(clp_src/components/core/src/clp/string_utils)
+set(YSTDLIB_CPP_BUILD_TESTING OFF)
+add_subdirectory(clp_src/components/core/submodules/ystdlib-cpp
+                 EXCLUDE_FROM_ALL)
 
 string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
 set(CLP_SRC_DIR clp_src/components/core/src)
@@ -199,6 +202,8 @@ velox_link_libraries(
     OpenSSL::Crypto
     simdjson::simdjson
     msgpack-cxx
+    ystdlib::containers
+    ystdlib::error_handling
     zstd::zstd
     spdlog::spdlog
     velox_vector

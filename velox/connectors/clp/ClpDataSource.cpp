@@ -38,7 +38,9 @@ ClpDataSource::ClpDataSource(
         std::shared_ptr<connector::ColumnHandle>>& columnHandles,
     velox::memory::MemoryPool* pool,
     std::shared_ptr<const ClpConfig>& clpConfig)
-    : splitSource_(clpConfig->splitSource()), pool_(pool), outputType_(outputType) {
+    : splitSource_(clpConfig->splitSource()),
+      pool_(pool),
+      outputType_(outputType) {
   auto clpTableHandle = std::dynamic_pointer_cast<ClpTableHandle>(tableHandle);
   if (auto query = clpTableHandle->kqlQuery(); query && !query->empty()) {
     kqlQuery_ = *query;
@@ -120,7 +122,7 @@ VectorPtr ClpDataSource::createVector(
     const TypePtr& type,
     size_t size,
     const std::vector<clp_s::BaseColumnReader*>& projectedColumns,
-    const std::vector<size_t>& filteredRows,
+    const std::shared_ptr<std::vector<size_t>>& filteredRows,
     size_t& readerIndex) {
   if (type->kind() == TypeKind::ROW) {
     std::vector<VectorPtr> children;
@@ -154,9 +156,10 @@ VectorPtr ClpDataSource::createVector(
 std::optional<RowVectorPtr> ClpDataSource::next(
     uint64_t size,
     ContinueFuture& future) {
-  std::vector<uint64_t> filteredRows;
+  std::shared_ptr<std::vector<uint64_t>> filteredRows =
+      std::make_shared<std::vector<uint64_t>>();
   auto rowsScanned = cursor_->fetch_next(size, filteredRows);
-  auto rowsFiltered = filteredRows.size();
+  auto rowsFiltered = filteredRows->size();
   if (rowsFiltered == 0) {
     return nullptr;
   }

@@ -64,7 +64,7 @@ class ClpQueryRunner : public clp_s::search::QueryRunner {
    */
   uint64_t fetchNext(
       uint64_t numRows,
-      std::vector<uint64_t>& filteredRowIndices);
+      const std::shared_ptr<std::vector<uint64_t>>& filteredRowIndices);
 
   /**
    * @return A reference to the vector of BaseColumnReader pointers that

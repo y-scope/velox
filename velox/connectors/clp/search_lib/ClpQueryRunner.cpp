@@ -30,6 +30,7 @@ void ClpQueryRunner::init(
     clp_s::SchemaReader* schemaReader,
     std::unordered_map<int32_t, clp_s::BaseColumnReader*> const& columnMap) {
   numMessages_ = schemaReader->get_num_messages();
+  curMessage_ = 0;
   clear_readers();
 
   projectedColumns_.clear();
@@ -63,12 +64,12 @@ void ClpQueryRunner::init(
 
 uint64_t ClpQueryRunner::fetchNext(
     size_t numRows,
-    std::vector<size_t>& filteredRowIndices) {
+    const std::shared_ptr<std::vector<size_t>>& filteredRowIndices) {
   size_t rowsfiltered = 0;
   size_t rowsScanned = 0;
   while (curMessage_ < numMessages_) {
     if (filter(curMessage_)) {
-      filteredRowIndices.emplace_back(curMessage_);
+      filteredRowIndices->emplace_back(curMessage_);
       rowsfiltered += 1;
     }
 
