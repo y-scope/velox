@@ -18,9 +18,7 @@
 
 #include "clp_s/ColumnReader.hpp"
 #include "velox/connectors/clp/search_lib/ClpCursor.h"
-#include "velox/dwio/common/SelectiveColumnReader.h"
-#include "velox/exec/AggregationHook.h"
-#include "velox/vector/DictionaryVector.h"
+#include "velox/vector/LazyVector.h"
 
 namespace facebook::velox::connector::clp::search_lib {
 /**

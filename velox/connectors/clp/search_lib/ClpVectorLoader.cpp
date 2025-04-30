@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-#include "ClpVectorLoader.h"
-
 #include <utility>
+
+#include "velox/connectors/clp/search_lib/ClpVectorLoader.h"
+#include "velox/vector/ComplexVector.h"
 
 namespace facebook::velox::connector::clp::search_lib {
 ClpVectorLoader::ClpVectorLoader(

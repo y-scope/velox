@@ -22,7 +22,6 @@
 #include "clp_s/ArchiveReader.hpp"
 #include "clp_s/search/SchemaMatch.hpp"
 #include "clp_s/search/ast/Expression.hpp"
-
 #include "velox/connectors/clp/search_lib/ClpQueryRunner.h"
 
 namespace facebook::velox::connector::clp::search_lib {

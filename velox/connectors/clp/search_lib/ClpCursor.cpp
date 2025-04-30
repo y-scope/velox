@@ -16,12 +16,12 @@
 
 #include <glog/logging.h>
 
-#include "clp_s/search/EvaluateTimestampIndex.hpp"
 #include "clp_s/search/ast/ConvertToExists.hpp"
 #include "clp_s/search/ast/EmptyExpr.hpp"
 #include "clp_s/search/ast/NarrowTypes.hpp"
 #include "clp_s/search/ast/OrOfAndForm.hpp"
 #include "clp_s/search/ast/SearchUtils.hpp"
+#include "clp_s/search/EvaluateTimestampIndex.hpp"
 #include "clp_s/search/kql/kql.hpp"
 #include "velox/connectors/clp/search_lib/ClpCursor.h"
 

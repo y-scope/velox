@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-#include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
 #include <iostream>
 #include <optional>
 
 #include "velox/connectors/clp/ClpColumnHandle.h"
 #include "velox/connectors/clp/ClpConnectorSplit.h"
 #include "velox/connectors/clp/ClpDataSource.h"
-
 #include "velox/connectors/clp/ClpTableHandle.h"
 #include "velox/connectors/clp/search_lib/ClpCursor.h"
 #include "velox/connectors/clp/search_lib/ClpVectorLoader.h"

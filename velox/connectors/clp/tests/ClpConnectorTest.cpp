@@ -15,7 +15,7 @@
  */
 
 #include <folly/init/Init.h>
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include "velox/common/base/Fs.h"
 #include "velox/common/base/tests/GTestUtils.h"

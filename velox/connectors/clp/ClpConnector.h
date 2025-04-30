@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "search_lib/clp_src/components/core/src/clp_s/TimestampPattern.hpp"
+#include "velox/connectors/clp/search_lib/clp_src/components/core/src/clp_s/TimestampPattern.hpp"
 #include "velox/connectors/Connector.h"
 #include "velox/connectors/clp/ClpConfig.h"
 
