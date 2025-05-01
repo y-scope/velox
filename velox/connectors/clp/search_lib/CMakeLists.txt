@@ -39,7 +39,6 @@ set(CLP_SRC_FILES
     ${CLP_SRC_DIR}/clp_s/BufferViewReader.hpp
     ${CLP_SRC_DIR}/clp_s/ColumnReader.cpp
     ${CLP_SRC_DIR}/clp_s/ColumnReader.hpp
-    ${CLP_SRC_DIR}/clp_s/ColumnReader.cpp
     ${CLP_SRC_DIR}/clp_s/ColumnWriter.hpp
     ${CLP_SRC_DIR}/clp_s/Compressor.hpp
     ${CLP_SRC_DIR}/clp_s/Decompressor.hpp

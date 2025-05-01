@@ -81,7 +81,7 @@ class ClpConnectorTest : public exec::test::OperatorTestBase {
   }
 };
 
-TEST_F(ClpConnectorTest, test_1) {
+TEST_F(ClpConnectorTest, test1NoPushdown) {
   auto plan = PlanBuilder()
                   .startTableScan()
                   .outputType(
@@ -121,6 +121,43 @@ TEST_F(ClpConnectorTest, test_1) {
            "GET",
            "GET",
        })});
+  test::assertEqualVectors(expected, output);
+}
+
+TEST_F(ClpConnectorTest, test1Pushdown) {
+  auto plan = PlanBuilder()
+                  .startTableScan()
+                  .outputType(
+                      ROW({"requestId", "userId", "path"},
+                          {VARCHAR(), VARCHAR(), VARCHAR()}))
+                  .tableHandle(std::make_shared<ClpTableHandle>(
+                      kClpConnectorId,
+                      "test_1",
+                      std::make_shared<std::string>(
+                          "method: \"POST\" AND status: 200")))
+                  .assignments({
+                      {"requestId",
+                       std::make_shared<ClpColumnHandle>(
+                           "requestId", "requestId", VARCHAR(), true)},
+                      {"userId",
+                       std::make_shared<ClpColumnHandle>(
+                           "userId", "userId", VARCHAR(), true)},
+                      {"path",
+                       std::make_shared<ClpColumnHandle>(
+                           "path", "path", VARCHAR(), true)},
+                  })
+                  .endTableScan()
+                  .planNode();
+
+  auto output = getResults(
+      plan, {makeClpSplit("test_1", getExampleFilePath("test_1.clps"))});
+  auto expected =
+      makeRowVector({// requestId
+                     makeFlatVector<StringView>({"req-106"}),
+                     // userId
+                     makeNullableFlatVector<StringView>({std::nullopt}),
+                     // path
+                     makeFlatVector<StringView>({"/auth/login"})});
   test::assertEqualVectors(expected, output);
 }
 

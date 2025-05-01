@@ -106,10 +106,10 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
 
   if (splitSource_ == ClpConfig::SplitSource::kLocal) {
     cursor_ = std::make_unique<search_lib::ClpCursor>(
-        clp_s::InputSource::Filesystem, clpSplit->archivePath_);
+        clp_s::InputSource::Filesystem, clpSplit->splitPath_);
   } else if (splitSource_ == ClpConfig::SplitSource::kS3) {
     cursor_ = std::make_unique<search_lib::ClpCursor>(
-        clp_s::InputSource::Network, clpSplit->archivePath_);
+        clp_s::InputSource::Network, clpSplit->splitPath_);
   }
 
   cursor_->executeQuery(kqlQuery_, fields_);
