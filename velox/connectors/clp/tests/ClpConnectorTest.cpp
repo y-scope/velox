@@ -161,6 +161,146 @@ TEST_F(ClpConnectorTest, test1Pushdown) {
   test::assertEqualVectors(expected, output);
 }
 
+TEST_F(ClpConnectorTest, test2NoPushdown) {
+  auto plan =
+      PlanBuilder(pool_.get())
+          .startTableScan()
+          .outputType(
+              ROW({"timestamp", "event"},
+                  {VARCHAR(),
+                   ROW({"type", "subtype", "severity"},
+                       {VARCHAR(), VARCHAR(), VARCHAR()})}))
+          .tableHandle(std::make_shared<ClpTableHandle>(
+              kClpConnectorId, "test_2", nullptr))
+          .assignments(
+              {{"timestamp",
+                std::make_shared<ClpColumnHandle>(
+                    "timestamp", "timestamp", VARCHAR(), true)},
+               {"event",
+                std::make_shared<ClpColumnHandle>(
+                    "event",
+                    "event",
+                    ROW({"type", "subtype", "severity"},
+                        {VARCHAR(), VARCHAR(), VARCHAR()}),
+                    true)}})
+          .endTableScan()
+          .filter(
+              "event.severity IN ('WARNING', 'ERROR') AND "
+              "((event.type = 'network' AND event.subtype = 'connection') OR "
+              "(event.type = 'storage' AND event.subtype LIKE 'disk_usage%'))")
+          .planNode();
+
+  auto output = getResults(
+      plan, {makeClpSplit("test_2", getExampleFilePath("test_2.clps"))});
+  auto expected =
+      makeRowVector({// timestamp
+                     makeFlatVector<StringView>({"2025-04-30T08:50:05Z"}),
+                     // event
+                     makeRowVector({
+                         // event.type
+                         makeFlatVector<StringView>({"storage"}),
+                         // event.subtype
+                         makeFlatVector<StringView>({"disk_usage"}),
+                         // event.severity
+                         makeFlatVector<StringView>({"WARNING"}),
+                     })});
+  test::assertEqualVectors(expected, output);
+}
+
+TEST_F(ClpConnectorTest, test2Pushdown) {
+  auto plan =
+      PlanBuilder()
+          .startTableScan()
+          .outputType(
+              ROW({"timestamp", "event"},
+                  {VARCHAR(),
+                   ROW({"type", "subtype", "severity"},
+                       {VARCHAR(), VARCHAR(), VARCHAR()})}))
+          .tableHandle(std::make_shared<ClpTableHandle>(
+              kClpConnectorId,
+              "test_2",
+              std::make_shared<std::string>(
+                  "(event.severity: \"WARNING\" OR event.severity: \"ERROR\") AND "
+                  "((event.type: \"network\" AND event.subtype: \"connection\") OR "
+                  "(event.type: \"storage\" AND event.subtype: \"disk*\"))")))
+          .assignments(
+              {{"timestamp",
+                std::make_shared<ClpColumnHandle>(
+                    "timestamp", "timestamp", VARCHAR(), true)},
+               {"event",
+                std::make_shared<ClpColumnHandle>(
+                    "event",
+                    "event",
+                    ROW({"type", "subtype", "severity"},
+                        {VARCHAR(), VARCHAR(), VARCHAR()}),
+                    true)}})
+          .endTableScan()
+          .planNode();
+
+  auto output = getResults(
+      plan, {makeClpSplit("test_2", getExampleFilePath("test_2.clps"))});
+  auto expected =
+      makeRowVector({// timestamp
+                     makeFlatVector<StringView>({"2025-04-30T08:50:05Z"}),
+                     // event
+                     makeRowVector({
+                         // event.type
+                         makeFlatVector<StringView>({"storage"}),
+                         // event.subtype
+                         makeFlatVector<StringView>({"disk_usage"}),
+                         // event.severity
+                         makeFlatVector<StringView>({"WARNING"}),
+                     })});
+  test::assertEqualVectors(expected, output);
+}
+
+TEST_F(ClpConnectorTest, test2Hybrid) {
+  auto plan =
+      PlanBuilder(pool_.get())
+          .startTableScan()
+          .outputType(
+              ROW({"timestamp", "event"},
+                  {VARCHAR(),
+                   ROW({"type", "subtype", "severity"},
+                       {VARCHAR(), VARCHAR(), VARCHAR()})}))
+          .tableHandle(std::make_shared<ClpTableHandle>(
+              kClpConnectorId,
+              "test_2",
+              std::make_shared<std::string>(
+                  "((event.type: \"network\" AND event.subtype: \"connection\") OR "
+                  "(event.type: \"storage\" AND event.subtype: \"disk*\"))")))
+          .assignments(
+              {{"timestamp",
+                std::make_shared<ClpColumnHandle>(
+                    "timestamp", "timestamp", VARCHAR(), true)},
+               {"event",
+                std::make_shared<ClpColumnHandle>(
+                    "event",
+                    "event",
+                    ROW({"type", "subtype", "severity"},
+                        {VARCHAR(), VARCHAR(), VARCHAR()}),
+                    true)}})
+          .endTableScan()
+          .filter("upper(event.severity) IN ('WARNING', 'ERROR')")
+          .planNode();
+
+  auto output = getResults(
+      plan, {makeClpSplit("test_2", getExampleFilePath("test_2.clps"))});
+  auto expected =
+      makeRowVector({// timestamp
+                     makeFlatVector<StringView>({"2025-04-30T08:50:05Z"}),
+                     // event
+                     makeRowVector({
+                         // event.type
+                         makeFlatVector<StringView>({"storage"}),
+                         // event.subtype
+                         makeFlatVector<StringView>({"disk_usage"}),
+                         // event.severity
+                         makeFlatVector<StringView>({"WARNING"}),
+                     })});
+  test::assertEqualVectors(expected, output);
+}
+
 } // namespace
 
 int main(int argc, char** argv) {
