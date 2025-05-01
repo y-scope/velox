@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#include "clp_s/search/clp_search/Grep.hpp"
 #include "velox/connectors/clp/search_lib/ClpQueryRunner.h"
+#include "clp_s/search/clp_search/Grep.hpp"
 #include "velox/vector/ComplexVector.h"
 
 using namespace clp_s;

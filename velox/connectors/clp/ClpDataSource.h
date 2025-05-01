@@ -18,9 +18,9 @@
 
 #include <set>
 
+#include "velox/connectors/Connector.h"
 #include "velox/connectors/clp/ClpConfig.h"
 #include "velox/connectors/clp/search_lib/ClpCursor.h"
-#include "velox/connectors/Connector.h"
 
 namespace facebook::velox::connector::clp {
 class ClpDataSource : public DataSource {

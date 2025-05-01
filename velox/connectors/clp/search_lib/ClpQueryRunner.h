@@ -19,10 +19,10 @@
 #include <simdjson.h>
 
 #include "clp_s/SchemaReader.hpp"
-#include "clp_s/search/ast/Expression.hpp"
 #include "clp_s/search/Projection.hpp"
 #include "clp_s/search/QueryRunner.hpp"
 #include "clp_s/search/SchemaMatch.hpp"
+#include "clp_s/search/ast/Expression.hpp"
 #include "velox/vector/FlatVector.h"
 
 namespace facebook::velox::connector::clp::search_lib {
