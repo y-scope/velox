@@ -489,6 +489,9 @@ velox_set_source(re2)
 velox_resolve_dependency(re2)
 
 if(${VELOX_ENABLE_CLP_CONNECTOR})
+  set(clp_SOURCE BUNDLED)
+  velox_resolve_dependency(clp)
+
   set(spdlog_SOURCE BUNDLED)
   velox_resolve_dependency(spdlog 1.12.0)
 
