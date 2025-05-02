@@ -853,6 +853,22 @@ These semantics are similar to the `Apache Hadoop-Aws module <https://hadoop.apa
        This endpoint is used to acquire access tokens for authenticating with Azure storage.
        The URL follows the format: `https://login.microsoftonline.com/<tenant-id>/oauth2/token`.
 
+CLP Connector
+-----------------------------
+.. list-table::
+   :widths: 20 10 10 70
+   :header-rows: 1
+
+   * - Property Name
+     - Type
+     - Default Value
+     - Description
+   * - clp.split-source
+     - string
+     - LOCAL
+     - The source of the split, **Allowed values:** ``LOCAL``, ``S3``.
+
+
 Presto-specific Configuration
 -----------------------------
 .. list-table::

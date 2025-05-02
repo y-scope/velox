@@ -35,7 +35,7 @@ class ClpConfig {
   static constexpr const char* kSplitSource = "clp.split-source";
 
   [[nodiscard]] SplitSource splitSource() const {
-    auto const value = config_->get<std::string>(kSplitSource, "");
+    auto const value = config_->get<std::string>(kSplitSource, "local");
     auto const upperValue = boost::algorithm::to_upper_copy(value);
     if (upperValue == "LOCAL") {
       return SplitSource::kLocal;
