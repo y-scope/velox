@@ -22,20 +22,14 @@ namespace facebook::velox::connector::clp {
 struct ClpConnectorSplit : public connector::ConnectorSplit {
   ClpConnectorSplit(
       const std::string& connectorId,
-      const std::string& schemaName,
-      const std::string& tableName,
       const std::string& splitPath)
       : connector::ConnectorSplit(connectorId),
-        schemaName_(schemaName),
-        tableName_(tableName),
         splitPath_(splitPath) {}
 
   [[nodiscard]] std::string toString() const override {
-    return fmt::format("CLP: {}.{}", schemaName_, tableName_);
+    return fmt::format("CLP: {}", splitPath_);
   }
 
-  const std::string schemaName_;
-  const std::string tableName_;
   const std::string splitPath_;
 };
 } // namespace facebook::velox::connector::clp

@@ -68,7 +68,7 @@ void ClpDataSource::addFieldsRecursively(
     const std::string& parentName) {
   if (columnType->kind() == TypeKind::ROW) {
     const auto& rowType = columnType->asRow();
-    for (size_t i = 0; i < rowType.size(); ++i) {
+    for (uint32_t i = 0; i < rowType.size(); ++i) {
       const auto& childType = rowType.childAt(i);
       const auto childName = parentName + "." + rowType.nameOf(i);
       addFieldsRecursively(childType, childName);
@@ -124,8 +124,7 @@ VectorPtr ClpDataSource::createVector(
   if (type->kind() == TypeKind::ROW) {
     std::vector<VectorPtr> children;
     auto& rowType = type->as<TypeKind::ROW>();
-    // Children are reserved the parent size and accessible for those rows.
-    for (int32_t i = 0; i < rowType.size(); ++i) {
+    for (uint32_t i = 0; i < rowType.size(); ++i) {
       children.push_back(createVector(
           rowType.childAt(i),
           size,
@@ -138,6 +137,9 @@ VectorPtr ClpDataSource::createVector(
   }
   auto vector = BaseVector::create(type, size, pool_);
   vector->setNulls(allocateNulls(size, pool_, bits::kNull));
+
+  VELOX_CHECK_LT(
+      readerIndex, projectedColumns.size(), "Reader index out of bounds");
   auto projectedColumn = projectedColumns[readerIndex];
   auto projectedType = fields_[readerIndex].type;
   readerIndex++;

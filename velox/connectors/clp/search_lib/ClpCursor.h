@@ -66,9 +66,8 @@ class ClpCursor {
    * @param query The KQL query to execute.
    * @param outputColumns A vector specifying the columns to be included in the
    * query result.
-   * @return The error code.
    */
-  ErrorCode executeQuery(
+  void executeQuery(
       const std::string& query,
       const std::vector<Field>& outputColumns);
 
