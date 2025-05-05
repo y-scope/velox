@@ -14,10 +14,25 @@
 include_guard(GLOBAL)
 
 FetchContent_Declare(
-        clp
-        GIT_REPOSITORY https://github.com/y-scope/clp.git
-        GIT_TAG 7b1b169a89abdfe44c159d6200b168391b697877
-)
+  clp
+  GIT_REPOSITORY https://github.com/y-scope/clp.git
+  GIT_TAG 7b1b169a89abdfe44c159d6200b168391b697877
+  GIT_SUBMODULES "" GIT_SUBMODULES_RECURSE TRUE)
 
 FetchContent_MakeAvailable(clp)
 
+if(clp_POPULATED)
+  message(STATUS "Updating submodules for clp...")
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E chdir "${clp_SOURCE_DIR}" git submodule update
+            --init --recursive
+    RESULT_VARIABLE submodule_update_result
+    OUTPUT_VARIABLE submodule_update_output
+    ERROR_VARIABLE submodule_update_error)
+  if(NOT ${submodule_update_result} EQUAL 0)
+    message(ERROR
+            "Failed to update submodules for clp:\n${submodule_update_error}")
+  else()
+    message(STATUS "Submodules for clp updated successfully.")
+  endif()
+endif()

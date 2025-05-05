@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+set(CLP_SRC_DIR ${clp_SOURCE_DIR}/components/core/src)
 add_subdirectory(search_lib)
 
 velox_add_library(
@@ -32,6 +32,10 @@ velox_link_libraries(
     absl::flat_hash_map
     Boost::filesystem
     Boost::headers)
+
+velox_include_directories(
+  velox_clp_connector PUBLIC ${clp_SOURCE_DIR}/components/core/submodules
+                             ${CLP_SRC_DIR})
 
 target_compile_features(velox_clp_connector PRIVATE cxx_std_20)
 

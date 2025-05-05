@@ -12,13 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(clp_src/components/core/src/clp/string_utils)
+set(CLP_EXTERNAL_BINARY_DIR ${CMAKE_BINARY_DIR}/external/clp)
+add_subdirectory(${clp_SOURCE_DIR}/components/core/src/clp/string_utils
+                 ${CLP_EXTERNAL_BINARY_DIR}/string_utils)
 set(YSTDLIB_CPP_BUILD_TESTING OFF)
-add_subdirectory(clp_src/components/core/submodules/ystdlib-cpp
-                 EXCLUDE_FROM_ALL)
+add_subdirectory(${clp_SOURCE_DIR}/components/core/submodules/ystdlib-cpp
+                 ${CLP_EXTERNAL_BINARY_DIR}/ystdlib-cpp EXCLUDE_FROM_ALL)
 
 string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
-set(CLP_SRC_DIR clp_src/components/core/src)
+
 antlr_target(
   KqlParser
   ${CLP_SRC_DIR}/clp_s/search/kql/Kql.g4
@@ -30,7 +32,7 @@ antlr_target(
 
 set(CLP_SRC_FILES
     ${ANTLR_KqlParser_CXX_OUTPUTS}
-    "clp_src/components/core/submodules/date/include/date/date.h"
+    "${clp_SOURCE_DIR}/components/core/submodules/date/include/date/date.h"
     ${CLP_SRC_DIR}/clp_s/archive_constants.hpp
     ${CLP_SRC_DIR}/clp_s/ArchiveReader.cpp
     ${CLP_SRC_DIR}/clp_s/ArchiveReader.hpp
@@ -183,8 +185,9 @@ target_compile_features(clp-s-search PRIVATE cxx_std_20)
 target_compile_definitions(clp-s-search
                            PUBLIC SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
 velox_include_directories(
-  clp-s-search PUBLIC ${ANTLR_KqlParser_OUTPUT_DIR}
-                      clp_src/components/core/submodules ${CLP_SRC_DIR})
+  clp-s-search
+  PUBLIC ${ANTLR_KqlParser_OUTPUT_DIR}
+         ${clp_SOURCE_DIR}/components/core/submodules ${CLP_SRC_DIR})
 
 velox_link_libraries(
   clp-s-search

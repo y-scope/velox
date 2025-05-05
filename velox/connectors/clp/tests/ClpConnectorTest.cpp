@@ -64,7 +64,7 @@ class ClpConnectorTest : public exec::test::OperatorTestBase {
       const std::string& tableName,
       const std::string& splitPath) {
     return exec::Split(std::make_shared<ClpConnectorSplit>(
-        kClpConnectorId, "default", tableName, splitPath));
+        kClpConnectorId, splitPath));
   }
 
   RowVectorPtr getResults(

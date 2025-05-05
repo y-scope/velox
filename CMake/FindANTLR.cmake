@@ -84,14 +84,9 @@ if(ANTLR_EXECUTABLE AND Java_JAVA_EXECUTABLE)
     if(ANTLR_TARGET_OUTPUT_DIRECTORY)
       set(ANTLR_${Name}_OUTPUT_DIR ${ANTLR_TARGET_OUTPUT_DIRECTORY})
     else()
+      message("ANTLR output: ${CMAKE_CURRENT_BINARY_DIR}")
       set(ANTLR_${Name}_OUTPUT_DIR
           ${CMAKE_CURRENT_BINARY_DIR}/antlr4cpp_generated_src/${ANTLR_INPUT})
-    endif()
-
-    set(ANTLR_${Name}_ORIGINAL_OUTPUT_DIR ${ANTLR_${Name}_OUTPUT_DIR})
-    if(ANTLR_INPUT_PARENT_DIR)
-      set(ANTLR_${Name}_OUTPUT_DIR
-          "${ANTLR_${Name}_OUTPUT_DIR}/${ANTLR_INPUT_PARENT_DIR}")
     endif()
 
     unset(ANTLR_${Name}_CXX_OUTPUTS)

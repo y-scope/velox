@@ -113,33 +113,33 @@ ErrorCode ClpCursor::preprocessQuery() {
   auto queryStream = std::istringstream(query_);
   expr_ = kql::parse_kql_expression(queryStream);
   if (nullptr == expr_) {
-    VLOG(ERROR) << "Failed to parse query '" << query_ << "'";
+    VLOG(2) << "Failed to parse query '" << query_ << "'";
     return ErrorCode::InvalidQuerySyntax;
   }
 
   if (std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    VLOG(INFO) << "Query '" << query_ << "' is logically false";
+    VLOG(2) << "Query '" << query_ << "' is logically false";
     return ErrorCode::LogicalError;
   }
 
   OrOfAndForm standardizePass;
   if (expr_ = standardizePass.run(expr_);
       std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    VLOG(INFO) << "Query '" << query_ << "' is logically false";
+    VLOG(2) << "Query '" << query_ << "' is logically false";
     return ErrorCode::LogicalError;
   }
 
   NarrowTypes narrowPass;
   if (expr_ = narrowPass.run(expr_);
       std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    VLOG(INFO) << "Query '" << query_ << "' is logically false";
+    VLOG(2) << "Query '" << query_ << "' is logically false";
     return ErrorCode::LogicalError;
   }
 
   ConvertToExists convertPass;
   if (expr_ = convertPass.run(expr_);
       std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    VLOG(INFO) << "Query '" << query_ << "' is logically false";
+    VLOG(2) << "Query '" << query_ << "' is logically false";
     return ErrorCode::LogicalError;
   }
 
@@ -155,7 +155,7 @@ ErrorCode ClpCursor::loadArchive() {
     archiveReader_->open(
         get_path_object_for_raw_path(archivePath_), networkAuthOption);
   } catch (std::exception& e) {
-    VLOG(ERROR) << "Failed to open archive file: " << e.what();
+    VLOG(2) << "Failed to open archive file: " << e.what();
     return ErrorCode::InternalError;
   }
 
@@ -165,14 +165,14 @@ ErrorCode ClpCursor::loadArchive() {
 
   EvaluateTimestampIndex timestampIndex(timestampDict);
   if (clp_s::EvaluatedValue::False == timestampIndex.run(expr_)) {
-    VLOG(INFO) << "No matching timestamp ranges for query '" << query_ << "'";
+    VLOG(2) << "No matching timestamp ranges for query '" << query_ << "'";
     return ErrorCode::InvalidTimestampRange;
   }
 
   schemaMatch_ = std::make_shared<SchemaMatch>(schemaTree, schemaMap);
   if (expr_ = schemaMatch_->run(expr_);
       std::dynamic_pointer_cast<EmptyExpr>(expr_)) {
-    VLOG(ERROR) << "No matching schemas for query '" << query_ << "'";
+    VLOG(2) << "No matching schemas for query '" << query_ << "'";
     return ErrorCode::SchemaNotFound;
   }
 
@@ -185,7 +185,7 @@ ErrorCode ClpCursor::loadArchive() {
       if (false ==
           tokenize_column_descriptor(
               column.name, descriptorTokens, descriptorNamespace)) {
-        VLOG(ERROR) << "Can not tokenize invalid column: '" << column.name
+        VLOG(2) << "Can not tokenize invalid column: '" << column.name
                     << "'";
         return ErrorCode::InternalError;
       }
@@ -217,7 +217,7 @@ ErrorCode ClpCursor::loadArchive() {
       projection_->add_column(columnDescriptor);
     }
   } catch (TraceableException& e) {
-    VLOG(ERROR) << e.what();
+    VLOG(2) << e.what();
     return ErrorCode::InternalError;
   }
   projection_->resolve_columns(schemaTree);
@@ -238,7 +238,7 @@ ErrorCode ClpCursor::loadArchive() {
 
   EvaluateTimestampIndex timestamp_index(timestampDict);
   if (EvaluatedValue::False == timestamp_index.run(expr_)) {
-    VLOG(INFO) << "No matching timestamp ranges for query '" << query_ << "'";
+    VLOG(2) << "No matching timestamp ranges for query '" << query_ << "'";
     return ErrorCode::InvalidTimestampRange;
   }
 
