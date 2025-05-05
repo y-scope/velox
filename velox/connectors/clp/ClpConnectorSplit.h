@@ -23,8 +23,7 @@ struct ClpConnectorSplit : public connector::ConnectorSplit {
   ClpConnectorSplit(
       const std::string& connectorId,
       const std::string& splitPath)
-      : connector::ConnectorSplit(connectorId),
-        splitPath_(splitPath) {}
+      : connector::ConnectorSplit(connectorId), splitPath_(splitPath) {}
 
   [[nodiscard]] std::string toString() const override {
     return fmt::format("CLP: {}", splitPath_);

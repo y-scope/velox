@@ -16,9 +16,9 @@
 
 #pragma once
 
+#include "clp_s/TimestampPattern.hpp"
 #include "velox/connectors/Connector.h"
 #include "velox/connectors/clp/ClpConfig.h"
-#include "clp_s/TimestampPattern.hpp"
 
 namespace facebook::velox::connector::clp {
 class ClpConnector : public Connector {

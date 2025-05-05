@@ -185,8 +185,7 @@ ErrorCode ClpCursor::loadArchive() {
       if (false ==
           tokenize_column_descriptor(
               column.name, descriptorTokens, descriptorNamespace)) {
-        VLOG(2) << "Can not tokenize invalid column: '" << column.name
-                    << "'";
+        VLOG(2) << "Can not tokenize invalid column: '" << column.name << "'";
         return ErrorCode::InternalError;
       }
 
