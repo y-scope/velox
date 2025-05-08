@@ -157,7 +157,7 @@ std::optional<RowVectorPtr> ClpDataSource::next(
     ContinueFuture& future) {
   std::shared_ptr<std::vector<uint64_t>> filteredRows =
       std::make_shared<std::vector<uint64_t>>();
-  auto rowsScanned = cursor_->fetch_next(size, filteredRows);
+  auto rowsScanned = cursor_->fetchNext(size, filteredRows);
   auto rowsFiltered = filteredRows->size();
   if (rowsFiltered == 0) {
     return nullptr;

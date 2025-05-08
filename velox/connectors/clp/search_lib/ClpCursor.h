@@ -78,7 +78,7 @@ class ClpCursor {
    * @param filteredRowIndices A vector of row indices that match the filter.
    * @return The number of rows scanned.
    */
-  uint64_t fetch_next(
+  uint64_t fetchNext(
       uint64_t numRows,
       const std::shared_ptr<std::vector<uint64_t>>& filteredRowIndices);
 

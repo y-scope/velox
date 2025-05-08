@@ -50,7 +50,7 @@ void ClpCursor::executeQuery(
   errorCode_ = preprocessQuery();
 }
 
-uint64_t ClpCursor::fetch_next(
+uint64_t ClpCursor::fetchNext(
     uint64_t numRows,
     const std::shared_ptr<std::vector<uint64_t>>& filteredRowIndices) {
   if (ErrorCode::Success != errorCode_) {
