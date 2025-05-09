@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include "clp_s/TimestampPattern.hpp"
+
 #include "velox/connectors/clp/ClpConnector.h"
 #include "velox/connectors/clp/ClpDataSource.h"
 
@@ -44,6 +46,16 @@ std::unique_ptr<DataSink> ClpConnector::createDataSink(
     ConnectorQueryCtx* connectorQueryCtx,
     CommitStrategy commitStrategy) {
   VELOX_NYI("createDataSink for ClpConnector is not implemented!");
+}
+
+ClpConnectorFactory::ClpConnectorFactory()
+    : ConnectorFactory(kClpConnectorName) {
+  clp_s::TimestampPattern::init();
+}
+
+ClpConnectorFactory::ClpConnectorFactory(const char* connectorName)
+    : ConnectorFactory(connectorName) {
+  clp_s::TimestampPattern::init();
 }
 
 } // namespace facebook::velox::connector::clp

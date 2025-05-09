@@ -110,22 +110,20 @@ velox_include_directories(
 
 velox_link_libraries(
   clp-s-search
+  PUBLIC msgpack-cxx spdlog::spdlog
   PRIVATE
+    absl::flat_hash_map
     antlr4_static
     Boost::filesystem
     Boost::iostreams
     Boost::program_options
     Boost::url
-    absl::flat_hash_map
     clp::string_utils
     ${CURL_LIBRARIES}
     glog::glog
     OpenSSL::Crypto
     simdjson::simdjson
-    msgpack-cxx
+    velox_vector
     ystdlib::containers
     ystdlib::error_handling
-    zstd::zstd
-    spdlog::spdlog
-    velox_vector
-    velox_external_date)
+    zstd::zstd)

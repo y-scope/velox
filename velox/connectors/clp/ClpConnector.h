@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include "clp_s/TimestampPattern.hpp"
 #include "velox/connectors/Connector.h"
 #include "velox/connectors/clp/ClpConfig.h"
 
@@ -62,11 +61,8 @@ class ClpConnectorFactory : public ConnectorFactory {
  public:
   static constexpr const char* kClpConnectorName = "clp";
 
-  ClpConnectorFactory() : ConnectorFactory(kClpConnectorName) {}
-  explicit ClpConnectorFactory(const char* connectorName)
-      : ConnectorFactory(connectorName) {
-    clp_s::TimestampPattern::init();
-  }
+  ClpConnectorFactory();
+  explicit ClpConnectorFactory(const char* connectorName);
 
   std::shared_ptr<Connector> newConnector(
       const std::string& id,

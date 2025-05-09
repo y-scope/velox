@@ -156,7 +156,7 @@ if(ANTLR_EXECUTABLE AND Java_JAVA_EXECUTABLE)
       OUTPUT ${ANTLR_${Name}_OUTPUTS}
       COMMAND
         ${Java_JAVA_EXECUTABLE} -jar ${ANTLR_EXECUTABLE} ${InputFile} -o
-        ${ANTLR_${Name}_ORIGINAL_OUTPUT_DIR} -no-listener -Dlanguage=Cpp
+        ${ANTLR_${Name}_OUTPUT_DIR} -no-listener -Dlanguage=Cpp
         ${ANTLR_TARGET_COMPILE_FLAGS}
       DEPENDS ${InputFile} ${ANTLR_TARGET_DEPENDS}
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

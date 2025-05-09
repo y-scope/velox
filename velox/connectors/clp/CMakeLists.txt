@@ -21,21 +21,8 @@ velox_add_library(
   ClpDataSource.cpp
   ClpTableHandle.cpp)
 
-velox_link_libraries(
-  velox_clp_connector
-  PRIVATE
-    clp-s-search
-    velox_connector
-    simdjson::simdjson
-    msgpack-cxx
-    spdlog::spdlog
-    absl::flat_hash_map
-    Boost::filesystem
-    Boost::headers)
-
-velox_include_directories(
-  velox_clp_connector PUBLIC ${clp_SOURCE_DIR}/components/core/submodules
-                             ${CLP_SRC_DIR})
+velox_link_libraries(velox_clp_connector PRIVATE clp-s-search velox_connector
+                                                 simdjson::simdjson)
 
 target_compile_features(velox_clp_connector PRIVATE cxx_std_20)
 
