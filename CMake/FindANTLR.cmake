@@ -21,10 +21,13 @@ add_definitions(-DANTLR4CPP_STATIC)
 
 # Define the JAR name and path
 set(ANTLR_JAR_NAME antlr-${ANTLR4_TAG}-complete.jar)
-set(ANTLR_EXECUTABLE ${PROJECT_SOURCE_DIR}/third_party/antlr/${ANTLR_JAR_NAME})
 
-# Ensure the output directory exists
-file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/third_party/antlr)
+# Set the download directory
+set(ANTLR_DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/antlr)
+file(MAKE_DIRECTORY ${ANTLR_DOWNLOAD_DIR})
+
+# Define the full path to the ANTLR JAR
+set(ANTLR_EXECUTABLE ${ANTLR_DOWNLOAD_DIR}/${ANTLR_JAR_NAME})
 
 # Download the ANTLR JAR if it does not exist
 if(NOT EXISTS ${ANTLR_EXECUTABLE})
@@ -84,7 +87,6 @@ if(ANTLR_EXECUTABLE AND Java_JAVA_EXECUTABLE)
     if(ANTLR_TARGET_OUTPUT_DIRECTORY)
       set(ANTLR_${Name}_OUTPUT_DIR ${ANTLR_TARGET_OUTPUT_DIRECTORY})
     else()
-      message("ANTLR output: ${CMAKE_CURRENT_BINARY_DIR}")
       set(ANTLR_${Name}_OUTPUT_DIR
           ${CMAKE_CURRENT_BINARY_DIR}/antlr4cpp_generated_src/${ANTLR_INPUT})
     endif()

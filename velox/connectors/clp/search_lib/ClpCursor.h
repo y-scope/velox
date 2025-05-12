@@ -37,7 +37,7 @@ enum class ErrorCode {
   InternalError
 };
 
-enum class ColumnType { String, Integer, Float, Array, Boolean, Unknown };
+enum class ColumnType { String, Integer, Float, Array, Boolean, Unknown = -1 };
 
 struct Field {
   ColumnType type;
@@ -87,7 +87,7 @@ class ClpCursor {
    * @return A vector of BaseColumnReader pointers representing the projected
    * columns.
    */
-  std::vector<clp_s::BaseColumnReader*>& getProjectedColumns() const;
+  const std::vector<clp_s::BaseColumnReader*>& getProjectedColumns() const;
 
  private:
   /**

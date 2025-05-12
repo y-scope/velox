@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include <iostream>
 #include <optional>
 
 #include "velox/connectors/clp/ClpColumnHandle.h"
@@ -35,10 +34,9 @@ ClpDataSource::ClpDataSource(
         std::shared_ptr<connector::ColumnHandle>>& columnHandles,
     velox::memory::MemoryPool* pool,
     std::shared_ptr<const ClpConfig>& clpConfig)
-    : splitSource_(clpConfig->splitSource()),
-      pool_(pool),
-      outputType_(outputType) {
+    : pool_(pool), outputType_(outputType) {
   auto clpTableHandle = std::dynamic_pointer_cast<ClpTableHandle>(tableHandle);
+  storageType_ = clpTableHandle->storageType();
   if (auto query = clpTableHandle->kqlQuery(); query && !query->empty()) {
     kqlQuery_ = *query;
   } else {
@@ -104,12 +102,12 @@ void ClpDataSource::addFieldsRecursively(
 void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
   auto clpSplit = std::dynamic_pointer_cast<ClpConnectorSplit>(split);
 
-  if (splitSource_ == ClpConfig::SplitSource::kLocal) {
+  if (storageType_ == ClpTableHandle::StorageType::kFS) {
     cursor_ = std::make_unique<search_lib::ClpCursor>(
-        clp_s::InputSource::Filesystem, clpSplit->splitPath_);
-  } else if (splitSource_ == ClpConfig::SplitSource::kS3) {
+        clp_s::InputSource::Filesystem, clpSplit->path_);
+  } else if (storageType_ == ClpTableHandle::StorageType::kS3) {
     cursor_ = std::make_unique<search_lib::ClpCursor>(
-        clp_s::InputSource::Network, clpSplit->splitPath_);
+        clp_s::InputSource::Network, clpSplit->path_);
   }
 
   cursor_->executeQuery(kqlQuery_, fields_);
@@ -119,7 +117,7 @@ VectorPtr ClpDataSource::createVector(
     const TypePtr& type,
     size_t size,
     const std::vector<clp_s::BaseColumnReader*>& projectedColumns,
-    const std::shared_ptr<std::vector<size_t>>& filteredRows,
+    const std::shared_ptr<std::vector<uint64_t>>& filteredRows,
     size_t& readerIndex) {
   if (type->kind() == TypeKind::ROW) {
     std::vector<VectorPtr> children;
@@ -155,8 +153,7 @@ VectorPtr ClpDataSource::createVector(
 std::optional<RowVectorPtr> ClpDataSource::next(
     uint64_t size,
     ContinueFuture& future) {
-  std::shared_ptr<std::vector<uint64_t>> filteredRows =
-      std::make_shared<std::vector<uint64_t>>();
+  auto filteredRows = std::make_shared<std::vector<uint64_t>>();
   auto rowsScanned = cursor_->fetchNext(size, filteredRows);
   auto rowsFiltered = filteredRows->size();
   if (rowsFiltered == 0) {

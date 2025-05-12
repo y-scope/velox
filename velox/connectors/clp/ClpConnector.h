@@ -67,8 +67,8 @@ class ClpConnectorFactory : public ConnectorFactory {
   std::shared_ptr<Connector> newConnector(
       const std::string& id,
       std::shared_ptr<const config::ConfigBase> config,
-      folly::Executor* ioExecutor,
-      folly::Executor* cpuExecutor) override {
+      folly::Executor* /*ioExecutor*/,
+      folly::Executor* /*cpuExecutor*/) override {
     return std::make_shared<ClpConnector>(id, config);
   }
 };

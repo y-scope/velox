@@ -27,25 +27,6 @@ class ConfigBase;
 namespace facebook::velox::connector::clp {
 class ClpConfig {
  public:
-  enum class SplitSource {
-    kLocal,
-    kS3,
-  };
-
-  static constexpr const char* kSplitSource = "clp.split-source";
-
-  [[nodiscard]] SplitSource splitSource() const {
-    auto const value = config_->get<std::string>(kSplitSource, "local");
-    auto const upperValue = boost::algorithm::to_upper_copy(value);
-    if (upperValue == "LOCAL") {
-      return SplitSource::kLocal;
-    }
-    if (upperValue == "S3") {
-      return SplitSource::kS3;
-    }
-    VELOX_UNSUPPORTED("Unsupported split source: {}.", value);
-  }
-
   explicit ClpConfig(std::shared_ptr<const config::ConfigBase> config) {
     VELOX_CHECK_NOT_NULL(config, "Config is null for CLP initialization");
     config_ = std::move(config);

@@ -101,12 +101,13 @@ uint64_t ClpCursor::fetchNext(
   return 0;
 }
 
-std::vector<clp_s::BaseColumnReader*>& ClpCursor::getProjectedColumns() const {
+const std::vector<clp_s::BaseColumnReader*>& ClpCursor::getProjectedColumns()
+    const {
   if (queryRunner_) {
     return queryRunner_->getProjectedColumns();
   }
-  static std::vector<clp_s::BaseColumnReader*> empty;
-  return empty;
+  static std::vector<clp_s::BaseColumnReader*> kEmpty;
+  return kEmpty;
 }
 
 ErrorCode ClpCursor::preprocessQuery() {

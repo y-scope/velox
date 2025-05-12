@@ -60,9 +60,7 @@ class ClpConnectorTest : public exec::test::OperatorTestBase {
     OperatorTestBase::TearDown();
   }
 
-  exec::Split makeClpSplit(
-      const std::string& tableName,
-      const std::string& splitPath) {
+  exec::Split makeClpSplit(const std::string& splitPath) {
     return exec::Split(
         std::make_shared<ClpConnectorSplit>(kClpConnectorId, splitPath));
   }
@@ -76,7 +74,7 @@ class ClpConnectorTest : public exec::test::OperatorTestBase {
   }
 
   static std::string getExampleFilePath(const std::string& filePath) {
-    std::string current_path = fs::current_path().c_str();
+    std::string current_path = fs::current_path().string();
     return current_path + "/examples/" + filePath;
   }
 };
@@ -88,7 +86,10 @@ TEST_F(ClpConnectorTest, test1NoPushdown) {
                       ROW({"requestId", "userId", "method"},
                           {VARCHAR(), VARCHAR(), VARCHAR()}))
                   .tableHandle(std::make_shared<ClpTableHandle>(
-                      kClpConnectorId, "test_1", nullptr))
+                      kClpConnectorId,
+                      "test_1",
+                      ClpTableHandle::StorageType::kFS,
+                      nullptr))
                   .assignments({
                       {"requestId",
                        std::make_shared<ClpColumnHandle>(
@@ -104,8 +105,8 @@ TEST_F(ClpConnectorTest, test1NoPushdown) {
                   .filter("method = 'GET'")
                   .planNode();
 
-  auto output = getResults(
-      plan, {makeClpSplit("test_1", getExampleFilePath("test_1.clps"))});
+  auto output =
+      getResults(plan, {makeClpSplit(getExampleFilePath("test_1.clps"))});
   auto expected = makeRowVector(
       {// requestId
        makeFlatVector<StringView>(
@@ -133,6 +134,7 @@ TEST_F(ClpConnectorTest, test1Pushdown) {
                   .tableHandle(std::make_shared<ClpTableHandle>(
                       kClpConnectorId,
                       "test_1",
+                      ClpTableHandle::StorageType::kFS,
                       std::make_shared<std::string>(
                           "method: \"POST\" AND status: 200")))
                   .assignments({
@@ -149,8 +151,8 @@ TEST_F(ClpConnectorTest, test1Pushdown) {
                   .endTableScan()
                   .planNode();
 
-  auto output = getResults(
-      plan, {makeClpSplit("test_1", getExampleFilePath("test_1.clps"))});
+  auto output =
+      getResults(plan, {makeClpSplit(getExampleFilePath("test_1.clps"))});
   auto expected =
       makeRowVector({// requestId
                      makeFlatVector<StringView>({"req-106"}),
@@ -171,7 +173,10 @@ TEST_F(ClpConnectorTest, test2NoPushdown) {
                    ROW({"type", "subtype", "severity"},
                        {VARCHAR(), VARCHAR(), VARCHAR()})}))
           .tableHandle(std::make_shared<ClpTableHandle>(
-              kClpConnectorId, "test_2", nullptr))
+              kClpConnectorId,
+              "test_2",
+              ClpTableHandle::StorageType::kFS,
+              nullptr))
           .assignments(
               {{"timestamp",
                 std::make_shared<ClpColumnHandle>(
@@ -190,8 +195,8 @@ TEST_F(ClpConnectorTest, test2NoPushdown) {
               "(event.type = 'storage' AND event.subtype LIKE 'disk_usage%'))")
           .planNode();
 
-  auto output = getResults(
-      plan, {makeClpSplit("test_2", getExampleFilePath("test_2.clps"))});
+  auto output =
+      getResults(plan, {makeClpSplit(getExampleFilePath("test_2.clps"))});
   auto expected =
       makeRowVector({// timestamp
                      makeFlatVector<StringView>({"2025-04-30T08:50:05Z"}),
@@ -219,6 +224,7 @@ TEST_F(ClpConnectorTest, test2Pushdown) {
           .tableHandle(std::make_shared<ClpTableHandle>(
               kClpConnectorId,
               "test_2",
+              ClpTableHandle::StorageType::kFS,
               std::make_shared<std::string>(
                   "(event.severity: \"WARNING\" OR event.severity: \"ERROR\") AND "
                   "((event.type: \"network\" AND event.subtype: \"connection\") OR "
@@ -237,8 +243,8 @@ TEST_F(ClpConnectorTest, test2Pushdown) {
           .endTableScan()
           .planNode();
 
-  auto output = getResults(
-      plan, {makeClpSplit("test_2", getExampleFilePath("test_2.clps"))});
+  auto output =
+      getResults(plan, {makeClpSplit(getExampleFilePath("test_2.clps"))});
   auto expected =
       makeRowVector({// timestamp
                      makeFlatVector<StringView>({"2025-04-30T08:50:05Z"}),
@@ -266,6 +272,7 @@ TEST_F(ClpConnectorTest, test2Hybrid) {
           .tableHandle(std::make_shared<ClpTableHandle>(
               kClpConnectorId,
               "test_2",
+              ClpTableHandle::StorageType::kFS,
               std::make_shared<std::string>(
                   "((event.type: \"network\" AND event.subtype: \"connection\") OR "
                   "(event.type: \"storage\" AND event.subtype: \"disk*\"))")))
@@ -284,8 +291,8 @@ TEST_F(ClpConnectorTest, test2Hybrid) {
           .filter("upper(event.severity) IN ('WARNING', 'ERROR')")
           .planNode();
 
-  auto output = getResults(
-      plan, {makeClpSplit("test_2", getExampleFilePath("test_2.clps"))});
+  auto output =
+      getResults(plan, {makeClpSplit(getExampleFilePath("test_2.clps"))});
   auto expected =
       makeRowVector({// timestamp
                      makeFlatVector<StringView>({"2025-04-30T08:50:05Z"}),

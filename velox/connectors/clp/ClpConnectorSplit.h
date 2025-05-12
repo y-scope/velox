@@ -20,15 +20,13 @@
 
 namespace facebook::velox::connector::clp {
 struct ClpConnectorSplit : public connector::ConnectorSplit {
-  ClpConnectorSplit(
-      const std::string& connectorId,
-      const std::string& splitPath)
-      : connector::ConnectorSplit(connectorId), splitPath_(splitPath) {}
+  ClpConnectorSplit(const std::string& connectorId, const std::string& path)
+      : connector::ConnectorSplit(connectorId), path_(path) {}
 
   [[nodiscard]] std::string toString() const override {
-    return fmt::format("CLP: {}", splitPath_);
+    return fmt::format("CLP Split: {}", path_);
   }
 
-  const std::string splitPath_;
+  const std::string path_;
 };
 } // namespace facebook::velox::connector::clp

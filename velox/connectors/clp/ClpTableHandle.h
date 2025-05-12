@@ -21,16 +21,27 @@
 namespace facebook::velox::connector::clp {
 class ClpTableHandle : public ConnectorTableHandle {
  public:
+  enum class StorageType {
+    kFS,
+    kS3,
+  };
+
   ClpTableHandle(
-      std::string connectorId,
+      const std::string& connectorId,
       const std::string& tableName,
+      StorageType storageType,
       std::shared_ptr<std::string> kqlQuery)
       : ConnectorTableHandle(connectorId),
         tableName_(tableName),
+        storageType_(storageType),
         kqlQuery_(std::move(kqlQuery)) {}
 
   [[nodiscard]] const std::string& tableName() const {
     return tableName_;
+  }
+
+  [[nodiscard]] const StorageType storageType() const {
+    return storageType_;
   }
 
   [[nodiscard]] const std::shared_ptr<std::string>& kqlQuery() const {
@@ -43,6 +54,7 @@ class ClpTableHandle : public ConnectorTableHandle {
 
  private:
   const std::string tableName_;
+  const StorageType storageType_;
   std::shared_ptr<std::string> kqlQuery_;
 };
 } // namespace facebook::velox::connector::clp

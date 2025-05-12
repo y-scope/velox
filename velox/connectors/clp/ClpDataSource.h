@@ -20,6 +20,7 @@
 
 #include "velox/connectors/Connector.h"
 #include "velox/connectors/clp/ClpConfig.h"
+#include "velox/connectors/clp/ClpTableHandle.h"
 #include "velox/connectors/clp/search_lib/ClpCursor.h"
 
 namespace facebook::velox::connector::clp {
@@ -87,10 +88,10 @@ class ClpDataSource : public DataSource {
       const TypePtr& type,
       size_t size,
       const std::vector<clp_s::BaseColumnReader*>& projectedColumns,
-      const std::shared_ptr<std::vector<size_t>>& filteredRows,
+      const std::shared_ptr<std::vector<uint64_t>>& filteredRows,
       size_t& readerIndex);
 
-  ClpConfig::SplitSource splitSource_;
+  ClpTableHandle::StorageType storageType_;
   std::string kqlQuery_;
   velox::memory::MemoryPool* pool_;
   RowTypePtr outputType_;
