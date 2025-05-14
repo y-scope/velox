@@ -21,8 +21,8 @@ velox_add_library(
   ClpDataSource.cpp
   ClpTableHandle.cpp)
 
-velox_link_libraries(velox_clp_connector PRIVATE clp-s-search velox_connector
-                                                 simdjson::simdjson)
+velox_link_libraries(velox_clp_connector
+                     PRIVATE clp-s-search simdjson::simdjson velox_connector)
 
 target_compile_features(velox_clp_connector PRIVATE cxx_std_20)
 

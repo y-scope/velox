@@ -79,6 +79,7 @@ void ClpDataSource::addFieldsRecursively(
         break;
       case TypeKind::INTEGER:
       case TypeKind::BIGINT:
+      case TypeKind::SMALLINT:
       case TypeKind::TINYINT:
         clpColumnType = search_lib::ColumnType::Integer;
         break;
@@ -160,7 +161,7 @@ std::optional<RowVectorPtr> ClpDataSource::next(
     return nullptr;
   }
   completedRows_ += rowsScanned;
-  uint64_t readerIndex = 0;
+  size_t readerIndex = 0;
   const auto& projectedColumns = cursor_->getProjectedColumns();
   if (projectedColumns.size() != fields_.size()) {
     VELOX_USER_FAIL(

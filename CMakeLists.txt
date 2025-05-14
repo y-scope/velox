@@ -494,7 +494,7 @@ if(${VELOX_ENABLE_CLP_CONNECTOR})
   velox_resolve_dependency(clp)
 
   set(spdlog_SOURCE BUNDLED)
-  velox_resolve_dependency(spdlog 1.12.0)
+  velox_resolve_dependency(spdlog)
 
   velox_set_source(msgpack-cxx)
   velox_resolve_dependency(msgpack-cxx)
@@ -502,7 +502,8 @@ if(${VELOX_ENABLE_CLP_CONNECTOR})
   velox_set_source(absl)
   velox_resolve_dependency(absl)
 
-  find_package(CURL 7.68.0 REQUIRED)
+  set(curl_SOURCE BUNDLED)
+  velox_resolve_dependency(curl)
   find_package(ANTLR REQUIRED)
 endif()
 

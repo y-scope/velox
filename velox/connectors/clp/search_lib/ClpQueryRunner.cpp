@@ -38,12 +38,12 @@ void ClpQueryRunner::init(
       continue;
     }
 
-    // Try to find a matching column in m_column_map
+    // Try to find a matching column in columnMap
     bool foundReader = false;
-    for (const auto node_id : nodeIds) {
-      auto column_it = columnMap.find(node_id);
-      if (column_it != columnMap.end()) {
-        projectedColumns_.push_back(column_it->second);
+    for (const auto nodeId : nodeIds) {
+      auto columnIt = columnMap.find(nodeId);
+      if (columnIt != columnMap.end()) {
+        projectedColumns_.push_back(columnIt->second);
         foundReader = true;
         break;
       }
@@ -60,7 +60,7 @@ void ClpQueryRunner::init(
 }
 
 uint64_t ClpQueryRunner::fetchNext(
-    size_t numRows,
+    uint64_t numRows,
     const std::shared_ptr<std::vector<uint64_t>>& filteredRowIndices) {
   size_t rowsfiltered = 0;
   size_t rowsScanned = 0;
