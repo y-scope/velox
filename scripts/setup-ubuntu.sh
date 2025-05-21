@@ -82,6 +82,8 @@ ARROW_VERSION="15.0.0"
 STEMMER_VERSION="2.2.0"
 DUCKDB_VERSION="v0.8.1"
 GEOS_VERSION="3.13.0"
+# Note: when updating icu4c version in icu.cmake update here as well. 
+ICU_VERSION="72"
 
 # Install packages required for build.
 function install_build_prerequisites {
@@ -132,7 +134,6 @@ function install_velox_deps_from_apt {
     libc-ares-dev \
     libcurl4-openssl-dev \
     libssl-dev \
-    libicu-dev \
     libdouble-conversion-dev \
     libgoogle-glog-dev \
     libbz2-dev \
@@ -151,6 +152,15 @@ function install_velox_deps_from_apt {
     flex \
     libfl-dev \
     tzdata
+}
+
+function install_icu {
+  wget_and_untar https://github.com/unicode-org/icu/releases/download/release-${ICU_VERSION}-1/icu4c-${ICU_VERSION}_1-src.tgz icu
+  pushd ${DEPENDENCY_DIR}/icu/source
+  ./configure --prefix=${INSTALL_PREFIX} --disable-samples --disable-tests
+  make -j${NPROC}
+  ${SUDO} make install
+  popd
 }
 
 function install_fmt {
@@ -315,6 +325,7 @@ function install_geos {
 
 function install_velox_deps {
   run_and_time install_velox_deps_from_apt
+  run_and_time install_icu
   run_and_time install_fmt
   run_and_time install_protobuf
   run_and_time install_boost
