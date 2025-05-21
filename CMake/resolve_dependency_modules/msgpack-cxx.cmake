@@ -23,6 +23,7 @@ string(
 
 velox_resolve_dependency_url(MSGPACK)
 
+set(MSGPACK_USE_BOOST OFF)
 message(STATUS "Building msgpack-cxx from source")
 
 FetchContent_Declare(
