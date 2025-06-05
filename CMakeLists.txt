@@ -490,6 +490,9 @@ velox_set_source(re2)
 velox_resolve_dependency(re2)
 
 if(${VELOX_ENABLE_CLP_CONNECTOR})
+  set(ystdlib_cpp_SOURCE BUNDLED)
+  velox_resolve_dependency(ystdlib_cpp)
+
   set(clp_SOURCE BUNDLED)
   velox_resolve_dependency(clp)
 
@@ -502,9 +505,17 @@ if(${VELOX_ENABLE_CLP_CONNECTOR})
   velox_set_source(absl)
   velox_resolve_dependency(absl)
 
-  set(curl_SOURCE BUNDLED)
-  velox_resolve_dependency(curl)
-  find_package(ANTLR REQUIRED)
+  velox_set_source(nlohmann_json)
+  velox_resolve_dependency(nlohmann_json)
+
+  velox_set_source(date)
+  velox_resolve_dependency(date)
+
+  velox_set_source(antlr4-runtime)
+  velox_resolve_dependency(antlr4-runtime)
+
+  find_package(CURL REQUIRED)
+  #find_package(antlr4-runtime REQUIRED)
 endif()
 
 if(${VELOX_BUILD_PYTHON_PACKAGE})

@@ -14,25 +14,25 @@
 include_guard(GLOBAL)
 
 FetchContent_Declare(
-  clp
-  GIT_REPOSITORY https://github.com/anlowee/clp.git
-  GIT_TAG xwei/-remove-antlr
+  ystdlib_cpp
+  GIT_REPOSITORY https://github.com/y-scope/ystdlib-cpp.git
+  GIT_TAG d80cf86e1a1f2dae6421978c8ee353408368f424
   GIT_SUBMODULES "" GIT_SUBMODULES_RECURSE TRUE)
 
-FetchContent_MakeAvailable(clp)
+FetchContent_MakeAvailable(ystdlib_cpp)
 
-if(clp_POPULATED)
-  message(STATUS "Updating submodules for clp...")
+if(ystdlib_cpp_POPULATED)
+  message(STATUS "Updating submodules for ystdlib-cpp...")
   execute_process(
-    COMMAND ${CMAKE_COMMAND} -E chdir "${clp_SOURCE_DIR}" git submodule update
+    COMMAND ${CMAKE_COMMAND} -E chdir "${ystdlib_cpp_SOURCE_DIR}" git submodule update
             --init --recursive
     RESULT_VARIABLE submodule_update_result
     OUTPUT_VARIABLE submodule_update_output
     ERROR_VARIABLE submodule_update_error)
   if(NOT ${submodule_update_result} EQUAL 0)
     message(ERROR
-            "Failed to update submodules for clp:\n${submodule_update_error}")
+            "Failed to update submodules for ystdlib-cpp:\n${submodule_update_error}")
   else()
-    message(STATUS "Submodules for clp updated successfully.")
+    message(STATUS "Submodules for ystdlib-cpp updated successfully.")
   endif()
 endif()

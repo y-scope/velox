@@ -15,20 +15,15 @@
 set(CLP_EXTERNAL_BINARY_DIR ${CMAKE_BINARY_DIR}/external/clp)
 add_subdirectory(${clp_SOURCE_DIR}/components/core/src/clp/string_utils
                  ${CLP_EXTERNAL_BINARY_DIR}/string_utils)
-set(YSTDLIB_CPP_BUILD_TESTING OFF)
-add_subdirectory(${clp_SOURCE_DIR}/components/core/submodules/ystdlib-cpp
-                 ${CLP_EXTERNAL_BINARY_DIR}/ystdlib-cpp EXCLUDE_FROM_ALL)
+#add_subdirectory(${clp_SOURCE_DIR}/components/core/src/clp_s/search/kql
+#                 ${CLP_EXTERNAL_BINARY_DIR}/kql)
 
 string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
 
-antlr_target(
-  KqlParser
-  ${CLP_SRC_DIR}/clp_s/search/kql/Kql.g4
-  LEXER
-  PARSER
-  VISITOR
-  PACKAGE
-  kql)
+set(ANTLR_KqlParser_OUTPUT_DIR ${CLP_SRC_DIR}/clp_s/search/kql/antlr_generated)
+file(GLOB ANTLR_KqlParser_CXX_OUTPUTS
+    "${ANTLR_KqlParser_OUTPUT_DIR}/*.cpp"
+)
 
 set(CLP_SRC_FILES
     ${ANTLR_KqlParser_CXX_OUTPUTS}
@@ -74,8 +69,8 @@ set(CLP_SRC_FILES
     ${CLP_SRC_DIR}/clp_s/search/clp_search/EncodedVariableInterpreter.cpp
     ${CLP_SRC_DIR}/clp_s/search/clp_search/Grep.cpp
     ${CLP_SRC_DIR}/clp_s/search/clp_search/Query.cpp
-    ${CLP_SRC_DIR}/clp_s/search/EvaluateTimestampIndex.cpp
     ${CLP_SRC_DIR}/clp_s/search/kql/kql.cpp
+    ${CLP_SRC_DIR}/clp_s/search/EvaluateTimestampIndex.cpp
     ${CLP_SRC_DIR}/clp_s/search/Projection.cpp
     ${CLP_SRC_DIR}/clp_s/search/QueryRunner.cpp
     ${CLP_SRC_DIR}/clp_s/search/SchemaMatch.cpp
@@ -106,7 +101,8 @@ target_compile_definitions(clp-s-search
 velox_include_directories(
   clp-s-search
   PUBLIC ${ANTLR_KqlParser_OUTPUT_DIR}
-         ${clp_SOURCE_DIR}/components/core/submodules ${CLP_SRC_DIR})
+         ${clp_SOURCE_DIR}/components/core/submodules 
+         ${CLP_SRC_DIR})
 
 velox_link_libraries(
   clp-s-search
@@ -119,10 +115,12 @@ velox_link_libraries(
     Boost::program_options
     Boost::url
     clp::string_utils
+    date::date
     ${CURL_LIBRARIES}
     glog::glog
     OpenSSL::Crypto
     simdjson::simdjson
+    nlohmann_json::nlohmann_json
     velox_vector
     ystdlib::containers
     ystdlib::error_handling
