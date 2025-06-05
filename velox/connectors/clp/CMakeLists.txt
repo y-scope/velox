@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-set(CLP_SRC_DIR ${clp_SOURCE_DIR}/components/core/src)
 add_subdirectory(search_lib)
 
 velox_add_library(

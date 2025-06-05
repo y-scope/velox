@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(CLP_EXTERNAL_BINARY_DIR ${CMAKE_BINARY_DIR}/external/clp)
-add_subdirectory(${clp_SOURCE_DIR}/components/core/src/clp/string_utils
-                 ${CLP_EXTERNAL_BINARY_DIR}/string_utils)
+set(CLP_SRC_DIR ${clp_SOURCE_DIR}/components/core/src)
+#set(CLP_EXTERNAL_BINARY_DIR ${CMAKE_BINARY_DIR}/external/clp)
+#add_subdirectory(${clp_SOURCE_DIR}/components/core/src/clp/string_utils
+#                 ${CLP_EXTERNAL_BINARY_DIR}/string_utils)
 #add_subdirectory(${clp_SOURCE_DIR}/components/core/src/clp_s/search/kql
 #                 ${CLP_EXTERNAL_BINARY_DIR}/kql)
 
@@ -106,7 +107,10 @@ velox_include_directories(
 
 velox_link_libraries(
   clp-s-search
-  PUBLIC msgpack-cxx spdlog::spdlog
+  PUBLIC 
+    msgpack-cxx 
+    nlohmann_json::nlohmann_json
+    spdlog::spdlog
   PRIVATE
     absl::flat_hash_map
     antlr4_static
@@ -120,7 +124,6 @@ velox_link_libraries(
     glog::glog
     OpenSSL::Crypto
     simdjson::simdjson
-    nlohmann_json::nlohmann_json
     velox_vector
     ystdlib::containers
     ystdlib::error_handling
