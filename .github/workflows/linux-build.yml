@@ -82,16 +82,16 @@ jobs:
         run: |
           source scripts/setup-ubuntu.sh && install_apt_deps
 
-      - name: Install Docs Dependencies
-        run: |
-          dnf install -y --setopt=install_weak_deps=False pandoc
-          pip3 install pipx
-          pipx install --force uv cmake==3.31
-          echo "PATH=$PATH:/github/home/.local/bin" >> $GITHUB_ENV
-          which uv
-          make python-venv
-          which uv
-          uv pip install -r scripts/docs-requirements.txt 
+      # - name: Install Docs Dependencies
+      #   run: |
+      #     dnf install -y --setopt=install_weak_deps=False pandoc
+      #     pip3 install pipx
+      #     pipx install --force uv cmake==3.31
+      #     echo "PATH=$PATH:/github/home/.local/bin" >> $GITHUB_ENV
+      #     which uv
+      #     make python-venv
+      #     which uv
+      #     uv pip install -r scripts/docs-requirements.txt 
 
       - name: Clear CCache Statistics
         run: |
@@ -149,12 +149,12 @@ jobs:
           if [[ "${USE_CLANG}" = "true" ]]; then export CC=/usr/bin/clang-15; export CXX=/usr/bin/clang++-15; fi
           make debug
 
-      - name: Build Docs
-        run: |
-          source .venv/bin/activate
-          cd velox/docs
-          make clean
-          make html
+      # - name: Build Docs
+      #   run: |
+      #     source .venv/bin/activate
+      #     cd velox/docs
+      #     make clean
+      #     make html
 
       - name: CCache after
         run: |
