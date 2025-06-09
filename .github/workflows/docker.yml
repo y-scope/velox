@@ -78,7 +78,7 @@ jobs:
         with:
           file: "${{ matrix.file }}"
           build-args: "${{ matrix.args }}"
-          push: ${{ github.repository == 'anlowee/velox' && github.event_name != 'pull_request'}}
+#          push: ${{ github.repository == 'y-scope/velox' && github.event_name != 'pull_request'}}
           tags: "${{ matrix.tags }}"
 
   linux-needs:
@@ -120,5 +120,5 @@ jobs:
         with:
           file: "${{ matrix.file }}"
           build-args: "${{ matrix.args }}"
-          push: ${{ github.repository == 'anlowee/velox' && github.event_name != 'pull_request'}}
+#          push: ${{ github.repository == 'y-scope/velox' && github.event_name != 'pull_request'}}
           tags: "${{ matrix.tags }}"
