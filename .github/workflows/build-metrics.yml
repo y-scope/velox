@@ -16,13 +16,11 @@ name: Collect Build Metrics
 
 on:
   pull_request:
-      branches: [presto-0.293-clp-connector]
       paths:
         - ".github/workflows/build-metrics.yml"
         - "scripts/ci/bm-report/**"
 
   push:
-      branches: [presto-0.293-clp-connector]
       paths:
         - ".github/workflows/build-metrics.yml"
         - "scripts/ci/bm-report/**"
@@ -43,9 +41,8 @@ concurrency:
 jobs:
   metrics:
     name: Linux ${{ matrix.link-type }} - ${{ matrix.type }} with adapters
-    if: ${{ github.repository == 'y-scope/velox' }}
     runs-on: ${{ matrix.runner }}
-    container: ghcr.io/facebookincubator/velox-dev:adapters
+    container: ghcr.io/y-scope/clp/velox-dev:adapters
     strategy:
       fail-fast: false
       matrix:

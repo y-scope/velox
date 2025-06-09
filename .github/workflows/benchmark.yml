@@ -16,21 +16,19 @@ name: "Ubuntu Benchmark"
 
 on:
   pull_request:
-    branches: [presto-0.293-clp-connector]
     paths:
       - '.github/workflows/benchmark.yml'
       - 'scripts/ci/benchmark-requirements.txt'
       - 'scripts/ci/setup-ubuntu.sh'
 
   push:
-    branches: [presto-0.293-clp-connector]
 
 permissions:
   contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.sha }}
-  cancel-in-progress: true
+  cancel-in-progress: "${{github.ref != 'refs/heads/presto-0.293-clp-connector'}}"
 
 defaults:
   run:
@@ -38,7 +36,6 @@ defaults:
 
 jobs:
   benchmark:
-    if: github.repository == 'y-scope/velox'
     runs-on: 8-core-ubuntu-22.04
     env:
       CCACHE_DIR: "${{ github.workspace }}/ccache/"

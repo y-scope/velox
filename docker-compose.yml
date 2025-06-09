@@ -21,7 +21,7 @@ services:
     #   or
     #   docker-compose run -e NUM_THREADS=<NUMBER_OF_THREADS_TO_USE> --rm ubuntu-cpp
     #   to set the number of threads used during compilation
-    image: ghcr.io/facebookincubator/velox-dev:ubuntu-22.04
+    image: ghcr.io/y-scope/clp/velox-dev:ubuntu-22.04
     build:
       context: .
       dockerfile: scripts/docker/ubuntu-22.04-cpp.dockerfile
@@ -43,12 +43,12 @@ services:
     #   to set the number of threads used during compilation
     # scripts/docker/adapters.dockerfile uses SHELL which is not supported for OCI image format.
     # podman users must specify "--podman-build-args='--format docker'" argument.
-    image: ghcr.io/facebookincubator/velox-dev:adapters
+    image: ghcr.io/y-scope/clp/velox-dev:adapters
     build:
       context: .
       dockerfile: scripts/docker/adapters.dockerfile
       args:
-        image: ghcr.io/facebookincubator/velox-dev:centos9
+        image: ghcr.io/y-scope/clp/velox-dev:centos9
     environment:
       NUM_THREADS: 8 # default value for NUM_THREADS
       CCACHE_DIR: "/velox/.ccache"
@@ -69,12 +69,12 @@ services:
     #   to set the number of threads used during compilation
     # scripts/docker/adapters.dockerfile uses SHELL which is not supported for OCI image format.
     # podman users must specify "--podman-build-args='--format docker'" argument.
-    image: ghcr.io/facebookincubator/velox-dev:adapters
+    image: ghcr.io/y-scope/clp/velox-dev:adapters
     build:
       context: .
       dockerfile: scripts/docker/adapters.dockerfile
       args:
-        image: ghcr.io/facebookincubator/velox-dev:centos9
+        image: ghcr.io/y-scope/clp/velox-dev:centos9
     environment:
       NUM_THREADS: 8 # default value for NUM_THREADS
       CCACHE_DIR: "/velox/.ccache"
@@ -101,7 +101,7 @@ services:
     #   or
     #   docker-compose run -e NUM_THREADS=<NUMBER_OF_THREADS_TO_USE> --rm centos-cpp
     #   to set the number of threads used during compilation
-    image: ghcr.io/facebookincubator/velox-dev:centos9
+    image: ghcr.io/y-scope/clp/velox-dev:centos9
     build:
       context: .
       dockerfile: scripts/docker/centos.dockerfile
@@ -122,7 +122,7 @@ services:
   #   or
   #   docker-compose run -e NUM_THREADS=<NUMBER_OF_THREADS_TO_USE> --rm presto-java
   #   to set the number of threads used during compilation
-    image: ghcr.io/facebookincubator/velox-dev:presto-java
+    image: ghcr.io/y-scope/clp/velox-dev:presto-java
     build:
       args:
         - PRESTO_VERSION=0.290
@@ -143,7 +143,7 @@ services:
   #   or
   #   docker-compose run -e NUM_THREADS=<NUMBER_OF_THREADS_TO_USE> --rm spark-server
   #   to set the number of threads used during compilation
-    image: ghcr.io/facebookincubator/velox-dev:spark-server
+    image: ghcr.io/y-scope/clp/velox-dev:spark-server
     build:
       args:
         - SPARK_VERSION=3.5.1

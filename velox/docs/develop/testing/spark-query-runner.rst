@@ -57,7 +57,7 @@ be started at `localhost:15002`.
 
     INFO SparkConnectServer: Spark Connect server started at: 0:0:0:0:0:0:0:0%0:15002
 
-Another option is to use Spark Query Runner in the docker image `ghcr.io/facebookincubator/velox-dev:spark-server`
+Another option is to use Spark Query Runner in the docker image `ghcr.io/y-scope/clp/velox-dev:spark-server`
 provided by Velox. It includes an executable Spark and the start script. You can download
 the image and run below command to start Spark connect server in it.
 

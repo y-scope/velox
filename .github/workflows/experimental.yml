@@ -16,12 +16,10 @@ name: "Experimental Fuzzer Jobs"
 
 on:
   pull_request:
-    branches: [presto-0.293-clp-connector]
     paths:
       - ".github/workflows/experimental.yml"
 
   push:
-    branches: [presto-0.293-clp-connector]
     paths:
       - ".github/workflows/experimental.yml"
 
@@ -52,7 +50,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.repository }}-${{ github.head_ref || github.sha }}
-  cancel-in-progress: true
+  cancel-in-progress: "${{github.ref != 'refs/heads/presto-0.293-clp-connector'}}"
 
 jobs:
   compile:
@@ -120,7 +118,7 @@ jobs:
 
   presto-java-aggregation-fuzzer-run:
     runs-on: 16-core-ubuntu
-    container: ghcr.io/facebookincubator/velox-dev:presto-java
+    container: ghcr.io/y-scope/clp/velox-dev:presto-java
     timeout-minutes: 120
     env:
       CCACHE_DIR: "${{ github.workspace }}/ccache/"

@@ -31,11 +31,9 @@ on:
   # schedule:
   #   - cron: '15 0 * * *'
   pull_request:
-    branches: [presto-0.293-clp-connector]
     paths:
       - '.github/workflows/build_pyvelox.yml'
   push:
-    branches: [presto-0.293-clp-connector]
     paths:
       - '.github/workflows/build_pyvelox.yml'
 
@@ -44,7 +42,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.repository }}-${{ github.head_ref || github.sha }}
-  cancel-in-progress: true
+  cancel-in-progress: "${{github.ref != 'refs/heads/presto-0.293-clp-connector'}}"
 
 jobs:
   build_wheels:

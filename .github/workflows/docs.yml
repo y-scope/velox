@@ -16,19 +16,16 @@ name: Update Documentation
 
 on:
   push:
-    branches: [presto-0.293-clp-connector]
     paths:
       - "velox/docs/**"
       - ".github/workflows/docs.yml"
 
   pull_request:
-    branches: [presto-0.293-clp-connector]
     paths:
       - "velox/docs/**"
       - ".github/workflows/docs.yml"
 
   push:
-    branches: [presto-0.293-clp-connector]
     paths:
       - "velox/docs/**"
       - ".github/workflows/docs.yml"
@@ -39,13 +36,13 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.repository }}-${{ github.head_ref || github.sha }}
-  cancel-in-progress: true
+  cancel-in-progress: "${{github.ref != 'refs/heads/presto-0.293-clp-connector'}}"
 
 jobs:
   build_docs:
     name: Build and Push
     runs-on: 8-core-ubuntu
-    container: ghcr.io/facebookincubator/velox-dev:centos9
+    container: ghcr.io/y-scope/clp/velox-dev:centos9
     env:
       CCACHE_DIR: "/tmp/ccache"
     steps:

@@ -16,7 +16,6 @@ name: macOS Build
 
 on:
   push:
-    branches: [presto-0.293-clp-connector]
     paths:
       - "velox/**"
       - "!velox/docs/**"
@@ -27,7 +26,6 @@ on:
       - ".github/workflows/macos.yml"
 
   pull_request:
-    branches: [presto-0.293-clp-connector]
     paths:
       - "velox/**"
       - "!velox/docs/**"
@@ -42,11 +40,10 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.repository }}-${{ github.head_ref || github.sha }}
-  cancel-in-progress: true
+  cancel-in-progress: "${{github.ref != 'refs/heads/presto-0.293-clp-connector'}}"
 
 jobs:
   macos-build:
-    if: ${{ github.repository == 'y-scope/velox' }}
     name: "${{ matrix.os }}"
     strategy:
       fail-fast: false

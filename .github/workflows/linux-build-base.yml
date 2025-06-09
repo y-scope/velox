@@ -23,12 +23,15 @@ on:
         required: false
         type: boolean
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.repository }}-${{ github.head_ref || github.sha }}
+  cancel-in-progress: "${{github.ref != 'refs/heads/presto-0.293-clp-connector'}}"
+
 jobs:
   adapters:
     name: Linux release with adapters
-    if: ${{ github.repository == 'y-scope/velox' }}
     runs-on: 8-core-ubuntu-22.04
-    container: ghcr.io/facebookincubator/velox-dev:adapters
+    container: ghcr.io/y-scope/clp/velox-dev:adapters
     defaults:
       run:
         shell: bash
@@ -121,7 +124,6 @@ jobs:
 
   ubuntu-debug:
     runs-on: 8-core-ubuntu-22.04
-    if: ${{ github.repository == 'y-scope/velox' }}
     name: "Ubuntu debug with resolve_dependency"
     env:
       CCACHE_DIR: "${{ github.workspace }}/ccache"

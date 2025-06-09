@@ -15,7 +15,6 @@ name: Run Checks
 
 on:
   pull_request:
-    branches: [presto-0.293-clp-connector]
     types:
       - opened
       - reopened
@@ -27,13 +26,13 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.repository }}-${{ github.head_ref || github.sha }}
-  cancel-in-progress: true
+  cancel-in-progress: "${{github.ref != 'refs/heads/presto-0.293-clp-connector'}}"
 
 jobs:
   check-matrix:
     name: ${{ matrix.config.name }}
     runs-on: ubuntu-latest
-    container: ghcr.io/facebookincubator/velox-dev:check
+    container: ghcr.io/y-scope/clp/velox-dev:check
     strategy:
       fail-fast: false
       matrix:

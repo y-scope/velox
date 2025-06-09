@@ -16,8 +16,6 @@ name: Linux Build using GCC
 
 on:
   push:
-    branches:
-      - "presto-0.293-clp-connector"
     paths:
       - "velox/**"
       - "!velox/docs/**"
@@ -32,8 +30,6 @@ on:
       - ".github/workflows/linux-build-base.yml"
 
   pull_request:
-    branches:
-      - "presto-0.293-clp-connector"
     paths:
       - "velox/**"
       - "!velox/docs/**"
@@ -52,7 +48,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.repository }}-${{ github.head_ref || github.sha }}
-  cancel-in-progress: true
+  cancel-in-progress: "${{github.ref != 'refs/heads/presto-0.293-clp-connector'}}"
 
 jobs:
   linux-gcc:
