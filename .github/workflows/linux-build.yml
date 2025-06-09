@@ -16,6 +16,7 @@ name: Linux Build using GCC
 
 on:
   push:
+    branches: [presto-0.293-clp-connector]
     paths:
       - "velox/**"
       - "!velox/docs/**"

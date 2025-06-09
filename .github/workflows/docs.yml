@@ -25,11 +25,6 @@ on:
       - "velox/docs/**"
       - ".github/workflows/docs.yml"
 
-  push:
-    paths:
-      - "velox/docs/**"
-      - ".github/workflows/docs.yml"
-
 
 permissions:
   contents: write
@@ -102,7 +97,7 @@ jobs:
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
       - name: Push Documentation
-        if: ${{ github.event_name == 'push' && github.repository == 'y-scope/velox'}}
+        if: ${{ github.event_name == 'push' && github.repository == 'anlowee/velox'}}
         run: |
           git checkout gh-pages
           cp -R velox/docs/_build/html/* docs

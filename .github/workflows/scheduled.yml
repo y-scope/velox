@@ -30,6 +30,7 @@ on:
       - "setup.py"
 
   push:
+    branches: [presto-0.293-clp-connector]
     paths:
       - "velox/**"
       - "!velox/docs/**"

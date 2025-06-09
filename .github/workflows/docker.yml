@@ -22,6 +22,7 @@ on:
       - .github/workflows/docker.yml
       - docker-compose.yml
   push:
+    branches: [presto-0.293-clp-connector]
     paths:
       - scripts/docker/*.dockfile
       - scripts/docker/*.dockerfile
@@ -77,7 +78,7 @@ jobs:
         with:
           file: "${{ matrix.file }}"
           build-args: "${{ matrix.args }}"
-          push: ${{ github.repository == 'y-scope/velox' && github.event_name != 'pull_request'}}
+          push: ${{ github.repository == 'anlowee/velox' && github.event_name != 'pull_request'}}
           tags: "${{ matrix.tags }}"
 
   linux-needs:
@@ -119,5 +120,5 @@ jobs:
         with:
           file: "${{ matrix.file }}"
           build-args: "${{ matrix.args }}"
-          push: ${{ github.repository == 'y-scope/velox' && github.event_name != 'pull_request'}}
+          push: ${{ github.repository == 'anlowee/velox' && github.event_name != 'pull_request'}}
           tags: "${{ matrix.tags }}"

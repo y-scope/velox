@@ -16,6 +16,7 @@ name: Breeze Linux Build
 
 on:
   push:
+    branches: [presto-0.293-clp-connector]
     paths:
       - "velox/experimental/breeze/**"
       - "velox/external/perfetto/**"
