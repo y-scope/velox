@@ -16,6 +16,7 @@ name: macOS Build
 
 on:
   push:
+    branches: [presto-0.293-clp-connector]
     paths:
       - "velox/**"
       - "!velox/docs/**"
@@ -26,6 +27,7 @@ on:
       - ".github/workflows/macos.yml"
 
   pull_request:
+    branches: [presto-0.293-clp-connector]
     paths:
       - "velox/**"
       - "!velox/docs/**"
@@ -44,7 +46,7 @@ concurrency:
 
 jobs:
   macos-build:
-    if: ${{ github.repository == 'facebookincubator/velox' }}
+    if: ${{ github.repository == 'y-scope/velox' }}
     name: "${{ matrix.os }}"
     strategy:
       fail-fast: false

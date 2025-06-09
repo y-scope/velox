@@ -17,7 +17,7 @@ name: Linux Build using GCC
 on:
   push:
     branches:
-      - "main"
+      - "presto-0.293-clp-connector"
     paths:
       - "velox/**"
       - "!velox/docs/**"
@@ -32,6 +32,8 @@ on:
       - ".github/workflows/linux-build-base.yml"
 
   pull_request:
+    branches:
+      - "presto-0.293-clp-connector"
     paths:
       - "velox/**"
       - "!velox/docs/**"

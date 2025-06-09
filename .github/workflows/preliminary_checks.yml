@@ -15,6 +15,7 @@ name: Run Checks
 
 on:
   pull_request:
+    branches: [presto-0.293-clp-connector]
     types:
       - opened
       - reopened

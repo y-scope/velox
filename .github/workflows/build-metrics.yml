@@ -16,6 +16,13 @@ name: Collect Build Metrics
 
 on:
   pull_request:
+      branches: [presto-0.293-clp-connector]
+      paths:
+        - ".github/workflows/build-metrics.yml"
+        - "scripts/ci/bm-report/**"
+
+  push:
+      branches: [presto-0.293-clp-connector]
       paths:
         - ".github/workflows/build-metrics.yml"
         - "scripts/ci/bm-report/**"
@@ -26,17 +33,17 @@ on:
         description: "ref to check"
         required: true
 
-  schedule:
-    # Run every day at 04:05
-    - cron: "5 4 * * *"
-
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.repository }}-${{ github.head_ref || github.sha }}
+  cancel-in-progress: "${{github.ref != 'refs/heads/presto-0.293-clp-connector'}}"
 
 jobs:
   metrics:
     name: Linux ${{ matrix.link-type }} - ${{ matrix.type }} with adapters
-    if: ${{ github.repository == 'facebookincubator/velox' }}
+    if: ${{ github.repository == 'y-scope/velox' }}
     runs-on: ${{ matrix.runner }}
     container: ghcr.io/facebookincubator/velox-dev:adapters
     strategy:
@@ -176,9 +183,9 @@ jobs:
           retention-days: 5
 
       - name: Push Report
-        # The report only uses conbench data from 'main'
+        # The report only uses conbench data from 'presto-0.293-clp-connector'
         # so any data generated in a PR won't be included
-        if: ${{ github.event_name != 'pull_request' && github.repository == 'facebookincubator/velox'}}
+        if: ${{ github.event_name != 'pull_request' && github.repository == 'y-scope/velox'}}
         run: |
           git checkout gh-pages
           mkdir -p docs/bm-report

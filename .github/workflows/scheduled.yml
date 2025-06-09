@@ -16,6 +16,7 @@ name: "Fuzzer Jobs"
 
 on:
   pull_request:
+    branches: [presto-0.293-clp-connector]
     paths:
       - "velox/**"
       - "!velox/docs/**"
@@ -31,7 +32,7 @@ on:
 
   push:
     branches:
-      - "main"
+      - "presto-0.293-clp-connector"
     paths:
       - "velox/**"
       - "!velox/docs/**"
@@ -44,14 +45,11 @@ on:
       - "scripts/setup-helper-functions.sh"
       - ".github/workflows/scheduled.yml"
 
-  schedule:
-    - cron: '0 3 * * *'
-
   workflow_dispatch:
     inputs:
       ref:
         description: 'Ref to checkout out'
-        default: 'main'
+        default: 'presto-0.293-clp-connector'
       numThreads:
         description: 'Number of threads'
         default: 16
@@ -76,7 +74,7 @@ permissions:
   contents: read
 
 concurrency:
-  # This will not cancel fuzzer runs on main (regardless of which trigger)
+  # This will not cancel fuzzer runs on presto-0.293-clp-connector (regardless of which trigger)
   # by making the commit sha part of the group but will use the branch
   # name in PRs to cancel on going runs on a new commit.
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha  }}
@@ -91,8 +89,7 @@ env:
 jobs:
   compile:
     name: Build
-    # prevent errors when forks ff their main branch
-    if: ${{ github.repository == 'facebookincubator/velox' }}
+    if: ${{ github.repository == 'y-scope/velox' }}
     runs-on: 32-core-ubuntu
     container: ghcr.io/facebookincubator/velox-dev:centos9
     timeout-minutes: 120
@@ -118,7 +115,7 @@ jobs:
 
     steps:
 
-      - name: Get latest commit from main
+      - name: Get latest commit from presto-0.293-clp-connector
         if: ${{ github.event_name != 'schedule' }}
         working-directory: ${{ github.workspace }}
         env:
@@ -127,18 +124,18 @@ jobs:
         run: |
           if [ '${{ github.event_name == 'push' }}' == "true" ]; then
             # get the parent commit of the current one to get the relevant function signatures
-            head_main=$(gh api -q '.parents.[0].sha' '/repos/facebookincubator/velox/commits/${{ github.sha }}')
+            head_clp_connector=$(gh api -q '.parents.[0].sha' '/repos/y-scope/velox/commits/${{ github.sha }}')
           else
-            head_main=$(gh api -H "Accept: application/vnd.github.sha" /repos/facebookincubator/velox/commits/heads/main)
+            head_clp_connector=$(gh api -H "Accept: application/vnd.github.sha" /repos/y-scope/velox/commits/heads/presto-0.293-clp-connector)
           fi
-          echo "head_main=$head_main" >> $GITHUB_OUTPUT
+          echo "head_clp_connector=$head_clp_connector" >> $GITHUB_OUTPUT
 
       - name: Get Function Signature Stash
         uses: assignUser/stash/restore@v1
         id: get-sig
         with:
           path: /tmp/signatures
-          key: function-signatures-${{ steps.get-head.outputs.head_main || github.sha }}
+          key: function-signatures-${{ steps.get-head.outputs.head_clp_connector || github.sha }}
 
       - name: Restore ccache
         uses: assignUser/stash/restore@v1
@@ -152,7 +149,7 @@ jobs:
           # it doesn't work
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}/velox
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}/velox_main
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}/velox_clp_connector
 
       - name: Ensure Stash Dirs Exists
         working-directory: ${{ github.workspace }}
@@ -160,35 +157,35 @@ jobs:
           mkdir -p '$CCACHE_DIR'
           mkdir -p /tmp/signatures
 
-      - name: Checkout Main
+      - name: Checkout Clp Connector
         if: ${{ github.event_name != 'schedule' && steps.get-sig.outputs.stash-hit != 'true' }}
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.get-head.outputs.head_main || 'main' }}
-          path: velox_main
+          ref: ${{ steps.get-head.outputs.head_clp_connector || 'presto-0.293-clp-connector' }}
+          path: velox_clp_connector
 
       - name: Build PyVelox
         if: ${{ github.event_name != 'schedule' && steps.get-sig.outputs.stash-hit != 'true' }}
-        working-directory: velox_main
+        working-directory: velox_clp_connector
         run: |
           make python-build
 
       - name: Create Baseline Signatures
         if: ${{ github.event_name != 'schedule' && steps.get-sig.outputs.stash-hit != 'true' }}
-        working-directory: velox_main
+        working-directory: velox_clp_connector
         run: |
           source .venv/bin/activate
           python3 -m pip install deepdiff
-          python3 scripts/ci/signature.py export --spark /tmp/signatures/spark_signatures_main.json
-          python3 scripts/ci/signature.py export --presto /tmp/signatures/presto_signatures_main.json
-          python3 scripts/ci/signature.py export_aggregates --presto /tmp/signatures/presto_aggregate_signatures_main.json
+          python3 scripts/ci/signature.py export --spark /tmp/signatures/spark_signatures_clp_connector.json
+          python3 scripts/ci/signature.py export --presto /tmp/signatures/presto_signatures_clp_connector.json
+          python3 scripts/ci/signature.py export_aggregates --presto /tmp/signatures/presto_aggregate_signatures_clp_connector.json
 
       - name: Save Function Signature Stash
         if: ${{ github.event_name == 'pull_request' && steps.get-sig.outputs.stash-hit != 'true' }}
         uses: assignUser/stash/save@v1
         with:
           path: /tmp/signatures
-          key: function-signatures-${{ steps.get-head.outputs.head_main }}
+          key: function-signatures-${{ steps.get-head.outputs.head_clp_connector }}
 
       - name: Checkout Contender
         uses: actions/checkout@v4
@@ -240,7 +237,7 @@ jobs:
           python3 -m pip install deepdiff
           python3 scripts/ci/signature.py gh_bias_check presto spark
           python3 scripts/ci/signature.py export_aggregates --presto /tmp/signatures/presto_aggregate_signatures_contender.json
-          python3 scripts/ci/signature.py bias_aggregates  /tmp/signatures/presto_aggregate_signatures_main.json \
+          python3 scripts/ci/signature.py bias_aggregates  /tmp/signatures/presto_aggregate_signatures_clp_connector.json \
            /tmp/signatures/presto_aggregate_signatures_contender.json /tmp/signatures/presto_aggregate_bias_functions \
            /tmp/signatures/presto_aggregate_errors
 
@@ -258,10 +255,10 @@ jobs:
         run: |
           # Remove irrelevant artifacts
           rm -f *_bias_functions
-          rm -f *_signatures_main.json
-          # Rename signature files as 'main' files
+          rm -f *_signatures_clp_connector.json
+          # Rename signature files as 'clp_connector' files
           for f in *_signatures_contender.json; do
-            mv "$f" "${f/_contender.json/_main.json}"
+            mv "$f" "${f/_contender.json/_clp_connector.json}"
           done
 
       - name: Save Function Signature Stash

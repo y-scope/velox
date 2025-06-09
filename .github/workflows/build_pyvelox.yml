@@ -31,6 +31,11 @@ on:
   # schedule:
   #   - cron: '15 0 * * *'
   pull_request:
+    branches: [presto-0.293-clp-connector]
+    paths:
+      - '.github/workflows/build_pyvelox.yml'
+  push:
+    branches: [presto-0.293-clp-connector]
     paths:
       - '.github/workflows/build_pyvelox.yml'
 

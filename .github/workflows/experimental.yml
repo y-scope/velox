@@ -16,15 +16,20 @@ name: "Experimental Fuzzer Jobs"
 
 on:
   pull_request:
+    branches: [presto-0.293-clp-connector]
     paths:
       - ".github/workflows/experimental.yml"
 
+  push:
+    branches: [presto-0.293-clp-connector]
+    paths:
+      - ".github/workflows/experimental.yml"
 
   workflow_dispatch:
     inputs:
       ref:
         description: 'Ref to checkout out'
-        default: 'main'
+        default: 'presto-0.293-clp-connector'
       numThreads:
         description: 'Number of threads'
         default: 16
@@ -44,6 +49,10 @@ defaults:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.repository }}-${{ github.head_ref || github.sha }}
+  cancel-in-progress: true
 
 jobs:
   compile:
@@ -68,7 +77,7 @@ jobs:
         with:
           path: velox
           submodules: 'recursive'
-          ref: "${{ inputs.ref || 'main' }}"
+          ref: "${{ inputs.ref || 'presto-0.293-clp-connector' }}"
 
       - name: "Install dependencies"
         run: cd  velox && source ./scripts/setup-ubuntu.sh && install_apt_deps
@@ -133,7 +142,7 @@ jobs:
         with:
           path: velox
           submodules: 'recursive'
-          ref: "${{ inputs.ref || 'main' }}"
+          ref: "${{ inputs.ref || 'presto-0.293-clp-connector' }}"
 
 
       - name: "Build"
@@ -183,7 +192,7 @@ jobs:
       - name: "Checkout Repo"
         uses: actions/checkout@v3
         with:
-          ref: "${{ inputs.ref || 'main' }}"
+          ref: "${{ inputs.ref || 'presto-0.293-clp-connector' }}"
 
       - name: "Install dependencies"
         run: source ./scripts/setup-ubuntu.sh && install_apt_deps
@@ -224,7 +233,7 @@ jobs:
       - name: "Checkout Repo"
         uses: actions/checkout@v3
         with:
-          ref: "${{ inputs.ref || 'main' }}"
+          ref: "${{ inputs.ref || 'presto-0.293-clp-connector' }}"
 
       - name: "Install dependencies"
         run: source ./scripts/setup-ubuntu.sh && install_apt_deps
@@ -265,7 +274,7 @@ jobs:
       - name: "Checkout Repo"
         uses: actions/checkout@v3
         with:
-          ref: "${{ inputs.ref || 'main' }}"
+          ref: "${{ inputs.ref || 'presto-0.293-clp-connector' }}"
 
       - name: "Install dependencies"
         run: source ./scripts/setup-ubuntu.sh && install_apt_deps
@@ -315,7 +324,7 @@ jobs:
       - name: "Checkout Repo"
         uses: actions/checkout@v3
         with:
-          ref: "${{ inputs.ref || 'main' }}"
+          ref: "${{ inputs.ref || 'presto-0.293-clp-connector' }}"
 
       - name: "Install dependencies"
         run: source ./scripts/setup-ubuntu.sh && install_apt_deps

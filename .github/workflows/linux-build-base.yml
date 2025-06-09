@@ -26,8 +26,7 @@ on:
 jobs:
   adapters:
     name: Linux release with adapters
-    # prevent errors when forks ff their main branch
-    if: ${{ github.repository == 'facebookincubator/velox' }}
+    if: ${{ github.repository == 'y-scope/velox' }}
     runs-on: 8-core-ubuntu-22.04
     container: ghcr.io/facebookincubator/velox-dev:adapters
     defaults:
@@ -122,8 +121,7 @@ jobs:
 
   ubuntu-debug:
     runs-on: 8-core-ubuntu-22.04
-    # prevent errors when forks ff their main branch
-    if: ${{ github.repository == 'facebookincubator/velox' }}
+    if: ${{ github.repository == 'y-scope/velox' }}
     name: "Ubuntu debug with resolve_dependency"
     env:
       CCACHE_DIR: "${{ github.workspace }}/ccache"

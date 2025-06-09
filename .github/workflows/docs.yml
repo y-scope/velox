@@ -16,14 +16,23 @@ name: Update Documentation
 
 on:
   push:
+    branches: [presto-0.293-clp-connector]
     paths:
       - "velox/docs/**"
       - ".github/workflows/docs.yml"
 
   pull_request:
+    branches: [presto-0.293-clp-connector]
     paths:
       - "velox/docs/**"
       - ".github/workflows/docs.yml"
+
+  push:
+    branches: [presto-0.293-clp-connector]
+    paths:
+      - "velox/docs/**"
+      - ".github/workflows/docs.yml"
+
 
 permissions:
   contents: write
@@ -96,7 +105,7 @@ jobs:
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
       - name: Push Documentation
-        if: ${{ github.event_name == 'push' && github.repository == 'facebookincubator/velox'}}
+        if: ${{ github.event_name == 'push' && github.repository == 'y-scope/velox'}}
         run: |
           git checkout gh-pages
           cp -R velox/docs/_build/html/* docs
