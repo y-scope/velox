@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # Build the test and build container for presto_cpp
-ARG image=ghcr.io/y-scope/clp/velox-dev:centos9
+ARG image=ghcr.io/facebookincubator/velox-dev:centos9
 FROM $image
 
 COPY scripts/setup-centos9.sh /
