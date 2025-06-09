@@ -45,7 +45,6 @@ concurrency:
 jobs:
   ubuntu-debug:
     runs-on: ubuntu-22.04
-    # prevent errors when forks ff their main branch
     if: ${{ github.repository == 'y-scope/velox' }}
     name: "Ubuntu debug"
     defaults:
@@ -80,7 +79,6 @@ jobs:
 
   ubuntu-gpu-relwithdebinfo:
     runs-on: 4-core-ubuntu-gpu-t4
-    # prevent errors when forks ff their main branch
     if: ${{ github.repository == 'y-scope/velox' }}
     name: "Ubuntu GPU debug"
     env:
