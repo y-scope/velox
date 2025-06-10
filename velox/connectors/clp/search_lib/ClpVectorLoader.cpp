@@ -14,12 +14,94 @@
  * limitations under the License.
  */
 
+#include <cstdint>
+#include <cmath>
 #include <utility>
 
+#include "clp_s/ColumnReader.hpp"
 #include "velox/connectors/clp/search_lib/ClpVectorLoader.h"
 #include "velox/vector/ComplexVector.h"
+#include "velox/Timestamp.h"
 
 namespace facebook::velox::connector::clp::search_lib {
+namespace {
+enum class TimestampPrecision : uint8_t {
+  Seconds,
+  Milliseconds,
+  Microseconds,
+  Nanoseconds
+};
+
+/**
+ * Estimates the precision of an epoch timestamp as seconds, milliseconds,
+ * or nanoseconds.
+ * 
+ * This heuristic relies on the fact that 1 year of epoch nanoseconds is
+ * approximately 1000 years of epoch microseconds and so on. This heuristic
+ * can be unreliable for timestamps sufficiently close to the epoch, but should
+ * otherwise be accurate for the next 1000 years.
+ *
+ * @param timestamp
+ * @return the estimated timestamp precision
+ */
+template<typename T>
+auto estimatePrecision(T timestamp) -> TimestampPrecision {
+  constexpr int64_t kEpochMilliseconds1971{31536000000};
+  constexpr int64_t kEpochMicroseconds1971{31536000000000};
+  constexpr int64_t kEpochNanoseconds1971{31536000000000};
+  if (timestamp > kEpochNanoseconds1971) {
+    return TimestampPrecision::Nanoseconds;
+  } else if (timestamp > kEpochMicroseconds1971) {
+    return TimestampPrecision::Microseconds;
+  } else if (timestamp > kEpochMilliseconds1971) {
+    return TimestampPrecision::Milliseconds;
+  } else if (timestamp > -kEpochMilliseconds1971) {
+    return TimestampPrecision::Seconds;
+  } else if (timestamp > -kEpochMicroseconds1971) {
+    return TimestampPrecision::Milliseconds;
+  } else if (timestamp > -kEpochNanoseconds1971) {
+    return TimestampPrecision::Microseconds;
+  } else {
+    return TimestampPrecision::Nanoseconds;
+  }
+}
+
+auto convertToVeloxTimestamp(double timestamp) -> Timestamp {
+  switch(estimatePrecision(timestamp)) {
+  case TimestampPrecision::Nanoseconds:
+    timestamp /= Timestamp::kNanosInSecond;
+    break;
+  case TimestampPrecision::Microseconds:
+    timestamp /= Timestamp::kMicrosecondsInSecond;
+    break;
+  case TimestampPrecision::Milliseconds:
+    timestamp /= Timestamp::kMillisecondsInSecond;
+    break;
+  }
+  double seconds{};
+  double nanoseconds = modf(timestamp, &seconds);
+  return Timestamp(
+    static_cast<int64_t>(seconds),
+    static_cast<int64_t>(nanoseconds * Timestamp::kNanosInSecond));
+}
+
+auto convertToVeloxTimestamp(int64_t timestamp) -> Timestamp {
+  switch(estimatePrecision(timestamp)) {
+  case TimestampPrecision::Microseconds:
+    timestamp *= Timestamp::kNanosecondsInMicrosecond;
+    break;
+  case TimestampPrecision::Milliseconds:
+    timestamp *= Timestamp::kNanosecondsInMillisecond;
+    break;
+  case TimestampPrecision::Seconds:
+    timestamp *= Timestamp::kNanosInSecond;
+    break;
+  }
+  int64_t seconds{timestamp / Timestamp::kNanosInSecond};
+  int64_t nanoseconds{timestamp - seconds * Timestamp::kNanosInSecond};
+  return Timestamp(seconds, nanoseconds);
+}
+}
 ClpVectorLoader::ClpVectorLoader(
     clp_s::BaseColumnReader* columnReader,
     ColumnType nodeType,
@@ -50,6 +132,49 @@ void ClpVectorLoader::populateData(RowSet rows, VectorPtr vector) {
     }
 
     vector->setNull(vectorIndex, false);
+  }
+}
+
+template <NodeType Type>
+void ClpVectorLoader::populateTimestampData(RowSet rows, VectorPtr vector) {
+  bool supportedNodeType{false};
+  switch (Type) {
+    case NodeType::Float:
+    case NodeType::Integer:
+    case NodeType::DateString:
+      supportedNodeType = true;
+      break;
+    default:
+      break;
+  }
+  if (columnReader_ == nullptr || false == supportedNodeType) {
+    for (int vectorIndex : rows) {
+      vector->setNull(vectorIndex, true);
+    }
+    return;
+  }
+
+  for (int vectorIndex : rows) {
+    auto messageIndex = (*filteredRowIndices_)[vectorIndex];
+
+    if (NodeType::Float == Type) {
+      auto reader = static_cast<FloatColumnReader*>(columnReader_);
+      vector->set(
+        vectorIndex,
+        convertToVeloxTimestamp(
+          std::get<double>(reader->extract_value(messageIndex))));
+    } else if (NodeType::Integer == Type) {
+      auto reader = static_cast<Int64ColumnReader*>(columnReader_);
+      vector->set(
+        vectorIndex,
+        convertToVeloxTimestamp(
+          std::get<int64_t>(reader->extract_value(messageIndex))));
+    } else {
+      auto reader = static_cast<DateStringColumnReader*>(columnReader_);
+      vector->set(
+        vectorIndex,
+        convertToVeloxTimestamp(reader->get_encoded_time(messageIndex)));
+    }
   }
 }
 
@@ -134,6 +259,20 @@ void ClpVectorLoader::loadInternal(
       }
       break;
     }
+    case ColumnType::Timestamp: {
+      auto timestampVector = vector->asFlatVector<Timestamp>();
+      if (nullptr != dynamic_cast<Int64ColumnReader*>(columnReader_)) {
+        populateTimestampData<NodeType::Integer>(rows, timestampVector);
+      } else if (
+        nullptr != dynamic_cast<DateStringColumnReader*>(columnReader_)) {
+        populateTimestampData<NodeType::DateString>(rows, timestampVector);
+      } else if (nullptr != dynamic_cast<FloatColumnReader*>(columnReader_)) {
+        populateTimestampData<NodeType::Float>(rows, timestampVector);
+      } else {
+        populateTimestampData<NodeType::Unknown>(rows, timestampVector);
+      }
+      break;
+    }
     default:
       VELOX_FAIL("Unsupported column type");
   }
@@ -150,6 +289,18 @@ template void ClpVectorLoader::populateData<uint8_t>(
     RowSet rows,
     FlatVector<bool>* vector);
 template void ClpVectorLoader::populateData<std::string>(
+    RowSet rows,
+    FlatVector<StringView>* vector);
+template void ClpVectorLoader::populateTimestampData<NodeType::Float>(
+    RowSet rows,
+    FlatVector<StringView>* vector);
+template void ClpVectorLoader::populateTimestampData<NodeType::Integer>(
+    RowSet rows,
+    FlatVector<StringView>* vector);
+template void ClpVectorLoader::populateTimestampData<NodeType::DateString>(
+    RowSet rows,
+    FlatVector<StringView>* vector);
+template void ClpVectorLoader::populateTimestampData<NodeType::Unknown>(
     RowSet rows,
     FlatVector<StringView>* vector);
 } // namespace facebook::velox::connector::clp::search_lib

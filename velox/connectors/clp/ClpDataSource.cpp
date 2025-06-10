@@ -93,6 +93,8 @@ void ClpDataSource::addFieldsRecursively(
       case TypeKind::ARRAY:
         clpColumnType = search_lib::ColumnType::Array;
         break;
+      case TypeKind::TIMESTAMP:
+        clpColumnType = search_lib::ColumnType::Timestamp;
       default:
         VELOX_USER_FAIL("Type not supported: {}", columnType->name());
     }

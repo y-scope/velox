@@ -210,6 +210,10 @@ ErrorCode ClpCursor::loadArchive() {
         case ColumnType::Array:
           columnDescriptor->set_matching_types(LiteralType::ArrayT);
           break;
+        case ColumnType::Timestamp:
+          columnDescriptor->set_matching_types(
+              LiteralType::EpochDateT | LiteralType::IntegerT |
+              LiteralType::FloatT);
         default:
           break;
       }
