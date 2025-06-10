@@ -163,7 +163,7 @@ jobs:
           if [[ "${USE_CLANG}" = "true" ]]; then export CC=/usr/bin/clang-15; export CXX=/usr/bin/clang++-15; fi
           make cmake BUILD_DIR=debug BUILD_TYPE=Debug
           # Refer to presto_cpp/main/CMakeLists.txt for the list of Velox targets need to build
-          cmake --build _build/debug -j $(getconf _NPROCESSORS_ONLN) \
+          cmake --build _build/debug -j $(getconf _NPROCESSORS_ONLN) --target \
             velox_abfs \
             velox_aggregates \
             velox_caching \
