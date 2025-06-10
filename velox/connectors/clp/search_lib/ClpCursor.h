@@ -37,7 +37,15 @@ enum class ErrorCode {
   InternalError
 };
 
-enum class ColumnType { String, Integer, Float, Array, Boolean, Timestamp, Unknown = -1 };
+enum class ColumnType {
+  String,
+  Integer,
+  Float,
+  Array,
+  Boolean,
+  Timestamp,
+  Unknown = -1
+};
 
 struct Field {
   ColumnType type;

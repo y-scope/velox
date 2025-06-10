@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-#include <cstdint>
 #include <cmath>
+#include <cstdint>
 #include <utility>
 
 #include "clp_s/ColumnReader.hpp"
+#include "velox/Timestamp.h"
 #include "velox/connectors/clp/search_lib/ClpVectorLoader.h"
 #include "velox/vector/ComplexVector.h"
-#include "velox/Timestamp.h"
 
 namespace facebook::velox::connector::clp::search_lib {
 namespace {
@@ -35,7 +35,7 @@ enum class TimestampPrecision : uint8_t {
 /**
  * Estimates the precision of an epoch timestamp as seconds, milliseconds,
  * or nanoseconds.
- * 
+ *
  * This heuristic relies on the fact that 1 year of epoch nanoseconds is
  * approximately 1000 years of epoch microseconds and so on. This heuristic
  * can be unreliable for timestamps sufficiently close to the epoch, but should
@@ -44,7 +44,7 @@ enum class TimestampPrecision : uint8_t {
  * @param timestamp
  * @return the estimated timestamp precision
  */
-template<typename T>
+template <typename T>
 auto estimatePrecision(T timestamp) -> TimestampPrecision {
   constexpr int64_t kEpochMilliseconds1971{31536000000};
   constexpr int64_t kEpochMicroseconds1971{31536000000000};
@@ -67,41 +67,41 @@ auto estimatePrecision(T timestamp) -> TimestampPrecision {
 }
 
 auto convertToVeloxTimestamp(double timestamp) -> Timestamp {
-  switch(estimatePrecision(timestamp)) {
-  case TimestampPrecision::Nanoseconds:
-    timestamp /= Timestamp::kNanosInSecond;
-    break;
-  case TimestampPrecision::Microseconds:
-    timestamp /= Timestamp::kMicrosecondsInSecond;
-    break;
-  case TimestampPrecision::Milliseconds:
-    timestamp /= Timestamp::kMillisecondsInSecond;
-    break;
+  switch (estimatePrecision(timestamp)) {
+    case TimestampPrecision::Nanoseconds:
+      timestamp /= Timestamp::kNanosInSecond;
+      break;
+    case TimestampPrecision::Microseconds:
+      timestamp /= Timestamp::kMicrosecondsInSecond;
+      break;
+    case TimestampPrecision::Milliseconds:
+      timestamp /= Timestamp::kMillisecondsInSecond;
+      break;
   }
   double seconds{};
   double nanoseconds = modf(timestamp, &seconds);
   return Timestamp(
-    static_cast<int64_t>(seconds),
-    static_cast<int64_t>(nanoseconds * Timestamp::kNanosInSecond));
+      static_cast<int64_t>(seconds),
+      static_cast<int64_t>(nanoseconds * Timestamp::kNanosInSecond));
 }
 
 auto convertToVeloxTimestamp(int64_t timestamp) -> Timestamp {
-  switch(estimatePrecision(timestamp)) {
-  case TimestampPrecision::Microseconds:
-    timestamp *= Timestamp::kNanosecondsInMicrosecond;
-    break;
-  case TimestampPrecision::Milliseconds:
-    timestamp *= Timestamp::kNanosecondsInMillisecond;
-    break;
-  case TimestampPrecision::Seconds:
-    timestamp *= Timestamp::kNanosInSecond;
-    break;
+  switch (estimatePrecision(timestamp)) {
+    case TimestampPrecision::Microseconds:
+      timestamp *= Timestamp::kNanosecondsInMicrosecond;
+      break;
+    case TimestampPrecision::Milliseconds:
+      timestamp *= Timestamp::kNanosecondsInMillisecond;
+      break;
+    case TimestampPrecision::Seconds:
+      timestamp *= Timestamp::kNanosInSecond;
+      break;
   }
   int64_t seconds{timestamp / Timestamp::kNanosInSecond};
   int64_t nanoseconds{timestamp - seconds * Timestamp::kNanosInSecond};
   return Timestamp(seconds, nanoseconds);
 }
-}
+} // namespace
 ClpVectorLoader::ClpVectorLoader(
     clp_s::BaseColumnReader* columnReader,
     ColumnType nodeType,
@@ -160,20 +160,20 @@ void ClpVectorLoader::populateTimestampData(RowSet rows, VectorPtr vector) {
     if (NodeType::Float == Type) {
       auto reader = static_cast<FloatColumnReader*>(columnReader_);
       vector->set(
-        vectorIndex,
-        convertToVeloxTimestamp(
-          std::get<double>(reader->extract_value(messageIndex))));
+          vectorIndex,
+          convertToVeloxTimestamp(
+              std::get<double>(reader->extract_value(messageIndex))));
     } else if (NodeType::Integer == Type) {
       auto reader = static_cast<Int64ColumnReader*>(columnReader_);
       vector->set(
-        vectorIndex,
-        convertToVeloxTimestamp(
-          std::get<int64_t>(reader->extract_value(messageIndex))));
+          vectorIndex,
+          convertToVeloxTimestamp(
+              std::get<int64_t>(reader->extract_value(messageIndex))));
     } else {
       auto reader = static_cast<DateStringColumnReader*>(columnReader_);
       vector->set(
-        vectorIndex,
-        convertToVeloxTimestamp(reader->get_encoded_time(messageIndex)));
+          vectorIndex,
+          convertToVeloxTimestamp(reader->get_encoded_time(messageIndex)));
     }
   }
 }
@@ -264,7 +264,7 @@ void ClpVectorLoader::loadInternal(
       if (nullptr != dynamic_cast<Int64ColumnReader*>(columnReader_)) {
         populateTimestampData<NodeType::Integer>(rows, timestampVector);
       } else if (
-        nullptr != dynamic_cast<DateStringColumnReader*>(columnReader_)) {
+          nullptr != dynamic_cast<DateStringColumnReader*>(columnReader_)) {
         populateTimestampData<NodeType::DateString>(rows, timestampVector);
       } else if (nullptr != dynamic_cast<FloatColumnReader*>(columnReader_)) {
         populateTimestampData<NodeType::Float>(rows, timestampVector);

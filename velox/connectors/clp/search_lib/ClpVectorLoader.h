@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include "clp_s/SchemaTree.hpp"
 #include "clp_s/ColumnReader.hpp"
+#include "clp_s/SchemaTree.hpp"
 #include "velox/connectors/clp/search_lib/ClpCursor.h"
 #include "velox/vector/LazyVector.h"
 
