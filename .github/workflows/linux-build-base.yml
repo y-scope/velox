@@ -18,7 +18,7 @@ on:
   workflow_call:
     inputs:
       use-clang:
-        description: 'Use Clang to compile the project.'
+        description: Use Clang to compile the project.
         default: false
         required: false
         type: boolean
@@ -28,34 +28,54 @@ jobs:
     name: "Ubuntu release with resolve_dependency"
     runs-on: yscope-gh-runner
     env:
-      CCACHE_DIR: "${{ github.workspace }}/ccache"
-      USE_CLANG: "${{ inputs.use-clang && 'true' || 'false' }}"
+      CCACHE_DIR: ${{ github.workspace }}/ccache
+      USE_CLANG: ${{ inputs.use-clang && 'true' || 'false' }}
     defaults:
       run:
         shell: bash
         working-directory: velox
     steps:
+      - name: Get Ccache Stash
+        uses: apache/infrastructure-actions/stash/restore@3354c1565d4b0e335b78a76aedd82153a9e144d4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-ubuntu-release-default-${{ inputs.use-clang && 'clang' || 'gcc' }}
+
       - name: Ensure Stash Dirs Exists
         working-directory: ${{ github.workspace }}
         run: |
-          mkdir -p '${{ env.CCACHE_DIR }}'
+          mkdir -p "$CCACHE_DIR"
 
       - uses: actions/checkout@v4
         with:
           path: velox
+          persist-credentials: false
 
       - name: Install Dependencies
         run: |
           source scripts/setup-ubuntu.sh && install_apt_deps
 
+      - name: Clear CCache StatisticsMore actions
+        run: |
+          ccache -sz
+
       - name: Build Artifact
         env:
           VELOX_DEPENDENCY_SOURCE: BUNDLED
           ICU_SOURCE: SYSTEM
-          MAKEFLAGS: "MAX_HIGH_MEM_JOBS=4 MAX_LINK_JOBS=3"
+          MAKEFLAGS: MAX_HIGH_MEM_JOBS=4 MAX_LINK_JOBS=3
         run: |
           if [[ "${USE_CLANG}" = "true" ]]; then export CC=/usr/bin/clang-15; export CXX=/usr/bin/clang++-15; fi
           make release
+
+      - name: CCache after
+        run: |
+          ccache -vs
+
+      - uses: apache/infrastructure-actions/stash/save@3354c1565d4b0e335b78a76aedd82153a9e144d4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-ubuntu-release-default-${{ inputs.use-clang && 'clang' || 'gcc' }}
 
       - name: Run Tests
         run: |
