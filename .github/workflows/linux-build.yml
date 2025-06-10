@@ -213,7 +213,9 @@ jobs:
           key: ccache-ubuntu-debug-default-${{ inputs.use-clang && 'clang' || 'gcc' }}
 
       # FIXME: Since we only part of the targets, but the command following will run all tests
-      # which may test targets that we didn't built. So we skip this for now.
+      # which may test targets that we didn't built. We can skip it by now because when we update
+      # Velox we should also bump the submodule version in presto-native-execution, which should
+      # trigger the presto_server's unittests which will cover the selected targets we built.
       # - name: Run Tests
       #   run: |
       #     cd _build/debug && ctest -j 8 --output-on-failure --no-tests=error
