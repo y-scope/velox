@@ -82,11 +82,10 @@ auto convertToVeloxTimestamp(double timestamp) -> Timestamp {
     case TimestampPrecision::Seconds:
       break;
   }
-  double seconds{};
-  double nanoseconds = modf(timestamp, &seconds);
+  double seconds{floor(timestamp)};
+  double nanoseconds{(timestamp - seconds) * Timestamp::kNanosInSecond};
   return Timestamp(
-      static_cast<int64_t>(seconds),
-      static_cast<int64_t>(nanoseconds * Timestamp::kNanosInSecond));
+      static_cast<int64_t>(seconds), static_cast<uint64_t>(nanoseconds));
 }
 
 auto convertToVeloxTimestamp(int64_t timestamp) -> Timestamp {
@@ -105,7 +104,11 @@ auto convertToVeloxTimestamp(int64_t timestamp) -> Timestamp {
   }
   int64_t seconds{timestamp / Timestamp::kNanosInSecond};
   int64_t nanoseconds{timestamp - seconds * Timestamp::kNanosInSecond};
-  return Timestamp(seconds, nanoseconds);
+  if (nanoseconds < 0) {
+    seconds -= 1;
+    nanoseconds += Timestamp::kNanosInSecond;
+  }
+  return Timestamp(seconds, static_cast<uint64_t>(nanoseconds));
 }
 } // namespace
 ClpVectorLoader::ClpVectorLoader(
