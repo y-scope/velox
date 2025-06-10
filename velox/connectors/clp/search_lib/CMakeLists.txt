@@ -110,9 +110,8 @@ velox_include_directories(
 
 velox_link_libraries(
   clp-s-search
-  PUBLIC msgpack-cxx spdlog::spdlog
+  PUBLIC absl::flat_hash_map msgpack-cxx spdlog::spdlog
   PRIVATE
-    absl::flat_hash_map
     antlr4_static
     Boost::filesystem
     Boost::iostreams

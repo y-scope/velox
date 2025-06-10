@@ -19,6 +19,8 @@
 #include "clp_s/ColumnReader.hpp"
 #include "clp_s/SchemaTree.hpp"
 #include "velox/connectors/clp/search_lib/ClpCursor.h"
+#include "velox/type/Timestamp.h"
+#include "velox/vector/FlatVector.h"
 #include "velox/vector/LazyVector.h"
 
 namespace facebook::velox::connector::clp::search_lib {
@@ -44,8 +46,10 @@ class ClpVectorLoader : public VectorLoader {
   template <typename T, typename VectorPtr>
   void populateData(RowSet rows, VectorPtr vector);
 
-  template <NodeType Type>
-  void populateTimestampData(RowSet rows, VectorPtr vector);
+  template <clp_s::NodeType Type>
+  void populateTimestampData(
+      RowSet rows,
+      FlatVector<facebook::velox::Timestamp>* vector);
 
   clp_s::BaseColumnReader* columnReader_;
   ColumnType nodeType_;
