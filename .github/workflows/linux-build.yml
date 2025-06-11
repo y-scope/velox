@@ -54,7 +54,7 @@ concurrency:
 jobs:
   linux-gcc:
     name: Build with GCC
-     runs-on: [self-hosted, ubuntu-22.04]
+      runs-on: self-hosted, ubuntu-22.04
     env:
       CCACHE_DIR: "${{ github.workspace }}/ccache"
       USE_CLANG: "${{ 'false' }}"
