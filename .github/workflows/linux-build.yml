@@ -71,11 +71,11 @@ jobs:
           docker image prune --all --force
           docker builder prune -a
           df -h
-      - name: Get Ccache Stash
-        uses: assignUser/stash/restore@v1
-        with:
-          path: '${{ env.CCACHE_DIR }}'
-          key: ccache-ubuntu-debug-default-${{ inputs.use-clang && 'clang' || 'gcc' }}
+      # - name: Get Ccache Stash
+      #   uses: assignUser/stash/restore@v1
+      #   with:
+      #     path: '${{ env.CCACHE_DIR }}'
+      #     key: ccache-ubuntu-debug-default-${{ inputs.use-clang && 'clang' || 'gcc' }}
       - name: Ensure Stash Dirs Exists
         working-directory: ${{ github.workspace }}
         run: |
@@ -86,6 +86,9 @@ jobs:
       - name: Install Core Dependencies
         run: |
           source scripts/setup-ubuntu.sh && install_apt_deps
+      - name: CCache before
+        run: |
+          ccache -vs
       # - name: Install Docs Dependencies
       #   run: |
       #     dnf install -y --setopt=install_weak_deps=False pandoc
