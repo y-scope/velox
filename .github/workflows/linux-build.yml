@@ -84,9 +84,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: velox
-      - name: Install Core Dependencies
-        run: |
-          source scripts/setup-ubuntu.sh && install_apt_deps
+      # - name: Install Core Dependencies
+      #   run: |
+      #     source scripts/setup-ubuntu.sh && install_apt_deps
       - name: CCache before
         run: |
           ccache -vs
