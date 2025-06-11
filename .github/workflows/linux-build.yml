@@ -57,7 +57,7 @@ jobs:
         shell: bash
         working-directory: velox
     steps:
-      - name: Node Cleanup
+      - name: Node Setup and Cleanup
         working-directory: ${{ github.workspace }}
         run: |
           df -h
@@ -71,6 +71,7 @@ jobs:
           docker image prune --all --force
           docker builder prune -a
           df -h
+          whoami
       # - name: Get Ccache Stash
       #   uses: assignUser/stash/restore@v1
       #   with:
