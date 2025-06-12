@@ -72,11 +72,11 @@ jobs:
           docker builder prune -a
           df -h
           whoami
-      - name: Get Ccache Stash
-        uses: assignUser/stash/restore@v1
-        with:
-          path: '${{ env.CCACHE_DIR }}'
-          key: ccache-ubuntu-debug-default-${{ inputs.use-clang && 'clang' || 'gcc' }}
+      # - name: Get Ccache Stash
+      #   uses: assignUser/stash/restore@v1
+      #   with:
+      #     path: '${{ env.CCACHE_DIR }}'
+      #     key: ccache-ubuntu-debug-default-${{ inputs.use-clang && 'clang' || 'gcc' }}
       - name: Ensure Stash Dirs Exists
         working-directory: ${{ github.workspace }}
         run: |
