@@ -89,7 +89,9 @@ jobs:
       - name: Debug
         run: |
           pwd
+          echo ${{ github.ref }}
           git remote -v
+          git fetch
           git ls-remote origin | grep presto-0.293-clp-connector
       - name: Install Core Dependencies
         run: |
@@ -112,7 +114,6 @@ jobs:
           ccache -sz
       - name: Check Headers
         run: |
-          git remote -v
           make header-fix
           if ! git diff --quiet; then
             diff=`git --no-pager diff`
