@@ -101,6 +101,7 @@ jobs:
           sudo apt install -y pipx
           pipx install --force uv cmake==3.31
           pipx ensurepath
+          source ~/.bashrc
           which uv
           make python-venv
           which uv
