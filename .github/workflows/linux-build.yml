@@ -48,7 +48,7 @@ concurrency:
 jobs:
   linux-gcc:
     name: Build with GCC
-    runs-on: ["self-hosted", "ubuntu-22.04"]
+    runs-on: yscope-gh-runner
     env:
       CCACHE_DIR: "${{ github.workspace }}/ccache"
       USE_CLANG: "${{ 'false' }}"
