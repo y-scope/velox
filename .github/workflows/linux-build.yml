@@ -73,10 +73,11 @@ jobs:
           df -h
           whoami
       - name: Get Ccache Stash
+        continue-on-error: true
         uses: assignUser/stash/restore@v1
         with:
           path: '${{ env.CCACHE_DIR }}'
-          key: ccache-ubuntu-debug-default-${{ inputs.use-clang && 'clang' || 'gcc' }}
+          key: ccache-ubuntu-release-default-${{ inputs.use-clang && 'clang' || 'gcc' }}
       - name: Ensure Stash Dirs Exists
         working-directory: ${{ github.workspace }}
         run: |
@@ -159,7 +160,7 @@ jobs:
       - uses: assignUser/stash/save@v1
         with:
           path: '${{ env.CCACHE_DIR }}'
-          key: ccache-ubuntu-debug-default-${{ inputs.use-clang && 'clang' || 'gcc' }}
+          key: ccache-ubuntu-release-default-${{ inputs.use-clang && 'clang' || 'gcc' }}
       - name: Run Tests
         run: |
           cd _build/release && ctest -j 8 --output-on-failure --no-tests=error
