@@ -11,13 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 name: Linux Build using GCC
-
 on:
   push:
-    branches:
-      - "main"
+    branches: [presto-0.293-clp-connector]
     paths:
       - "velox/**"
       - "!velox/docs/**"
@@ -30,7 +27,6 @@ on:
       - "scripts/setup-helper-functions.sh"
       - ".github/workflows/linux-build.yml"
       - ".github/workflows/linux-build-base.yml"
-
   pull_request:
     paths:
       - "velox/**"
@@ -44,15 +40,71 @@ on:
       - "scripts/setup-helper-functions.sh"
       - ".github/workflows/linux-build.yml"
       - ".github/workflows/linux-build-base.yml"
-
 permissions:
   contents: read
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.repository }}-${{ github.head_ref || github.sha }}
-  cancel-in-progress: true
-
+  cancel-in-progress: ${{github.ref != 'refs/heads/presto-0.293-clp-connector'}}
 jobs:
   linux-gcc:
     name: Build with GCC
-    uses: ./.github/workflows/linux-build-base.yml
+    runs-on: yscope-gh-runner
+    env:
+      CCACHE_DIR: "${{ github.workspace }}/ccache"
+      USE_CLANG: "${{ 'false' }}"
+    defaults:
+      run:
+        shell: bash
+        working-directory: velox
+    steps:
+      - name: Node Setup and Cleanup
+        working-directory: ${{ github.workspace }}
+        run: |
+          df -h
+          rm -rf /usr/local/lib/android
+          rm -rf /usr/share/dotnet
+          rm -rf /usr/share/dotnet
+          rm -rf /opt/ghc
+          rm -rf /opt/hostedtoolcache/CodeQL
+          rm -rf "/usr/local/share/boost"
+          rm -rf "$AGENT_TOOLSDIRECTORY"
+          docker image prune --all --force
+          docker builder prune -a
+          df -h
+      - uses: actions/checkout@v4
+        with:
+          path: velox
+      - name: Ensure Stash Dirs Exists
+        working-directory: ${{ github.workspace }}
+        run: |
+          mkdir -p '${{ env.CCACHE_DIR }}'
+      - name: Fetch the origin to get presto-0.293-clp-connector branch
+        run: |
+          git fetch
+      - name: Install Core Dependencies
+        run: |
+          source scripts/setup-ubuntu.sh && install_apt_deps
+      - name: Install Docs Dependencies
+        run: |
+          sudo apt install -y --no-install-recommends pandoc
+          sudo apt install -y pipx
+          pipx install --force uv cmake==3.31
+          make python-venv
+          ~/.local/bin/uv pip install -r scripts/docs-requirements.txt 
+      - name: Build Docs
+        run: |
+          source .venv/bin/activate
+          cd velox/docs
+          make clean
+          make html
+      - name: Build Artifact
+        env:
+          VELOX_DEPENDENCY_SOURCE: BUNDLED
+          ICU_SOURCE: SYSTEM
+          MAKEFLAGS: "NUM_THREADS=8 MAX_HIGH_MEM_JOBS=4 MAX_LINK_JOBS=3"
+        run: |
+          if [[ "${USE_CLANG}" = "true" ]]; then export CC=/usr/bin/clang-15; export CXX=/usr/bin/clang++-15; fi
+          make release
+      - name: Run Tests
+        run: |
+          cd _build/release && ctest -j 8 --output-on-failure --no-tests=error

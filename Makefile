@@ -22,8 +22,8 @@ BENCHMARKS_DUMP_DIR=dumps
 TREAT_WARNINGS_AS_ERRORS ?= 1
 ENABLE_WALL ?= 1
 PYTHON_VENV ?= .venv
-PIP ?= $(shell command -v uv > /dev/null 2>&1 && echo "uv pip" || echo "python3 -m pip")
-VENV ?= $(shell command -v uv > /dev/null 2>&1 && echo "uv venv" || echo "python3 -m venv")
+PIP ?= $(shell command -v ~/.local/bin/uv > /dev/null 2>&1 && echo "~/.local/bin/uv pip" || echo "python3 -m pip")
+VENV ?= $(shell command -v ~/.local/bin/uv > /dev/null 2>&1 && echo "~/.local/bin/uv venv" || echo "python3 -m venv")
 
 # Option to make a minimal build. By default set to "OFF"; set to
 # "ON" to only build a minimal set of components. This may override
@@ -185,33 +185,33 @@ fuzzertest: debug
 			--logtostderr=1 \
 			--minloglevel=0
 
-format-fix: 			#: Fix formatting issues in the main branch
+format-fix: 			#: Fix formatting issues in the presto-0.293-clp-connector branch
 ifneq ("$(wildcard ${PYTHON_VENV}/pyvenv.cfg)","")
-	source ${PYTHON_VENV}/bin/activate; scripts/check.py format main --fix
+	source ${PYTHON_VENV}/bin/activate; scripts/check.py format presto-0.293-clp-connector --fix
 else
-	scripts/check.py format main --fix
+	scripts/check.py format presto-0.293-clp-connector --fix
 endif
 
-format-check: 			#: Check for formatting issues on the main branch
+format-check: 			#: Check for formatting issues on the presto-0.293-clp-connector branch
 	clang-format --version
 ifneq ("$(wildcard ${PYTHON_VENV}/pyvenv.cfg)","")
-	source ${PYTHON_VENV}/bin/activate; scripts/check.py format main
+	source ${PYTHON_VENV}/bin/activate; scripts/check.py format presto-0.293-clp-connector
 else
-	scripts/check.py format main
+	scripts/check.py format presto-0.293-clp-connector
 endif
 
 header-fix:			#: Fix license header issues in the current branch
 ifneq ("$(wildcard ${PYTHON_VENV}/pyvenv.cfg)","")
-	source ${PYTHON_VENV}/bin/activate; scripts/check.py header main --fix
+	source ${PYTHON_VENV}/bin/activate; scripts/check.py header presto-0.293-clp-connector --fix
 else
-	scripts/check.py header main --fix
+	scripts/check.py header presto-0.293-clp-connector --fix
 endif
 
-header-check:			#: Check for license header issues on the main branch
+header-check:			#: Check for license header issues on the presto-0.293-clp-connector branch
 ifneq ("$(wildcard ${PYTHON_VENV}/pyvenv.cfg)","")
-	source ${PYTHON_VENV}/bin/activate; scripts/check.py header main
+	source ${PYTHON_VENV}/bin/activate; scripts/check.py header presto-0.293-clp-connector
 else
-	scripts/check.py header main
+	scripts/check.py header presto-0.293-clp-connector
 endif
 
 circleci-container:			#: Build the linux container for CircleCi
@@ -238,7 +238,7 @@ python-venv:
 	fi
 
 check-pip-version: python-venv # We need a recent pip for '-C'
-	@if [ "$(PIP)" == "uv pip" ]; then \
+	@if [ "$(PIP)" == "~/.local/bin/uv pip" ]; then \
 		exit 0; \
 	fi; \
 	source .venv/bin/activate; \
