@@ -97,6 +97,9 @@ jobs:
           ccache -vs
       - name: Install Docs Dependencies
         run: |
+          sudo apt install -y --no-install-recommends pandoc
+          sudo apt install -y pipx
+          pipx install --force uv cmake==3.31
           make python-venv
           ~/.local/bin/uv pip install -r scripts/docs-requirements.txt 
       - name: Build Docs
@@ -108,42 +111,6 @@ jobs:
       - name: Clear CCache Statistics
         run: |
           ccache -sz
-      # - name: Check Headers
-      #   run: |
-      #     make header-fix
-      #     if ! git diff --quiet; then
-      #       diff=`git --no-pager diff`
-      #       echo "Found missing License Header(s) in the following files:"
-      #       git --no-pager diff --name-only
-      #       echo "Check the Job summary for a copy-pasteable patch."
-      #       echo "> [!IMPORTANT]" >> $GITHUB_STEP_SUMMARY
-      #       echo "Found missing License Header(s)" >> $GITHUB_STEP_SUMMARY
-      #       echo "> Please apply fix using:"  >> $GITHUB_STEP_SUMMARY
-      #       echo "\`\`\`sh" >> $GITHUB_STEP_SUMMARY
-      #       echo "patch -p1 <<EOF" >> $GITHUB_STEP_SUMMARY
-      #       echo "$diff" >> $GITHUB_STEP_SUMMARY
-      #       echo "EOF" >> $GITHUB_STEP_SUMMARY
-      #       echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-      #       exit 1
-      #     fi
-      # - name: Check Format
-      #   run: |
-      #     make format-fix
-      #     if ! git diff --quiet; then
-      #       diff=`git --no-pager diff`
-      #       echo "Found format issues in the following files:"
-      #       git --no-pager diff --name-only
-      #       echo "Check the Job summary for a copy-pasteable patch."
-      #       echo "> [!IMPORTANT]" >> $GITHUB_STEP_SUMMARY
-      #       echo "Found format issues" >> $GITHUB_STEP_SUMMARY
-      #       echo "> Please apply fix using:"  >> $GITHUB_STEP_SUMMARY
-      #       echo "\`\`\`sh" >> $GITHUB_STEP_SUMMARY
-      #       echo "patch -p1 <<EOF" >> $GITHUB_STEP_SUMMARY
-      #       echo "$diff" >> $GITHUB_STEP_SUMMARY
-      #       echo "EOF" >> $GITHUB_STEP_SUMMARY
-      #       echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-      #       exit 1
-      #     fi
       - name: Build Artifact
         env:
           VELOX_DEPENDENCY_SOURCE: BUNDLED
