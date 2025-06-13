@@ -86,13 +86,10 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           mkdir -p '${{ env.CCACHE_DIR }}'
-      - name: Debug
+      - name: Fetch the origin to get presto-0.293-clp-connector branch
         run: |
-          pwd
-          echo ${{ github.ref }}
-          git remote -v
+          echo ${{github.ref != 'refs/heads/presto-0.293-clp-connector'}}
           git fetch
-          git ls-remote origin | grep presto-0.293-clp-connector
       - name: Install Core Dependencies
         run: |
           source scripts/setup-ubuntu.sh && install_apt_deps
