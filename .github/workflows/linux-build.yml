@@ -73,6 +73,9 @@ jobs:
           df -h
           whoami
           pwd
+      - uses: actions/checkout@v4
+        with:
+          path: velox
       - name: Get Ccache Stash
         continue-on-error: true
         uses: assignUser/stash/restore@v1
@@ -83,9 +86,6 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           mkdir -p '${{ env.CCACHE_DIR }}'
-      - uses: actions/checkout@v4
-        with:
-          path: velox
       - name: Debug
         run: |
           pwd
@@ -112,6 +112,7 @@ jobs:
           ccache -sz
       - name: Check Headers
         run: |
+          git remote -v
           make header-fix
           if ! git diff --quiet; then
             diff=`git --no-pager diff`
