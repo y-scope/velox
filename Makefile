@@ -22,8 +22,8 @@ BENCHMARKS_DUMP_DIR=dumps
 TREAT_WARNINGS_AS_ERRORS ?= 1
 ENABLE_WALL ?= 1
 PYTHON_VENV ?= .venv
-PIP ?= $(shell command -v uv > /dev/null 2>&1 && echo "uv pip" || echo "python3 -m pip")
-VENV ?= $(shell command -v uv > /dev/null 2>&1 && echo "uv venv" || echo "python3 -m venv")
+PIP ?= $(shell command -v ~/.local/bin/uv > /dev/null 2>&1 && echo "~/.local/bin/uv pip" || echo "python3 -m pip")
+VENV ?= $(shell command -v ~/.local/bin/uv > /dev/null 2>&1 && echo "~/.local/bin/uv venv" || echo "python3 -m venv")
 
 # Option to make a minimal build. By default set to "OFF"; set to
 # "ON" to only build a minimal set of components. This may override
@@ -238,7 +238,7 @@ python-venv:
 	fi
 
 check-pip-version: python-venv # We need a recent pip for '-C'
-	@if [ "$(PIP)" == "uv pip" ]; then \
+	@if [ "$(PIP)" == "~/.local/bin/uv pip" ]; then \
 		exit 0; \
 	fi; \
 	source .venv/bin/activate; \

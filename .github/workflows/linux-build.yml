@@ -72,9 +72,6 @@ jobs:
           docker builder prune -a
           df -h
           whoami
-          source ~/.bashrc
-          ls /home/yscope/.local/bin
-          uv --version
           pwd
       - uses: actions/checkout@v4
         with:
@@ -100,12 +97,8 @@ jobs:
           ccache -vs
       - name: Install Docs Dependencies
         run: |
-          which uv
-          echo bababababbaba
           make python-venv
-          echo cacacacac
-          which uv
-          uv pip install -r scripts/docs-requirements.txt 
+          ~/.local/bin/uv pip install -r scripts/docs-requirements.txt 
       - name: Build Docs
         run: |
           source .venv/bin/activate
