@@ -72,6 +72,8 @@ jobs:
           docker builder prune -a
           df -h
           whoami
+          cat ~/.bashrc
+          which uv
           pwd
       - uses: actions/checkout@v4
         with:
@@ -97,12 +99,6 @@ jobs:
           ccache -vs
       - name: Install Docs Dependencies
         run: |
-          sudo apt install -y --no-install-recommends pandoc
-          sudo apt install -y pipx
-          pipx install --force uv cmake==3.31
-          pipx ensurepath
-          source ~/.bashrc
-          echo hahahahahahah
           which uv
           echo bababababbaba
           make python-venv
