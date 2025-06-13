@@ -102,8 +102,11 @@ jobs:
           pipx install --force uv cmake==3.31
           pipx ensurepath
           source ~/.bashrc
+          echo hahahahahahah
           which uv
+          echo bababababbaba
           make python-venv
+          echo cacacacac
           which uv
           uv pip install -r scripts/docs-requirements.txt 
       - name: Build Docs
