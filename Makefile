@@ -187,31 +187,31 @@ fuzzertest: debug
 
 format-fix: 			#: Fix formatting issues in the presto-0.293-clp-connector branch
 ifneq ("$(wildcard ${PYTHON_VENV}/pyvenv.cfg)","")
-	source ${PYTHON_VENV}/bin/activate; scripts/check.py format presto-0.293-clp-connector --fix
+	source ${PYTHON_VENV}/bin/activate; scripts/check.py format tree --fix
 else
-	scripts/check.py format presto-0.293-clp-connector --fix
+	scripts/check.py format tree --fix
 endif
 
 format-check: 			#: Check for formatting issues on the presto-0.293-clp-connector branch
 	clang-format --version
 ifneq ("$(wildcard ${PYTHON_VENV}/pyvenv.cfg)","")
-	source ${PYTHON_VENV}/bin/activate; scripts/check.py format presto-0.293-clp-connector
+	source ${PYTHON_VENV}/bin/activate; scripts/check.py format tree
 else
-	scripts/check.py format presto-0.293-clp-connector
+	scripts/check.py format tree
 endif
 
 header-fix:			#: Fix license header issues in the current branch
 ifneq ("$(wildcard ${PYTHON_VENV}/pyvenv.cfg)","")
-	source ${PYTHON_VENV}/bin/activate; scripts/check.py header presto-0.293-clp-connector --fix
+	source ${PYTHON_VENV}/bin/activate; scripts/check.py header tree --fix
 else
-	scripts/check.py header presto-0.293-clp-connector --fix
+	scripts/check.py header tree --fix
 endif
 
 header-check:			#: Check for license header issues on the presto-0.293-clp-connector branch
 ifneq ("$(wildcard ${PYTHON_VENV}/pyvenv.cfg)","")
-	source ${PYTHON_VENV}/bin/activate; scripts/check.py header presto-0.293-clp-connector
+	source ${PYTHON_VENV}/bin/activate; scripts/check.py header tree
 else
-	scripts/check.py header presto-0.293-clp-connector
+	scripts/check.py header tree
 endif
 
 circleci-container:			#: Build the linux container for CircleCi
