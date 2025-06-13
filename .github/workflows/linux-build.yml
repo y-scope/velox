@@ -72,6 +72,8 @@ jobs:
           docker builder prune -a
           df -h
           whoami
+          git remote -v
+          git ls-remote origin | grep presto-0.293-clp-connector
       - name: Get Ccache Stash
         continue-on-error: true
         uses: assignUser/stash/restore@v1
