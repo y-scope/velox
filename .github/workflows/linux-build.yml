@@ -71,8 +71,6 @@ jobs:
           docker image prune --all --force
           docker builder prune -a
           df -h
-          whoami
-          pwd
       - uses: actions/checkout@v4
         with:
           path: velox
