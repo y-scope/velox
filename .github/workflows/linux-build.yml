@@ -44,7 +44,7 @@ permissions:
   contents: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.repository }}-${{ github.head_ref || github.sha }}
-  cancel-in-progress: "${{github.ref != 'refs/heads/presto-0.293-clp-connector'}}"
+  cancel-in-progress: ${{github.ref != 'refs/heads/presto-0.293-clp-connector'}}
 jobs:
   linux-gcc:
     name: Build with GCC
@@ -88,7 +88,6 @@ jobs:
           mkdir -p '${{ env.CCACHE_DIR }}'
       - name: Fetch the origin to get presto-0.293-clp-connector branch
         run: |
-          echo ${{github.ref != 'refs/heads/presto-0.293-clp-connector'}}
           git fetch
       - name: Install Core Dependencies
         run: |
