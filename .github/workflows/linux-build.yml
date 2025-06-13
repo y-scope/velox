@@ -73,6 +73,7 @@ jobs:
           df -h
           whoami
           source ~/.bashrc
+          ls /home/yscope/.local/bin
           uv --version
           pwd
       - uses: actions/checkout@v4
