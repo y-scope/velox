@@ -72,8 +72,8 @@ jobs:
           docker builder prune -a
           df -h
           whoami
-          cat ~/.bashrc
-          which uv
+          source ~/.bashrc
+          uv --version
           pwd
       - uses: actions/checkout@v4
         with:
