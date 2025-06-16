@@ -185,14 +185,14 @@ fuzzertest: debug
 			--logtostderr=1 \
 			--minloglevel=0
 
-format-fix: 			#: Fix formatting issues in the presto-0.293-clp-connector branch
+format-fix: 			#: Fix formatting issues
 ifneq ("$(wildcard ${PYTHON_VENV}/pyvenv.cfg)","")
 	source ${PYTHON_VENV}/bin/activate; scripts/check.py format presto-0.293-clp-connector --fix
 else
 	scripts/check.py format presto-0.293-clp-connector --fix
 endif
 
-format-check: 			#: Check for formatting issues on the presto-0.293-clp-connector branch
+format-check: 			#: Check for formatting issues
 	clang-format --version
 ifneq ("$(wildcard ${PYTHON_VENV}/pyvenv.cfg)","")
 	source ${PYTHON_VENV}/bin/activate; scripts/check.py format presto-0.293-clp-connector
