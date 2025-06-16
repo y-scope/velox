@@ -36,7 +36,7 @@ concurrency:
 jobs:
   build_docs:
     name: Build
-    runs-on: 8-core-ubuntu
+    runs-on: yscope-gh-runner
     container: ghcr.io/facebookincubator/velox-dev:centos9
     env:
       CCACHE_DIR: "/tmp/ccache"
