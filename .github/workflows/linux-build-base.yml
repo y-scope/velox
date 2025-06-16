@@ -42,9 +42,11 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           mkdir -p '${{ env.CCACHE_DIR }}'
+
       - name: Install Dependencies
         run: |
           source scripts/setup-ubuntu.sh && install_apt_deps
+
       - name: Build Artifact
         env:
           VELOX_DEPENDENCY_SOURCE: BUNDLED
@@ -56,6 +58,7 @@ jobs:
             export CXX=/usr/bin/clang++-15
           fi
           make release
+
       - name: Run Tests
         working-directory: velox/_build/release
         run: |
