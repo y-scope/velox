@@ -44,8 +44,8 @@ on:
       - "scripts/setup-helper-functions.sh"
       - ".github/workflows/scheduled.yml"
 
-  # schedule:
-  #   - cron: '0 3 * * *'
+  schedule:
+    - cron: '0 6 * * *'
 
   workflow_dispatch:
     inputs:
@@ -59,7 +59,7 @@ concurrency:
 
 jobs:
   linux-clang:
-    # if: ${{ github.event_name == 'schedule' }}
+    if: ${{ github.event_name == 'schedule' }}
     name: Build with Clang
     uses: ./.github/workflows/linux-build-base.yml
     with:

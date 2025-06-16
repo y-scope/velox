@@ -53,6 +53,4 @@ concurrency:
 jobs:
   linux-gcc:
     name: Build with GCC
-    # uses: ./.github/workflows/linux-build-base.yml
-    run:  |
-      echo "Test"
+    uses: ./.github/workflows/linux-build-base.yml
