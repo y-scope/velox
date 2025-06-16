@@ -39,6 +39,10 @@ jobs:
     runs-on: yscope-gh-runner
     env:
       CCACHE_DIR: "/tmp/ccache"
+    defaults:
+      run:
+        shell: bash
+        working-directory: velox
     steps:
       - uses: actions/checkout@v4
         with:
