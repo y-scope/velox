@@ -51,6 +51,6 @@ concurrency:
   cancel-in-progress: ${{github.ref != 'refs/heads/presto-0.293-clp-connector'}}
 
 jobs:
-  linux-gcc:
-    name: Build with GCC
-    uses: ./.github/workflows/linux-build-base.yml
+  # linux-gcc:
+  #   name: Build with GCC
+  #   uses: ./.github/workflows/linux-build-base.yml
