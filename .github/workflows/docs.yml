@@ -35,11 +35,13 @@ concurrency:
 jobs:
   build_docs:
     name: Build
+    # Prevent duplicated runs when an internal branch has a PR
+    if: github.event_name == 'push' || github.event.pull_request == null
     runs-on: ubuntu-latest
     env:
       CCACHE_DIR: "/tmp/ccache"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           fetch-depth: 0
           persist-credentials: true
