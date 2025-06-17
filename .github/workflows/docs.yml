@@ -35,8 +35,6 @@ concurrency:
 jobs:
   build_docs:
     name: Build
-    # Prevent duplicated runs when an internal branch has a PR
-    if: github.event_name == 'push' || github.event.pull_request == null
     runs-on: ubuntu-latest
     env:
       CCACHE_DIR: "/tmp/ccache"
