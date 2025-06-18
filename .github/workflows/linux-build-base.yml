@@ -64,8 +64,7 @@ jobs:
           MAKEFLAGS: MAX_HIGH_MEM_JOBS=4 MAX_LINK_JOBS=3
         run: |
           if [[ "${USE_CLANG}" = "true" ]]; then export CC=/usr/bin/clang-15; export CXX=/usr/bin/clang++-15; fi
-          #make release
-          make minimal
+          make release
 
       - name: CCache after
         run: |
