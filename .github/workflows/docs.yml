@@ -39,10 +39,12 @@ jobs:
     env:
       CCACHE_DIR: "/tmp/ccache"
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           fetch-depth: 0
           persist-credentials: true
+
       - name: Install System Dependencies
         run: |
           sudo apt install -y pipx

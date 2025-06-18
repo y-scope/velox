@@ -35,13 +35,14 @@ jobs:
         shell: bash
         working-directory: velox
     steps:
-      - uses: actions/checkout@v4
-        with:
-          path: velox
       - name: Ensure Stash Dirs Exists
         working-directory: ${{ github.workspace }}
         run: |
           mkdir -p '${{ env.CCACHE_DIR }}'
+
+      - uses: actions/checkout@v4
+        with:
+          path: velox
 
       - name: Install Dependencies
         run: |
@@ -53,13 +54,9 @@ jobs:
           ICU_SOURCE: SYSTEM
           MAKEFLAGS: "MAX_HIGH_MEM_JOBS=4 MAX_LINK_JOBS=3"
         run: |
-          if [[ "${USE_CLANG}" = "true" ]]; then
-            export CC=/usr/bin/clang-15
-            export CXX=/usr/bin/clang++-15
-          fi
+          if [[ "${USE_CLANG}" = "true" ]]; then export CC=/usr/bin/clang-15; export CXX=/usr/bin/clang++-15; fi
           make release
 
       - name: Run Tests
-        working-directory: velox/_build/release
         run: |
-          ctest -j $(getconf _NPROCESSORS_ONLN) --output-on-failure --no-tests=error
+          cd _build/release && ctest -j $(getconf _NPROCESSORS_ONLN) --output-on-failure --no-tests=error

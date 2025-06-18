@@ -207,7 +207,7 @@ else
 	scripts/check.py header presto-0.293-clp-connector --fix
 endif
 
-header-check:			#: Check for license header issues on the presto-0.293-clp-connector branch
+header-check:			#: Check for license header issues
 ifneq ("$(wildcard ${PYTHON_VENV}/pyvenv.cfg)","")
 	source ${PYTHON_VENV}/bin/activate; scripts/check.py header presto-0.293-clp-connector
 else
