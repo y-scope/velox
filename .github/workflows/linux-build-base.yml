@@ -25,7 +25,7 @@ on:
 
 jobs:
   ubuntu-release:
-    name: "Ubuntu release with resolve_dependency"
+    name: Ubuntu release with resolve_dependency
     runs-on: yscope-gh-runner
     env:
       CCACHE_DIR: ${{ github.workspace }}/ccache

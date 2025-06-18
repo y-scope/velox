@@ -30,7 +30,7 @@ on:
 
   push:
     branches:
-      - "presto-0.293-clp-connector"
+      - presto-0.293-clp-connector
     paths:
       - velox/**
       - '!velox/docs/**'
@@ -45,10 +45,7 @@ on:
 
   schedule:
     # Run at 6am UTC to avoid interrupting late night work in Toronto.
-    - cron: '0 6 * * *'
-
-  workflow_dispatch:
-    inputs:
+    - cron: 0 6 * * *
 
 permissions:
   contents: read
