@@ -31,8 +31,6 @@ concurrency:
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
-    env:
-      CCACHE_CONFIGPATH: ~/yscache/pre-commit/ccache.conf
     steps:
       - run: python -m pip install pre-commit
 
@@ -41,9 +39,12 @@ jobs:
           fetch-depth: 2
           persist-credentials: false
 
-      - name: Clear CCache Statistics
-        run: |
-          ccache -sz
+      - uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            pre-commit-
 
       - name: Run pre-commit
         env:
@@ -54,7 +55,3 @@ jobs:
           echo $files | tr ' ' '\n'
           echo "::endgroup::"
           pre-commit run --show-diff-on-failure --color=always --files $files
-
-      - name: CCache after
-        run: |
-          ccache -vs
