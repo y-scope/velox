@@ -35,6 +35,11 @@ jobs:
         shell: bash
         working-directory: velox
     steps:
+      - uses: actions/checkout@v4
+        with:
+          path: velox
+          persist-credentials: false
+
       - name: Prepare Stash Key
         run: |
           SANITIZED_REPO="${{ github.repository }}"
@@ -43,11 +48,6 @@ jobs:
           SANITIZED_REF_NAME="${SANITIZED_REF_NAME//\//-}"
           STASH_KEY="velox-ccache-ubuntu-release-${{ inputs.use-clang && 'clang' || 'gcc' }}-${SANITIZED_REPO}-${SANITIZED_REF_NAME}"
           echo "STASH_KEY=$STASH_KEY" >> $GITHUB_ENV
-
-      - uses: actions/checkout@v4
-        with:
-          path: velox
-          persist-credentials: false
 
       - name: Ensure Stash Dirs Exists
         working-directory: ${{ github.workspace }}
