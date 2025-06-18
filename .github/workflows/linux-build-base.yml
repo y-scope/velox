@@ -35,6 +35,11 @@ jobs:
         shell: bash
         working-directory: velox
     steps:
+      - uses: actions/checkout@v4
+        with:
+          path: velox
+          persist-credentials: false
+
       - name: Ensure Stash Dirs Exists
         working-directory: ${{ github.workspace }}
         run: |
@@ -43,11 +48,6 @@ jobs:
       - name: Get Release Build Ccache Stash
         run: |
           restore.sh velox-ccache-ubuntu-release-${{ inputs.use-clang && 'clang' || 'gcc' }}-${{ github.repository }}-${{ github.ref_name }} ${{ env.CCACHE_DIR }}
-
-      - uses: actions/checkout@v4
-        with:
-          path: velox
-          persist-credentials: false
 
       - name: Install Dependencies
         run: |
