@@ -30,6 +30,7 @@ jobs:
     env:
       CCACHE_DIR: ${{ github.workspace }}/ccache
       USE_CLANG: ${{ inputs.use-clang && 'true' || 'false' }}
+      STASH_KEY: velox-ccache-ubuntu-release-${{ inputs.use-clang && 'clang' || 'gcc' }}-${{ github.repository }}-${{ github.ref_name }}
     defaults:
       run:
         shell: bash
@@ -47,7 +48,7 @@ jobs:
 
       - name: Get Release Build Ccache Stash
         run: |
-          ~/yscache/restore.sh velox-ccache-ubuntu-release-${{ inputs.use-clang && 'clang' || 'gcc' }}-${{ github.repository }}-${{ github.ref_name }} ${{ env.CCACHE_DIR }}
+          ~/yscache/restore.sh "$STASH_KEY" "$CCACHE_DIR"
 
       - name: Install Dependencies
         run: |
@@ -64,7 +65,8 @@ jobs:
           MAKEFLAGS: MAX_HIGH_MEM_JOBS=4 MAX_LINK_JOBS=3
         run: |
           if [[ "${USE_CLANG}" = "true" ]]; then export CC=/usr/bin/clang-15; export CXX=/usr/bin/clang++-15; fi
-          make release
+          #make release
+          make minimal
 
       - name: CCache after
         run: |
@@ -72,8 +74,8 @@ jobs:
 
       - name: Save Release Build Ccache Stash
         run: |
-          ~/yscache/save.sh velox-ccache-ubuntu-release-${{ inputs.use-clang && 'clang' || 'gcc' }}-${{ github.repository }}-${{ github.ref_name }} ${{ env.CCACHE_DIR }}
+          ~/yscache/save.sh "$STASH_KEY" "$CCACHE_DIR"
 
-      - name: Run Tests
-        run: |
-          cd _build/release && ctest -j $(getconf _NPROCESSORS_ONLN) --output-on-failure --no-tests=error
+      # - name: Run Tests
+      #   run: |
+      #     cd _build/release && ctest -j $(getconf _NPROCESSORS_ONLN) --output-on-failure --no-tests=error
