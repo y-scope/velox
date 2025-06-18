@@ -84,6 +84,6 @@ jobs:
         run: |
           ~/yscache/save.sh "$STASH_KEY" "$CCACHE_DIR"
 
-      # - name: Run Tests
-      #   run: |
-      #     cd _build/release && ctest -j $(getconf _NPROCESSORS_ONLN) --output-on-failure --no-tests=error
+      - name: Run Tests
+        run: |
+          cd _build/release && ctest -j $(getconf _NPROCESSORS_ONLN) --output-on-failure --no-tests=error
