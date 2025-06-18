@@ -28,7 +28,7 @@ jobs:
     name: Ubuntu release with resolve_dependency
     runs-on: yscope-gh-runner
     env:
-      CCACHE_DIR: ${{ github.workspace }}/ccache
+      CCACHE_CONFIGPATH: ~/yscache/velox-ubuntu-release-${{ inputs.use-clang && 'clang' || 'gcc' }}/ccache.conf
       USE_CLANG: ${{ inputs.use-clang && 'true' || 'false' }}
     defaults:
       run:
@@ -40,29 +40,11 @@ jobs:
           path: velox
           persist-credentials: false
 
-      - name: Prepare Stash Key
-        run: |
-          SANITIZED_REPO="${{ github.repository }}"
-          SANITIZED_REPO="${SANITIZED_REPO//\//-}"
-          SANITIZED_REF_NAME="${{ github.ref_name }}"
-          SANITIZED_REF_NAME="${SANITIZED_REF_NAME//\//-}"
-          STASH_KEY="velox-ccache-ubuntu-release-${{ inputs.use-clang && 'clang' || 'gcc' }}-${SANITIZED_REPO}-${SANITIZED_REF_NAME}"
-          echo "STASH_KEY=$STASH_KEY" >> "$GITHUB_ENV"
-
-      - name: Ensure Stash Dirs Exists
-        working-directory: ${{ github.workspace }}
-        run: |
-          mkdir -p "$CCACHE_DIR"
-
-      - name: Get Release Build Ccache Stash
-        run: |
-          ~/yscache/restore.sh "$STASH_KEY" "$CCACHE_DIR"
-
       - name: Install Dependencies
         run: |
           source scripts/setup-ubuntu.sh && install_apt_deps
 
-      - name: Clear CCache StatisticsMore actions
+      - name: Clear CCache Statistics
         run: |
           ccache -sz
 
@@ -79,10 +61,6 @@ jobs:
       - name: CCache after
         run: |
           ccache -vs
-
-      - name: Save Release Build Ccache Stash
-        run: |
-          ~/yscache/save.sh "$STASH_KEY" "$CCACHE_DIR"
 
       - name: Run Tests
         run: |
