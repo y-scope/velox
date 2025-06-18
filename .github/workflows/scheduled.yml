@@ -45,8 +45,7 @@ on:
       - ".github/workflows/scheduled.yml"
 
   schedule:
-    # Run at 6am UTC (2am EST) to avoid interfering with potential late-night
-    # work sessions around 11pm EST
+    # Run at 6am UTC to avoid interrupting late night work in Toronto.
     - cron: '0 6 * * *'
 
   workflow_dispatch:
