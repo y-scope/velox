@@ -28,7 +28,8 @@ jobs:
     name: Ubuntu release with resolve_dependency
     runs-on: yscope-gh-runner
     env:
-      CCACHE_CONFIGPATH: ~/yscache/velox-ubuntu-release-${{ inputs.use-clang && 'clang' || 'gcc' }}/ccache.conf
+      CCACHE_DIR: ~/yscache/velox-ubuntu-release-${{ inputs.use-clang && 'clang' || 'gcc' }}/ccache
+      #CCACHE_CONFIGPATH: ~/yscache/velox-ubuntu-release-${{ inputs.use-clang && 'clang' || 'gcc' }}/ccache.conf
       USE_CLANG: ${{ inputs.use-clang && 'true' || 'false' }}
     defaults:
       run:
