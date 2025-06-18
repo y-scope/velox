@@ -47,7 +47,7 @@ jobs:
           SANITIZED_REF_NAME="${{ github.ref_name }}"
           SANITIZED_REF_NAME="${SANITIZED_REF_NAME//\//-}"
           STASH_KEY="velox-ccache-ubuntu-release-${{ inputs.use-clang && 'clang' || 'gcc' }}-${SANITIZED_REPO}-${SANITIZED_REF_NAME}"
-          echo "STASH_KEY=$STASH_KEY" >> $GITHUB_ENV
+          echo "STASH_KEY=$STASH_KEY" >> "$GITHUB_ENV"
 
       - name: Ensure Stash Dirs Exists
         working-directory: ${{ github.workspace }}
