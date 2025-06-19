@@ -52,9 +52,5 @@ concurrency:
 
 jobs:
   linux-gcc:
-    # name: Build with GCC
-    # uses: ./.github/workflows/linux-build-base.yml
-    name: Build with Clang
+    name: Build with GCC
     uses: ./.github/workflows/linux-build-base.yml
-    with:
-      use-clang: true
