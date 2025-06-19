@@ -20,6 +20,7 @@ on:
       - reopened
       - edited
       - synchronize
+  push:
 
 permissions:
   contents: read
