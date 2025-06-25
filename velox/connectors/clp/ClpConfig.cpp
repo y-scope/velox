@@ -14,39 +14,27 @@
  * limitations under the License.
  */
 
-#pragma once
-
-#include <boost/algorithm/string.hpp>
-
-#include "velox/common/config/Config.h"
-
-namespace facebook::velox::config {
-class ConfigBase;
-}
+#include "ClpConfig.h"
 
 namespace facebook::velox::connector::clp {
-class ClpConfig {
- public:
-  enum class StorageType {
-    kFS,
-    kS3,
-  };
 
-  static constexpr const char* kStorageType = "clp.storage-type";
+namespace {
 
-  explicit ClpConfig(std::shared_ptr<const config::ConfigBase> config) {
-    VELOX_CHECK_NOT_NULL(config, "Config is null for CLP initialization");
-    config_ = std::move(config);
+ClpConfig::StorageType stringToStorageType(const std::string& strValue) {
+  auto upperValue = boost::algorithm::to_upper_copy(strValue);
+  if (upperValue == "FS") {
+    return ClpConfig::StorageType::kFS;
   }
-
-  [[nodiscard]] const std::shared_ptr<const config::ConfigBase>& config()
-      const {
-    return config_;
+  if (upperValue == "S3") {
+    return ClpConfig::StorageType::kS3;
   }
+  VELOX_UNSUPPORTED("Unsupported storage type: {}.", strValue);
+}
 
-  StorageType storageType() const;
+} // namespace
 
- private:
-  std::shared_ptr<const config::ConfigBase> config_;
-};
+ClpConfig::StorageType ClpConfig::storageType() const {
+  return stringToStorageType(config_->get<std::string>(kStorageType, "FS"));
+}
+
 } // namespace facebook::velox::connector::clp

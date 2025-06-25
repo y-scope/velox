@@ -17,6 +17,7 @@ add_subdirectory(search_lib)
 velox_add_library(
   velox_clp_connector
   OBJECT
+  ClpConfig.cpp
   ClpConnector.cpp
   ClpDataSource.cpp
   ClpTableHandle.cpp)

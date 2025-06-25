@@ -36,7 +36,7 @@ ClpDataSource::ClpDataSource(
     std::shared_ptr<const ClpConfig>& clpConfig)
     : pool_(pool), outputType_(outputType) {
   auto clpTableHandle = std::dynamic_pointer_cast<ClpTableHandle>(tableHandle);
-  storageType_ = clpTableHandle->storageType();
+  storageType_ = clpConfig->storageType();
   if (auto query = clpTableHandle->kqlQuery(); query && !query->empty()) {
     kqlQuery_ = *query;
   } else {
@@ -103,10 +103,10 @@ void ClpDataSource::addFieldsRecursively(
 void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
   auto clpSplit = std::dynamic_pointer_cast<ClpConnectorSplit>(split);
 
-  if (storageType_ == ClpTableHandle::StorageType::kFS) {
+  if (storageType_ == ClpConfig::StorageType::kFS) {
     cursor_ = std::make_unique<search_lib::ClpCursor>(
         clp_s::InputSource::Filesystem, clpSplit->path_);
-  } else if (storageType_ == ClpTableHandle::StorageType::kS3) {
+  } else if (storageType_ == ClpConfig::StorageType::kS3) {
     cursor_ = std::make_unique<search_lib::ClpCursor>(
         clp_s::InputSource::Network, clpSplit->path_);
   }

@@ -91,7 +91,7 @@ class ClpDataSource : public DataSource {
       const std::shared_ptr<std::vector<uint64_t>>& filteredRows,
       size_t& readerIndex);
 
-  ClpTableHandle::StorageType storageType_;
+  ClpConfig::StorageType storageType_;
   std::string kqlQuery_;
   velox::memory::MemoryPool* pool_;
   RowTypePtr outputType_;
