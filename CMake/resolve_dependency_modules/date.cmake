@@ -17,7 +17,7 @@ set(VELOX_DATE_BUILD_VERSION 3.0.1)
 set(VELOX_DATE_BUILD_SHA256_CHECKSUM
     7a390f200f0ccd207e8cff6757e04817c1a0aec3e327b006b7eb451c57ee3538)
 set(VELOX_DATE_SOURCE_URL
-    "https://github.com/HowardHinnant/date/archive/refs/tags/v${DATE_BUILD_VERSION}.tar.gz"
+    "https://github.com/HowardHinnant/date/archive/refs/tags/v${VELOX_DATE_BUILD_VERSION}.tar.gz"
 )
 
 velox_resolve_dependency_url(DATE)
@@ -31,8 +31,8 @@ message(STATUS "Building date from source")
 
 FetchContent_Declare(
   date
-  URL ${DATE_SOURCE_URL}
-  URL_HASH ${DATE_BUILD_SHA256_CHECKSUM}
+  URL ${VELOX_DATE_SOURCE_URL}
+  URL_HASH ${VELOX_DATE_BUILD_SHA256_CHECKSUM}
   OVERRIDE_FIND_PACKAGE)
 
 FetchContent_MakeAvailable(date)
