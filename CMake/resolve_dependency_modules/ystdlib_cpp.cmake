@@ -1,4 +1,4 @@
-# Copyright (c) Facebook, Inc. and its affiliates.Add commentMore actions
+# Copyright (c) Facebook, Inc. and its affiliates.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,9 @@
 include_guard(GLOBAL)
 
 FetchContent_Declare(
-        ystdlib_cpp
-        GIT_REPOSITORY https://github.com/y-scope/ystdlib-cpp.git
-        GIT_TAG d80cf86e1a1f2dae6421978c8ee353408368f424
-        GIT_SUBMODULES "" GIT_SUBMODULES_RECURSE TRUE)
+  ystdlib_cpp
+  GIT_REPOSITORY https://github.com/y-scope/ystdlib-cpp.git
+  GIT_TAG d80cf86e1a1f2dae6421978c8ee353408368f424)
 
 FetchContent_Populate(ystdlib_cpp)
 
