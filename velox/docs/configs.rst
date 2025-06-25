@@ -912,7 +912,7 @@ CLP Connector
      - Description
    * - clp.storage-type
      - string
-     - LOCAL
+     - FS
      - The storage type of CLP archives, **Allowed values:** ``FS``, ``S3``.
 
 Presto-specific Configuration
