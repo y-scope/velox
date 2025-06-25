@@ -26,7 +26,7 @@ message(STATUS "Building antlr4-runtime from source")
 
 FetchContent_Declare(
   antlr4-runtime
-  URL ${VELOX_ANTLR4_RUNTIME_URL}
+  URL ${VELOX_ANTLR4_RUNTIME_SOURCE_URL}
   URL_HASH ${VELOX_ANTLR4_RUNTIME_BUILD_SHA256_CHECKSUM}
   SOURCE_SUBDIR runtime/Cpp OVERRIDE_FIND_PACKAGE)
 
