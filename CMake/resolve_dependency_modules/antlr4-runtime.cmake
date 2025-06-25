@@ -23,6 +23,7 @@ set(VELOX_ANTLR4_RUNTIME_SOURCE_URL
 velox_resolve_dependency_url(ANTLR4_RUNTIME)
 
 message(STATUS "Building antlr4-runtime from source")
+
 FetchContent_Declare(
   antlr4-runtime
   URL ${VELOX_ANTLR4_RUNTIME_URL}
