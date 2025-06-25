@@ -20,6 +20,8 @@ set(VELOX_NLOHMANN_JSON_SOURCE_URL
     "https://github.com/nlohmann/json/archive/refs/tags/v${VELOX_NLOHMANN_JSON_BUILD_VERSION}.tar.gz"
 )
 
+velox_resolve_dependency_url(NLOHMANN_JSON)
+
 message(STATUS "Building nlohmann_json from source")
 
 FetchContent_Declare(
