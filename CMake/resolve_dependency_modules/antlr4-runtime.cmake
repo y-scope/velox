@@ -13,25 +13,23 @@
 # limitations under the License.
 include_guard(GLOBAL)
 
-set(VELOX_SIMDJSON_VERSION 3.9.3)
-set(VELOX_SIMDJSON_BUILD_SHA256_CHECKSUM
-    2e3d10abcde543d3dd8eba9297522cafdcebdd1db4f51b28f3bc95bf1d6ad23c)
-set(VELOX_SIMDJSON_SOURCE_URL
-    "https://github.com/simdjson/simdjson/archive/refs/tags/v${VELOX_SIMDJSON_VERSION}.tar.gz"
+set(VELOX_ANTLR4_RUNTIME_VERSION 4.13.2)
+set(VELOX_ANTLR4_RUNTIME_BUILD_SHA256_CHECKSUM
+    9f18272a9b32b622835a3365f850dd1063d60f5045fb1e12ce475ae6e18a35bb)
+set(VELOX_ANTLR4_RUNTIME_SOURCE_URL
+    "https://github.com/antlr/antlr4/archive/refs/tags/${VELOX_ANTLR4_RUNTIME_VERSION}.tar.gz"
 )
 
-velox_resolve_dependency_url(SIMDJSON)
+velox_resolve_dependency_url(ANTLR4_RUNTIME)
 
-message(STATUS "Building simdjson from source")
-
+message(STATUS "Building antlr4-runtime from source")
 FetchContent_Declare(
-  simdjson
-  URL ${VELOX_SIMDJSON_SOURCE_URL}
-  URL_HASH ${VELOX_SIMDJSON_BUILD_SHA256_CHECKSUM}
-  OVERRIDE_FIND_PACKAGE)
+  antlr4-runtime
+  URL ${VELOX_ANTLR4_RUNTIME_URL}
+  URL_HASH ${VELOX_ANTLR4_RUNTIME_BUILD_SHA256_CHECKSUM}
+  SOURCE_SUBDIR runtime/Cpp OVERRIDE_FIND_PACKAGE)
 
-if(${VELOX_SIMDJSON_SKIPUTF8VALIDATION})
-  set(SIMDJSON_SKIPUTF8VALIDATION ON)
-endif()
-
-FetchContent_MakeAvailable(simdjson)
+set(ANTLR4_INSTALL
+    ON
+    CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(antlr4-runtime)

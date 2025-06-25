@@ -1,4 +1,4 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
+# Copyright (c) Facebook, Inc. and its affiliates.Add commentMore actions
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,20 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#set(CLP_SRC_DIR ${clp_SOURCE_DIR}/components/core/src)
-add_subdirectory(search_lib)
+include_guard(GLOBAL)
 
-velox_add_library(
-  velox_clp_connector
-  OBJECT
-  ClpConnector.cpp
-  ClpDataSource.cpp
-  ClpTableHandle.cpp)
+FetchContent_Declare(
+        ystdlib_cpp
+        GIT_REPOSITORY https://github.com/y-scope/ystdlib-cpp.git
+        GIT_TAG d80cf86e1a1f2dae6421978c8ee353408368f424
+        GIT_SUBMODULES "" GIT_SUBMODULES_RECURSE TRUE)
 
-velox_link_libraries(velox_clp_connector
-                     PRIVATE clp-s-search simdjson::simdjson velox_connector)
-target_compile_features(velox_clp_connector PRIVATE cxx_std_20)
+FetchContent_Populate(ystdlib_cpp)
 
-if(${VELOX_BUILD_TESTING})
-  add_subdirectory(tests)
-endif()
+set(CLP_YSTDLIB_SOURCE_DIRECTORY "${ystdlib_cpp_SOURCE_DIR}")

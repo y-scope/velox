@@ -11,20 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#set(CLP_SRC_DIR ${clp_SOURCE_DIR}/components/core/src)
-add_subdirectory(search_lib)
+include_guard(GLOBAL)
 
-velox_add_library(
-  velox_clp_connector
-  OBJECT
-  ClpConnector.cpp
-  ClpDataSource.cpp
-  ClpTableHandle.cpp)
+set(VELOX_NLOHMANN_JSON_BUILD_VERSION 3.11.3)
+set(VELOX_NLOHMANN_JSON_BUILD_SHA256_CHECKSUM
+    0d8ef5af7f9794e3263480193c491549b2ba6cc74bb018906202ada498a79406)
+set(VELOX_NLOHMANN_JSON_SOURCE_URL
+    "https://github.com/nlohmann/json/archive/refs/tags/v${VELOX_NLOHMANN_JSON_BUILD_VERSION}.tar.gz"
+)
 
-velox_link_libraries(velox_clp_connector
-                     PRIVATE clp-s-search simdjson::simdjson velox_connector)
-target_compile_features(velox_clp_connector PRIVATE cxx_std_20)
+FetchContent_Declare(
+  nlohmann_json
+  URL ${VELOX_NLOHMANN_JSON_SOURCE_URL}
+  URL_HASH ${VELOX_NLOHMANN_JSON_BUILD_SHA256_CHECKSUM})
 
-if(${VELOX_BUILD_TESTING})
-  add_subdirectory(tests)
-endif()
+set(JSON_BuildTests
+    OFF
+    CACHE INTERNAL "")
+
+FetchContent_MakeAvailable(nlohmann_json)
