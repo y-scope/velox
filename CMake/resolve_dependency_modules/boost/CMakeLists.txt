@@ -42,7 +42,8 @@ endif()
 FetchContent_Declare(
   Boost
   URL ${VELOX_BOOST_SOURCE_URL}
-  URL_HASH ${VELOX_BOOST_BUILD_SHA256_CHECKSUM})
+  URL_HASH ${VELOX_BOOST_BUILD_SHA256_CHECKSUM}
+  OVERRIDE_FIND_PACKAGE)
 
 # Configure the file before adding the header only libs
 configure_file(${CMAKE_CURRENT_LIST_DIR}/FindBoost.cmake.in
