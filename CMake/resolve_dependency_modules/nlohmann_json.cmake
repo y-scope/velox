@@ -27,7 +27,8 @@ message(STATUS "Building nlohmann_json from source")
 FetchContent_Declare(
   nlohmann_json
   URL ${VELOX_NLOHMANN_JSON_SOURCE_URL}
-  URL_HASH ${VELOX_NLOHMANN_JSON_BUILD_SHA256_CHECKSUM})
+  URL_HASH ${VELOX_NLOHMANN_JSON_BUILD_SHA256_CHECKSUM}
+  OVERRIDE_FIND_PACKAGE)
 
 set(JSON_BuildTests
     OFF
