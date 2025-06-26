@@ -16,7 +16,7 @@ include_guard(GLOBAL)
 FetchContent_Declare(
   ystdlib_cpp
   GIT_REPOSITORY https://github.com/y-scope/ystdlib-cpp.git
-  GIT_TAG d80cf86e1a1f2dae6421978c8ee353408368f424)
+  GIT_TAG 0ae886c6a7ee706a3c6e1950262b63d72f71fe63)
 
 FetchContent_Populate(ystdlib_cpp)
 
