@@ -461,7 +461,6 @@ set(BOOST_INCLUDE_LIBRARIES
     context
     date_time
     filesystem
-    headers
     iostreams
     program_options
     regex
