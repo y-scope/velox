@@ -32,3 +32,4 @@ velox_link_libraries(
     clp_s::search::kql
     velox_vector)
 target_compile_features(clp-s-search PRIVATE cxx_std_20)
+
