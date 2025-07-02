@@ -24,6 +24,7 @@
 #include "velox/connectors/clp/search_lib/ClpCursor.h"
 
 namespace facebook::velox::connector::clp {
+
 class ClpDataSource : public DataSource {
  public:
   ClpDataSource(
@@ -59,31 +60,27 @@ class ClpDataSource : public DataSource {
   }
 
  private:
-  /**
-   * Recursively adds fields from the column type to the list of fields to be
-   * retrieved from the data source.
-   *
-   * @param columnType The type of the column.
-   * @param parentName The name of the parent field (used for nested fields).
-   */
+  /// Recursively adds fields from the column type to the list of fields to be
+  /// retrieved from the data source.
+  ///
+  /// @param columnType The type of the column.
+  /// @param parentName The name of the parent field (used for nested fields).
   void addFieldsRecursively(
       const TypePtr& columnType,
       const std::string& parentName);
 
-  /**
-   * Creates a Vector of the specified type and size.
-   *
-   * This method recursively creates vectors for complex types like ROW. For
-   * primitive types, it creates a LazyVector that will load the data from the
-   * underlying data source when it is accessed.
-   *
-   * @param type The type of the Vector to create.
-   * @param size The number of elements in the Vector.
-   * @param projectedColumns The readers the projected columns.
-   * @param filteredRows The rows to be read.
-   * @param readerIndex The index of the column reader.
-   * @return A Vector of the specified type and size.
-   */
+  /// Creates a Vector of the specified type and size.
+  ///
+  /// This method recursively creates vectors for complex types like ROW. For
+  /// primitive types, it creates a LazyVector that will load the data from the
+  /// underlying data source when it is accessed.
+  ///
+  /// @param type The type of the Vector to create.
+  /// @param size The number of elements in the Vector.
+  /// @param projectedColumns The readers of the projected columns.
+  /// @param filteredRows The rows to be read.
+  /// @param readerIndex The index of the column reader.
+  /// @return A Vector of the specified type and size.
   VectorPtr createVector(
       const TypePtr& type,
       size_t size,
@@ -103,4 +100,5 @@ class ClpDataSource : public DataSource {
 
   std::unique_ptr<search_lib::ClpCursor> cursor_;
 };
+
 } // namespace facebook::velox::connector::clp

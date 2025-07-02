@@ -25,6 +25,7 @@ class ConfigBase;
 }
 
 namespace facebook::velox::connector::clp {
+
 class ClpConfig {
  public:
   enum class StorageType {
@@ -49,4 +50,5 @@ class ClpConfig {
  private:
   std::shared_ptr<const config::ConfigBase> config_;
 };
+
 } // namespace facebook::velox::connector::clp

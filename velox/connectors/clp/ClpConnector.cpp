@@ -20,6 +20,7 @@
 #include "velox/connectors/clp/ClpDataSource.h"
 
 namespace facebook::velox::connector::clp {
+
 ClpConnector::ClpConnector(
     const std::string& id,
     std::shared_ptr<const config::ConfigBase> config)

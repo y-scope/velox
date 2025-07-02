@@ -19,6 +19,7 @@
 #include "velox/connectors/Connector.h"
 
 namespace facebook::velox::connector::clp {
+
 struct ClpConnectorSplit : public connector::ConnectorSplit {
   ClpConnectorSplit(const std::string& connectorId, const std::string& path)
       : connector::ConnectorSplit(connectorId), path_(path) {}
@@ -29,4 +30,5 @@ struct ClpConnectorSplit : public connector::ConnectorSplit {
 
   const std::string path_;
 };
+
 } // namespace facebook::velox::connector::clp

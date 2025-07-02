@@ -19,6 +19,7 @@
 #include "velox/connectors/Connector.h"
 
 namespace facebook::velox::connector::clp {
+
 class ClpTableHandle : public ConnectorTableHandle {
  public:
   ClpTableHandle(
@@ -45,4 +46,5 @@ class ClpTableHandle : public ConnectorTableHandle {
   const std::string tableName_;
   std::shared_ptr<std::string> kqlQuery_;
 };
+
 } // namespace facebook::velox::connector::clp

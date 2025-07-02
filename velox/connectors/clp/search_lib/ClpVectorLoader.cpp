@@ -16,10 +16,14 @@
 
 #include <utility>
 
+#include "clp_s/ColumnReader.hpp"
+
 #include "velox/connectors/clp/search_lib/ClpVectorLoader.h"
 #include "velox/vector/ComplexVector.h"
+#include "velox/vector/FlatVector.h"
 
 namespace facebook::velox::connector::clp::search_lib {
+
 ClpVectorLoader::ClpVectorLoader(
     clp_s::BaseColumnReader* columnReader,
     ColumnType nodeType,
@@ -152,4 +156,5 @@ template void ClpVectorLoader::populateData<uint8_t>(
 template void ClpVectorLoader::populateData<std::string>(
     RowSet rows,
     FlatVector<StringView>* vector);
+
 } // namespace facebook::velox::connector::clp::search_lib

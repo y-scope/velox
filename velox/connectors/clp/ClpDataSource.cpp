@@ -163,12 +163,12 @@ std::optional<RowVectorPtr> ClpDataSource::next(
   completedRows_ += rowsScanned;
   size_t readerIndex = 0;
   const auto& projectedColumns = cursor_->getProjectedColumns();
-  if (projectedColumns.size() != fields_.size()) {
-    VELOX_USER_FAIL(
-        "Projected columns size {} does not match fields size {}",
-        projectedColumns.size(),
-        fields_.size());
-  }
+  VELOX_CHECK_EQ(
+      projectedColumns.size(),
+      fields_.size(),
+      "Projected columns size {} does not match fields size {}",
+      projectedColumns.size(),
+      fields_.size());
   return std::dynamic_pointer_cast<RowVector>(createVector(
       outputType_, rowsFiltered, projectedColumns, filteredRows, readerIndex));
 }

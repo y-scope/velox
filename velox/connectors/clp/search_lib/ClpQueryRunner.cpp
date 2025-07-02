@@ -15,8 +15,7 @@
  */
 
 #include "velox/connectors/clp/search_lib/ClpQueryRunner.h"
-#include "clp_s/search/clp_search/Grep.hpp"
-#include "velox/vector/ComplexVector.h"
+#include "clp_s/search/Projection.hpp"
 
 using namespace clp_s;
 using namespace clp_s::search;
@@ -54,7 +53,7 @@ void ClpQueryRunner::init(
     }
   }
 
-  for (auto& [columnId, columnReader] : columnMap) {
+  for (const auto& [columnId, columnReader] : columnMap) {
     initialize_reader(columnId, columnReader);
   }
 }

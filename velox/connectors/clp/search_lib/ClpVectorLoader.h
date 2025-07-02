@@ -16,16 +16,18 @@
 
 #pragma once
 
-#include "clp_s/ColumnReader.hpp"
 #include "velox/connectors/clp/search_lib/ClpCursor.h"
 #include "velox/vector/LazyVector.h"
 
+namespace clp_s {
+class BaseColumnReader;
+} // namespace clp_s
+
 namespace facebook::velox::connector::clp::search_lib {
-/**
- * ClpVectorLoader is a custom Velox VectorLoader that populates Velox vectors
- * from a CLP-based column reader. It supports various column types including
- * integers, floats, booleans, strings, and arrays of strings.
- */
+
+/// ClpVectorLoader is a custom Velox VectorLoader that populates Velox vectors
+/// from a CLP-based column reader. It supports various column types including
+/// integers, floats, booleans, strings, and arrays of strings.
 class ClpVectorLoader : public VectorLoader {
  public:
   ClpVectorLoader(
@@ -50,4 +52,5 @@ class ClpVectorLoader : public VectorLoader {
   inline static thread_local std::unique_ptr<simdjson::ondemand::parser>
       arrayParser_ = std::make_unique<simdjson::ondemand::parser>();
 };
+
 } // namespace facebook::velox::connector::clp::search_lib
