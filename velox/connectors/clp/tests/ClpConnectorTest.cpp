@@ -282,10 +282,8 @@ TEST_F(ClpConnectorTest, test2Hybrid) {
           .filter("upper(event.severity) IN ('WARNING', 'ERROR')")
           .planNode();
 
-  auto output = getResults(
-      plan,
-      {makeClpSplit(
-          getExampleFilePath("test_2.clps"))});
+  auto output =
+      getResults(plan, {makeClpSplit(getExampleFilePath("test_2.clps"))});
   auto expected = makeRowVector(
       {// timestamp
        makeFlatVector<StringView>({"2025-04-30T08:50:05Z"}),
