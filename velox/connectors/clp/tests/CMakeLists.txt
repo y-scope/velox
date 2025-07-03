@@ -17,6 +17,7 @@ add_test(velox_clp_connector_test velox_clp_connector_test)
 
 target_link_libraries(
   velox_clp_connector_test
+  clp_s_archive_writer
   velox_clp_connector
   velox_vector_test_lib
   velox_exec_test_lib

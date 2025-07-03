@@ -25,9 +25,6 @@ set(CLP_BUILD_TESTING
 set(CLP_BUILD_EXECUTABLES
     OFF
     CACHE BOOL "Build CLP executables")
-set(CLP_BUILD_CLP_S_ARCHIVEWRITER
-    OFF
-    CACHE BOOL "Build CLP-S archive writer")
 set(CLP_BUILD_CLP_S_JSONCONSTRUCTOR
     OFF
     CACHE BOOL "Build CLP-S JSON constructor")

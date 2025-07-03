@@ -86,10 +86,7 @@ TEST_F(ClpConnectorTest, test1NoPushdown) {
                       ROW({"requestId", "userId", "method"},
                           {VARCHAR(), VARCHAR(), VARCHAR()}))
                   .tableHandle(std::make_shared<ClpTableHandle>(
-                      kClpConnectorId,
-                      "test_1",
-                      ClpTableHandle::StorageType::kFS,
-                      nullptr))
+                      kClpConnectorId, "test_1", nullptr))
                   .assignments({
                       {"requestId",
                        std::make_shared<ClpColumnHandle>(
@@ -134,7 +131,6 @@ TEST_F(ClpConnectorTest, test1Pushdown) {
                   .tableHandle(std::make_shared<ClpTableHandle>(
                       kClpConnectorId,
                       "test_1",
-                      ClpTableHandle::StorageType::kFS,
                       std::make_shared<std::string>(
                           "method: \"POST\" AND status: 200")))
                   .assignments({
@@ -173,10 +169,7 @@ TEST_F(ClpConnectorTest, test2NoPushdown) {
                    ROW({"type", "subtype", "severity"},
                        {VARCHAR(), VARCHAR(), VARCHAR()})}))
           .tableHandle(std::make_shared<ClpTableHandle>(
-              kClpConnectorId,
-              "test_2",
-              ClpTableHandle::StorageType::kFS,
-              nullptr))
+              kClpConnectorId, "test_2", nullptr))
           .assignments(
               {{"timestamp",
                 std::make_shared<ClpColumnHandle>(
@@ -224,7 +217,6 @@ TEST_F(ClpConnectorTest, test2Pushdown) {
           .tableHandle(std::make_shared<ClpTableHandle>(
               kClpConnectorId,
               "test_2",
-              ClpTableHandle::StorageType::kFS,
               std::make_shared<std::string>(
                   "(event.severity: \"WARNING\" OR event.severity: \"ERROR\") AND "
                   "((event.type: \"network\" AND event.subtype: \"connection\") OR "
@@ -267,12 +259,11 @@ TEST_F(ClpConnectorTest, test2Hybrid) {
           .outputType(
               ROW({"timestamp", "event"},
                   {VARCHAR(),
-                   ROW({"type", "subtype", "severity"},
-                       {VARCHAR(), VARCHAR(), VARCHAR()})}))
+                   ROW({"type", "subtype", "severity", "tags"},
+                       {VARCHAR(), VARCHAR(), VARCHAR(), ARRAY(VARCHAR())})}))
           .tableHandle(std::make_shared<ClpTableHandle>(
               kClpConnectorId,
               "test_2",
-              ClpTableHandle::StorageType::kFS,
               std::make_shared<std::string>(
                   "((event.type: \"network\" AND event.subtype: \"connection\") OR "
                   "(event.type: \"storage\" AND event.subtype: \"disk*\"))")))
@@ -284,27 +275,32 @@ TEST_F(ClpConnectorTest, test2Hybrid) {
                 std::make_shared<ClpColumnHandle>(
                     "event",
                     "event",
-                    ROW({"type", "subtype", "severity"},
-                        {VARCHAR(), VARCHAR(), VARCHAR()}),
+                    ROW({"type", "subtype", "severity", "tags"},
+                        {VARCHAR(), VARCHAR(), VARCHAR(), ARRAY(VARCHAR())}),
                     true)}})
           .endTableScan()
           .filter("upper(event.severity) IN ('WARNING', 'ERROR')")
           .planNode();
 
-  auto output =
-      getResults(plan, {makeClpSplit(getExampleFilePath("test_2.clps"))});
-  auto expected =
-      makeRowVector({// timestamp
-                     makeFlatVector<StringView>({"2025-04-30T08:50:05Z"}),
-                     // event
-                     makeRowVector({
-                         // event.type
-                         makeFlatVector<StringView>({"storage"}),
-                         // event.subtype
-                         makeFlatVector<StringView>({"disk_usage"}),
-                         // event.severity
-                         makeFlatVector<StringView>({"WARNING"}),
-                     })});
+  auto output = getResults(
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_2.clps"))});
+  auto expected = makeRowVector(
+      {// timestamp
+       makeFlatVector<StringView>({"2025-04-30T08:50:05Z"}),
+       // event
+       makeRowVector({// event.type
+                      makeFlatVector<StringView>({"storage"}),
+                      // event.subtype
+                      makeFlatVector<StringView>({"disk_usage"}),
+                      // event.severity
+                      makeFlatVector<StringView>({"WARNING"}),
+                      // event.tags
+                      makeArrayVector<StringView>(
+                          {{"\"filesystem\"", "\"monitoring\""}})})
+
+      });
   test::assertEqualVectors(expected, output);
 }
 

@@ -89,6 +89,12 @@ void ClpVectorLoader::loadInternal(
       break;
     }
     case ColumnType::Array: {
+      if (columnReader_ == nullptr) {
+        for (int vectorIndex : rows) {
+          vector->setNull(vectorIndex, true);
+        }
+        return;
+      }
       auto arrayVector = std::dynamic_pointer_cast<ArrayVector>(vector);
       auto elements = arrayVector->elements()->asFlatVector<StringView>();
       vector_size_t elementIndex = 0;
