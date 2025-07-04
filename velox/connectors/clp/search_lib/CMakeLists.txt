@@ -14,13 +14,12 @@
 velox_add_library(
   clp-s-search
   STATIC
-  ${CLP_SRC_FILES}
-  ClpVectorLoader.cpp
-  ClpVectorLoader.h
   ClpCursor.cpp
   ClpCursor.h
   ClpQueryRunner.cpp
-  ClpQueryRunner.h)
+  ClpQueryRunner.h
+  ClpVectorLoader.cpp
+  ClpVectorLoader.h)
 
 velox_link_libraries(
   clp-s-search

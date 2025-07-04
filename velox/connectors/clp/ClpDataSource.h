@@ -20,8 +20,11 @@
 
 #include "velox/connectors/Connector.h"
 #include "velox/connectors/clp/ClpConfig.h"
-#include "velox/connectors/clp/ClpTableHandle.h"
 #include "velox/connectors/clp/search_lib/ClpCursor.h"
+
+namespace clp_s {
+class BaseColumnReader;
+} // namespace clp_s
 
 namespace facebook::velox::connector::clp {
 

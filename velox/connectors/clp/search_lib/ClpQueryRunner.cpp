@@ -15,13 +15,13 @@
  */
 
 #include "velox/connectors/clp/search_lib/ClpQueryRunner.h"
-#include "clp_s/search/Projection.hpp"
 
 using namespace clp_s;
 using namespace clp_s::search;
 using namespace clp_s::search::clp_search;
 
 namespace facebook::velox::connector::clp::search_lib {
+
 void ClpQueryRunner::init(
     clp_s::SchemaReader* schemaReader,
     std::unordered_map<int32_t, clp_s::BaseColumnReader*> const& columnMap) {

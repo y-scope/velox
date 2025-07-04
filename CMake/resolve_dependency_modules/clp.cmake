@@ -18,12 +18,9 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/y-scope/clp.git
   GIT_TAG 0798100389bd5231b520ec48ab186275795e3790)
 
-set(CLP_BUILD_TESTING
+set(CLP_BUILD_CLP_REGEX_UTILS
     OFF
-    CACHE BOOL "Build CLP tests")
-set(CLP_BUILD_EXECUTABLES
-    OFF
-    CACHE BOOL "Build CLP executables")
+    CACHE BOOL "Build CLP regex utils")
 set(CLP_BUILD_CLP_S_JSONCONSTRUCTOR
     OFF
     CACHE BOOL "Build CLP-S JSON constructor")
@@ -33,9 +30,12 @@ set(CLP_BUILD_CLP_S_REDUCER_DEPENDENCIES
 set(CLP_BUILD_CLP_S_SEARCH_SQL
     OFF
     CACHE BOOL "Build CLP-S search SQL")
-set(CLP_BUILD_CLP_REGEX_UTILS
+set(CLP_BUILD_EXECUTABLES
     OFF
-    CACHE BOOL "Build CLP regex utils")
+    CACHE BOOL "Build CLP executables")
+set(CLP_BUILD_TESTING
+    OFF
+    CACHE BOOL "Build CLP tests")
 
 FetchContent_Populate(clp)
 

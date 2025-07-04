@@ -16,8 +16,6 @@
 
 #pragma once
 
-#include <boost/algorithm/string.hpp>
-
 #include "velox/common/config/Config.h"
 
 namespace facebook::velox::config {

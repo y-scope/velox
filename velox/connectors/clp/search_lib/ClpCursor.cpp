@@ -108,7 +108,7 @@ const std::vector<clp_s::BaseColumnReader*>& ClpCursor::getProjectedColumns()
   if (queryRunner_) {
     return queryRunner_->getProjectedColumns();
   }
-  static std::vector<clp_s::BaseColumnReader*> kEmpty;
+  static std::vector<clp_s::BaseColumnReader*> const kEmpty;
   return kEmpty;
 }
 

@@ -523,11 +523,17 @@ velox_set_source(re2)
 velox_resolve_dependency(re2)
 
 if(${VELOX_ENABLE_CLP_CONNECTOR})
-  set(ystdlib_cpp_SOURCE BUNDLED)
-  velox_resolve_dependency(ystdlib_cpp)
-
   velox_set_source(absl)
   velox_resolve_dependency(absl)
+
+  velox_set_source(antlr4-runtime)
+  velox_resolve_dependency(antlr4-runtime)
+
+  velox_set_source(date)
+  velox_resolve_dependency(date)
+
+  velox_set_source(msgpack-cxx)
+  velox_resolve_dependency(msgpack-cxx)
 
   velox_set_source(nlohmann_json)
   velox_resolve_dependency(nlohmann_json)
@@ -535,17 +541,11 @@ if(${VELOX_ENABLE_CLP_CONNECTOR})
   velox_set_source(simdjson)
   velox_resolve_dependency(simdjson)
 
-  velox_set_source(date)
-  velox_resolve_dependency(date)
-
   velox_set_source(spdlog)
   velox_resolve_dependency(spdlog)
 
-  velox_set_source(msgpack-cxx)
-  velox_resolve_dependency(msgpack-cxx)
-
-  velox_set_source(antlr4-runtime)
-  velox_resolve_dependency(antlr4-runtime)
+  set(ystdlib_cpp_SOURCE BUNDLED)
+  velox_resolve_dependency(ystdlib_cpp)
 
   set(clp_SOURCE BUNDLED)
   velox_resolve_dependency(clp)

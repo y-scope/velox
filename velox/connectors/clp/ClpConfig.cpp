@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-#include "ClpConfig.h"
+#include <boost/algorithm/string.hpp>
+
+#include "velox/connectors/clp/ClpConfig.h"
 
 namespace facebook::velox::connector::clp {
 
