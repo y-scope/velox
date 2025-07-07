@@ -61,8 +61,8 @@ void ClpQueryRunner::init(
 uint64_t ClpQueryRunner::fetchNext(
     uint64_t numRows,
     const std::shared_ptr<std::vector<uint64_t>>& filteredRowIndices) {
-  size_t rowsfiltered = 0;
-  size_t rowsScanned = 0;
+  size_t rowsfiltered{0};
+  size_t rowsScanned{0};
   while (curMessage_ < numMessages_) {
     if (filter(curMessage_)) {
       filteredRowIndices->emplace_back(curMessage_);
