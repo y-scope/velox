@@ -25,7 +25,7 @@ namespace {
 ClpConfig::StorageType stringToStorageType(const std::string& strValue) {
   auto upperValue = boost::algorithm::to_upper_copy(strValue);
   if (upperValue == "FS") {
-    return ClpConfig::StorageType::kFS;
+    return ClpConfig::StorageType::kFs;
   }
   if (upperValue == "S3") {
     return ClpConfig::StorageType::kS3;

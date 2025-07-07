@@ -27,7 +27,7 @@ namespace facebook::velox::connector::clp {
 class ClpConfig {
  public:
   enum class StorageType {
-    kFS,
+    kFs,
     kS3,
   };
 

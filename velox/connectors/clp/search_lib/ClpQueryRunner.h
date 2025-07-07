@@ -37,13 +37,12 @@ class Expression;
 
 namespace facebook::velox::connector::clp::search_lib {
 
-/// This class extends the generic QueryRunner to support column projection and
-/// row filtering over CLP-S archives. It is used by the Velox-CLP connector to
+/// Extends the generic QueryRunner to support column projection and row
+/// filtering over CLP-S archives. It is used by the Velox-CLP connector to
 /// efficiently identify matching rows and project relevant columns, which are
 /// then consumed by the ClpVectorLoader.
 class ClpQueryRunner : public clp_s::search::QueryRunner {
  public:
-  // Constructor
   ClpQueryRunner(
       const std::shared_ptr<clp_s::search::SchemaMatch>& match,
       const std::shared_ptr<clp_s::search::ast::Expression>& expr,

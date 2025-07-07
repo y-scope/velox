@@ -103,7 +103,7 @@ void ClpDataSource::addFieldsRecursively(
 void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
   auto clpSplit = std::dynamic_pointer_cast<ClpConnectorSplit>(split);
 
-  if (storageType_ == ClpConfig::StorageType::kFS) {
+  if (storageType_ == ClpConfig::StorageType::kFs) {
     cursor_ = std::make_unique<search_lib::ClpCursor>(
         clp_s::InputSource::Filesystem, clpSplit->path_);
   } else if (storageType_ == ClpConfig::StorageType::kS3) {
@@ -115,27 +115,27 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
 }
 
 VectorPtr ClpDataSource::createVector(
-    const TypePtr& type,
-    size_t size,
+    const TypePtr& vectorType,
+    size_t vectorSize,
     const std::vector<clp_s::BaseColumnReader*>& projectedColumns,
     const std::shared_ptr<std::vector<uint64_t>>& filteredRows,
     size_t& readerIndex) {
-  if (type->kind() == TypeKind::ROW) {
+  if (vectorType->kind() == TypeKind::ROW) {
     std::vector<VectorPtr> children;
-    auto& rowType = type->as<TypeKind::ROW>();
+    auto& rowType = vectorType->as<TypeKind::ROW>();
     for (uint32_t i = 0; i < rowType.size(); ++i) {
       children.push_back(createVector(
           rowType.childAt(i),
-          size,
+          vectorSize,
           projectedColumns,
           filteredRows,
           readerIndex));
     }
     return std::make_shared<RowVector>(
-        pool_, type, nullptr, size, std::move(children));
+        pool_, vectorType, nullptr, vectorSize, std::move(children));
   }
-  auto vector = BaseVector::create(type, size, pool_);
-  vector->setNulls(allocateNulls(size, pool_, bits::kNull));
+  auto vector = BaseVector::create(vectorType, vectorSize, pool_);
+  vector->setNulls(allocateNulls(vectorSize, pool_, bits::kNull));
 
   VELOX_CHECK_LT(
       readerIndex, projectedColumns.size(), "Reader index out of bounds");
@@ -144,8 +144,8 @@ VectorPtr ClpDataSource::createVector(
   readerIndex++;
   return std::make_shared<LazyVector>(
       pool_,
-      type,
-      size,
+      vectorType,
+      vectorSize,
       std::make_unique<search_lib::ClpVectorLoader>(
           projectedColumn, projectedType, filteredRows),
       std::move(vector));

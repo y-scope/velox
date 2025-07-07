@@ -25,9 +25,9 @@ class BaseColumnReader;
 
 namespace facebook::velox::connector::clp::search_lib {
 
-/// ClpVectorLoader is a custom Velox VectorLoader that populates Velox vectors
-/// from a CLP-based column reader. It supports various column types including
-/// integers, floats, booleans, strings, and arrays of strings.
+/// A custom Velox VectorLoader that populates Velox vectors from a CLP-based
+/// column reader. It supports various column types including integers, floats,
+/// booleans, strings, and arrays of strings.
 class ClpVectorLoader : public VectorLoader {
  public:
   ClpVectorLoader(
