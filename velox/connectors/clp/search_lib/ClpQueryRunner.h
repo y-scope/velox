@@ -23,17 +23,16 @@ class SchemaReader;
 class SchemaTree;
 class ArchiveReader;
 class BaseColumnReader;
+} // namespace clp_s
 
-namespace search {
+namespace clp_s::search {
 class SchemaMatch;
 class Projection;
+} // namespace clp_s::search
 
-namespace ast {
+namespace lp_s::search::ast {
 class Expression;
-} // namespace ast
-
-} // namespace search
-} // namespace clp_s
+} // namespace lp_s::search::ast
 
 namespace facebook::velox::connector::clp::search_lib {
 

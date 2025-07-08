@@ -32,6 +32,7 @@ using namespace clp_s::search;
 using namespace clp_s::search::ast;
 
 namespace facebook::velox::connector::clp::search_lib {
+
 ClpCursor::ClpCursor(InputSource inputSource, std::string archivePath)
     : errorCode_(ErrorCode::QueryNotInitialized),
       inputSource_(inputSource),
