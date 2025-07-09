@@ -121,4 +121,5 @@ class ClpCursor {
   std::shared_ptr<clp_s::search::Projection> projection_;
   std::shared_ptr<clp_s::ArchiveReader> archiveReader_;
 };
+
 } // namespace facebook::velox::connector::clp::search_lib

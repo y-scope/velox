@@ -62,9 +62,7 @@ void ClpVectorLoader::loadInternal(
     ValueHook* hook,
     vector_size_t resultSize,
     VectorPtr* result) {
-  if (!result) {
-    VELOX_USER_FAIL("vector is null");
-  }
+  VELOX_CHECK_NOT_NULL(result, "result vector must not be null");
 
   auto vector = *result;
   switch (nodeType_) {
