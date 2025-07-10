@@ -32,7 +32,7 @@ class Projection;
 
 namespace clp_s::search::ast {
 class Expression;
-} // namespace lp_s::search::ast
+} // namespace clp_s::search::ast
 
 namespace facebook::velox::connector::clp::search_lib {
 
