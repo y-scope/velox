@@ -383,7 +383,8 @@ if(ENABLE_ALL_WARNINGS)
          -Wno-maybe-uninitialized \
          -Wno-unused-result \
          -Wno-format-overflow \
-         -Wno-strict-aliasing")
+         -Wno-strict-aliasing \
+	 -Wno-error=restrict")
   endif()
 
   set(KNOWN_WARNINGS
