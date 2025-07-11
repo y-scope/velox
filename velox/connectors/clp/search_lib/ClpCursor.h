@@ -50,11 +50,11 @@ enum class ErrorCode {
 };
 
 enum class ColumnType {
-  String,
-  Integer,
-  Float,
   Array,
   Boolean,
+  Float,
+  Integer,
+  String,
   Timestamp,
   Unknown = -1
 };
