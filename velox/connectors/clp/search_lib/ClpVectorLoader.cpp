@@ -91,21 +91,27 @@ auto convertToVeloxTimestamp(double timestamp) -> Timestamp {
 }
 
 auto convertToVeloxTimestamp(int64_t timestamp) -> Timestamp {
+  int64_t precisionDifference{Timestamp::kNanosInSecond};
   switch (estimatePrecision(timestamp)) {
     case TimestampPrecision::Nanoseconds:
       break;
     case TimestampPrecision::Microseconds:
-      timestamp *= Timestamp::kNanosecondsInMicrosecond;
+      nanosecondPrecisionDifference =
+          Timestamp::kNanosInSecond / Timestamp::kNanosecondsInMicrosecond;
       break;
     case TimestampPrecision::Milliseconds:
-      timestamp *= Timestamp::kNanosecondsInMillisecond;
+      nanosecondPrecisionDifference =
+          Timestamp::kNanosInSecond / Timestamp::kNanosecondsInMillisecond;
       break;
     case TimestampPrecision::Seconds:
-      timestamp *= Timestamp::kNanosInSecond;
+      precisionDifference =
+          Timestamp::kNanosInSecond / Timestamp::kNanosInSecond;
       break;
   }
-  int64_t seconds{timestamp / Timestamp::kNanosInSecond};
-  int64_t nanoseconds{timestamp - seconds * Timestamp::kNanosInSecond};
+  int64_t seconds{timestamp / precisionDifference};
+  int64_t nanoseconds{
+      (timestamp % precisionDifference) *
+      (Timestamp::kNanosInSecond / precisionDifference)};
   if (nanoseconds < 0) {
     seconds -= 1;
     nanoseconds += Timestamp::kNanosInSecond;
