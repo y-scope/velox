@@ -29,6 +29,7 @@
 namespace facebook::velox::connector::clp::search_lib {
 
 namespace {
+
 enum class TimestampPrecision : uint8_t {
   Seconds,
   Milliseconds,
@@ -58,20 +59,16 @@ auto estimatePrecision(T timestamp) -> TimestampPrecision {
   constexpr int64_t kEpochMilliseconds1971{31536000000};
   constexpr int64_t kEpochMicroseconds1971{31536000000000};
   constexpr int64_t kEpochNanoseconds1971{31536000000000000};
-  if (timestamp > kEpochNanoseconds1971) {
+  auto absTimestamp = timestamp >= 0 ? timestamp : -timestamp;
+
+  if (absTimestamp > kEpochNanoseconds1971) {
     return TimestampPrecision::Nanoseconds;
-  } else if (timestamp > kEpochMicroseconds1971) {
+  } else if (absTimestamp > kEpochMicroseconds1971) {
     return TimestampPrecision::Microseconds;
-  } else if (timestamp > kEpochMilliseconds1971) {
+  } else if (absTimestamp > kEpochMilliseconds1971) {
     return TimestampPrecision::Milliseconds;
-  } else if (timestamp > -kEpochMilliseconds1971) {
-    return TimestampPrecision::Seconds;
-  } else if (timestamp > -kEpochMicroseconds1971) {
-    return TimestampPrecision::Milliseconds;
-  } else if (timestamp > -kEpochNanoseconds1971) {
-    return TimestampPrecision::Microseconds;
   } else {
-    return TimestampPrecision::Nanoseconds;
+    return TimestampPrecision::Seconds;
   }
 }
 
@@ -117,6 +114,7 @@ auto convertToVeloxTimestamp(int64_t timestamp) -> Timestamp {
   }
   return Timestamp(seconds, static_cast<uint64_t>(nanoseconds));
 }
+
 } // namespace
 
 ClpVectorLoader::ClpVectorLoader(
