@@ -315,9 +315,8 @@ TEST_F(ClpConnectorTest, test3TimestampMarshalling) {
   auto plan = PlanBuilder(pool_.get())
                   .startTableScan()
                   .outputType(ROW({"timestamp"}, {TIMESTAMP()}))
-                  .tableHandle(
-                      std::make_shared<ClpTableHandle>(
-                          kClpConnectorId, "test_3", nullptr))
+                  .tableHandle(std::make_shared<ClpTableHandle>(
+                      kClpConnectorId, "test_3", nullptr))
                   .assignments(
                       {{"timestamp",
                         std::make_shared<ClpColumnHandle>(
