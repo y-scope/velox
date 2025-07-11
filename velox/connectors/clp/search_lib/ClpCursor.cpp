@@ -217,6 +217,7 @@ ErrorCode ClpCursor::loadArchive() {
           columnDescriptor->set_matching_types(
               LiteralType::EpochDateT | LiteralType::IntegerT |
               LiteralType::FloatT);
+          break;
         default:
           break;
       }

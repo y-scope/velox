@@ -52,7 +52,7 @@ template <typename T>
 auto estimatePrecision(T timestamp) -> TimestampPrecision {
   constexpr int64_t kEpochMilliseconds1971{31536000000};
   constexpr int64_t kEpochMicroseconds1971{31536000000000};
-  constexpr int64_t kEpochNanoseconds1971{31536000000000};
+  constexpr int64_t kEpochNanoseconds1971{31536000000000000};
   if (timestamp > kEpochNanoseconds1971) {
     return TimestampPrecision::Nanoseconds;
   } else if (timestamp > kEpochMicroseconds1971) {
@@ -84,7 +84,7 @@ auto convertToVeloxTimestamp(double timestamp) -> Timestamp {
     case TimestampPrecision::Seconds:
       break;
   }
-  double seconds{floor(timestamp)};
+  double seconds{std::floor(timestamp)};
   double nanoseconds{(timestamp - seconds) * Timestamp::kNanosInSecond};
   return Timestamp(
       static_cast<int64_t>(seconds), static_cast<uint64_t>(nanoseconds));
