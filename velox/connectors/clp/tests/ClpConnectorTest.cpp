@@ -196,19 +196,19 @@ TEST_F(ClpConnectorTest, test2NoPushdown) {
 
   auto output =
       getResults(plan, {makeClpSplit(getExampleFilePath("test_2.clps"))});
-  auto expected = makeRowVector(
-      {// timestamp
-       makeFlatVector<Timestamp>(
-           {Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds)}),
-       // event
-       makeRowVector({
-           // event.type
-           makeFlatVector<StringView>({"storage"}),
-           // event.subtype
-           makeFlatVector<StringView>({"disk_usage"}),
-           // event.severity
-           makeFlatVector<StringView>({"WARNING"}),
-       })});
+  auto expected =
+      makeRowVector({// timestamp
+                     makeFlatVector<Timestamp>({Timestamp(
+                         kTestTimestampSeconds, kTestTimestampNanoseconds)}),
+                     // event
+                     makeRowVector({
+                         // event.type
+                         makeFlatVector<StringView>({"storage"}),
+                         // event.subtype
+                         makeFlatVector<StringView>({"disk_usage"}),
+                         // event.severity
+                         makeFlatVector<StringView>({"WARNING"}),
+                     })});
   test::assertEqualVectors(expected, output);
 }
 
@@ -244,19 +244,19 @@ TEST_F(ClpConnectorTest, test2Pushdown) {
 
   auto output =
       getResults(plan, {makeClpSplit(getExampleFilePath("test_2.clps"))});
-  auto expected = makeRowVector(
-      {// timestamp
-       makeFlatVector<Timestamp>(
-           {Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds)}),
-       // event
-       makeRowVector({
-           // event.type
-           makeFlatVector<StringView>({"storage"}),
-           // event.subtype
-           makeFlatVector<StringView>({"disk_usage"}),
-           // event.severity
-           makeFlatVector<StringView>({"WARNING"}),
-       })});
+  auto expected =
+      makeRowVector({// timestamp
+                     makeFlatVector<Timestamp>({Timestamp(
+                         kTestTimestampSeconds, kTestTimestampNanoseconds)}),
+                     // event
+                     makeRowVector({
+                         // event.type
+                         makeFlatVector<StringView>({"storage"}),
+                         // event.subtype
+                         makeFlatVector<StringView>({"disk_usage"}),
+                         // event.severity
+                         makeFlatVector<StringView>({"WARNING"}),
+                     })});
   test::assertEqualVectors(expected, output);
 }
 
@@ -297,16 +297,15 @@ TEST_F(ClpConnectorTest, test2Hybrid) {
        makeFlatVector<Timestamp>(
            {Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds)}),
        // event
-       makeRowVector(
-           {// event.type
-            makeFlatVector<StringView>({"storage"}),
-            // event.subtype
-            makeFlatVector<StringView>({"disk_usage"}),
-            // event.severity
-            makeFlatVector<StringView>({"WARNING"}),
-            // event.tags
-            makeArrayVector<StringView>(
-                {{"\"filesystem\"", "\"monitoring\""}})})
+       makeRowVector({// event.type
+                      makeFlatVector<StringView>({"storage"}),
+                      // event.subtype
+                      makeFlatVector<StringView>({"disk_usage"}),
+                      // event.severity
+                      makeFlatVector<StringView>({"WARNING"}),
+                      // event.tags
+                      makeArrayVector<StringView>(
+                          {{"\"filesystem\"", "\"monitoring\""}})})
 
       });
   test::assertEqualVectors(expected, output);
