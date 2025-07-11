@@ -38,13 +38,17 @@ enum class TimestampPrecision : uint8_t {
 
 /**
  * Estimates the precision of an epoch timestamp as seconds, milliseconds,
- * or nanoseconds.
+ * microseconds, or nanoseconds.
  *
  * This heuristic relies on the fact that 1 year of epoch nanoseconds is
  * approximately 1000 years of epoch microseconds and so on. This heuristic
  * can be unreliable for timestamps sufficiently close to the epoch, but should
  * otherwise be accurate for the next 1000 years.
  *
+ * Note: Future versions of the clp-s archive format will adopt a nanosecond-precision integer
+ * timestamp format (as opposed to the current format which allows other precisions), at which point
+ * we can remove this heuristic.
+ * 
  * @param timestamp
  * @return the estimated timestamp precision
  */
