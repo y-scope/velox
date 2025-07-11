@@ -312,28 +312,29 @@ TEST_F(ClpConnectorTest, test2Hybrid) {
 }
 
 TEST_F(ClpConnectorTest, test3TimestampMarshalling) {
-  auto plan =
-      PlanBuilder(pool_.get())
-          .startTableScan()
-          .outputType(ROW({"timestamp"}, {TIMESTAMP()}))
-          .tableHandle(std::make_shared<ClpTableHandle>(
-              kClpConnectorId,
-              "test_3",
-              nullptr))
-          .assignments(
-              {{"timestamp",
-                std::make_shared<ClpColumnHandle>(
-                    "timestamp", "timestamp", TIMESTAMP(), true)}})
-          .endTableScan()
-          .planNode();
+  auto plan = PlanBuilder(pool_.get())
+                  .startTableScan()
+                  .outputType(ROW({"timestamp"}, {TIMESTAMP()}))
+                  .tableHandle(
+                      std::make_shared<ClpTableHandle>(
+                          kClpConnectorId, "test_3", nullptr))
+                  .assignments(
+                      {{"timestamp",
+                        std::make_shared<ClpColumnHandle>(
+                            "timestamp", "timestamp", TIMESTAMP(), true)}})
+                  .endTableScan()
+                  .planNode();
 
   auto output =
       getResults(plan, {makeClpSplit(getExampleFilePath("test_3.clps"))});
-  auto expected = makeRowVector(
-      {// timestamp
-       makeFlatVector<Timestamp>(
-           {Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds),Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds),Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds),Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds)}),
-      });
+  auto expected = makeRowVector({
+      // timestamp
+      makeFlatVector<Timestamp>(
+          {Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds),
+           Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds),
+           Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds),
+           Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds)}),
+  });
   test::assertEqualVectors(expected, output);
 }
 
