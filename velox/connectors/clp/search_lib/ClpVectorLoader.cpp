@@ -96,11 +96,11 @@ auto convertToVeloxTimestamp(int64_t timestamp) -> Timestamp {
     case TimestampPrecision::Nanoseconds:
       break;
     case TimestampPrecision::Microseconds:
-      nanosecondPrecisionDifference =
+      precisionDifference =
           Timestamp::kNanosInSecond / Timestamp::kNanosecondsInMicrosecond;
       break;
     case TimestampPrecision::Milliseconds:
-      nanosecondPrecisionDifference =
+      precisionDifference =
           Timestamp::kNanosInSecond / Timestamp::kNanosecondsInMillisecond;
       break;
     case TimestampPrecision::Seconds:
