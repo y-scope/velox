@@ -95,7 +95,7 @@ TEST_F(ClpConnectorTest, test1NoPushdown) {
                       ROW({"requestId", "userId", "method"},
                           {VARCHAR(), VARCHAR(), VARCHAR()}))
                   .tableHandle(std::make_shared<ClpTableHandle>(
-                      kClpConnectorId, "test_1", kqlQuery))
+                      kClpConnectorId, "test_1"))
                   .assignments({
                       {"requestId",
                        std::make_shared<ClpColumnHandle>(
@@ -140,7 +140,7 @@ TEST_F(ClpConnectorTest, test1Pushdown) {
                       ROW({"requestId", "userId", "path"},
                           {VARCHAR(), VARCHAR(), VARCHAR()}))
                   .tableHandle(std::make_shared<ClpTableHandle>(
-                      kClpConnectorId, "test_1", kqlQuery))
+                      kClpConnectorId, "test_1"))
                   .assignments({
                       {"requestId",
                        std::make_shared<ClpColumnHandle>(
@@ -177,8 +177,8 @@ TEST_F(ClpConnectorTest, test2NoPushdown) {
                   {TIMESTAMP(),
                    ROW({"type", "subtype", "severity"},
                        {VARCHAR(), VARCHAR(), VARCHAR()})}))
-          .tableHandle(std::make_shared<ClpTableHandle>(
-              kClpConnectorId, "test_2", kqlQuery))
+          .tableHandle(
+              std::make_shared<ClpTableHandle>(kClpConnectorId, "test_2"))
           .assignments(
               {{"timestamp",
                 std::make_shared<ClpColumnHandle>(
@@ -228,7 +228,7 @@ TEST_F(ClpConnectorTest, test2Pushdown) {
                            ROW({"type", "subtype", "severity"},
                                {VARCHAR(), VARCHAR(), VARCHAR()})}))
                   .tableHandle(std::make_shared<ClpTableHandle>(
-                      kClpConnectorId, "test_2", kqlQuery))
+                      kClpConnectorId, "test_2"))
                   .assignments(
                       {{"timestamp",
                         std::make_shared<ClpColumnHandle>(
@@ -273,8 +273,8 @@ TEST_F(ClpConnectorTest, test2Hybrid) {
                   {TIMESTAMP(),
                    ROW({"type", "subtype", "severity", "tags"},
                        {VARCHAR(), VARCHAR(), VARCHAR(), ARRAY(VARCHAR())})}))
-          .tableHandle(std::make_shared<ClpTableHandle>(
-              kClpConnectorId, "test_2", kqlQuery))
+          .tableHandle(
+              std::make_shared<ClpTableHandle>(kClpConnectorId, "test_2"))
           .assignments(
               {{"timestamp",
                 std::make_shared<ClpColumnHandle>(
@@ -317,7 +317,7 @@ TEST_F(ClpConnectorTest, test3TimestampMarshalling) {
                   .startTableScan()
                   .outputType(ROW({"timestamp"}, {TIMESTAMP()}))
                   .tableHandle(std::make_shared<ClpTableHandle>(
-                      kClpConnectorId, "test_3", kqlQuery))
+                      kClpConnectorId, "test_3"))
                   .assignments(
                       {{"timestamp",
                         std::make_shared<ClpColumnHandle>(
