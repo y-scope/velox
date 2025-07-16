@@ -132,7 +132,7 @@ TEST_F(ClpConnectorTest, test1NoPushdown) {
 }
 
 TEST_F(ClpConnectorTest, test1Pushdown) {
-  const std::shared_ptr<std::string> kqlQuery =
+  auto kqlQuery =
       std::make_shared<std::string>("method: \"POST\" AND status: 200");
   auto plan = PlanBuilder()
                   .startTableScan()
@@ -216,7 +216,7 @@ TEST_F(ClpConnectorTest, test2NoPushdown) {
 }
 
 TEST_F(ClpConnectorTest, test2Pushdown) {
-  const std::shared_ptr<std::string> kqlQuery = std::make_shared<std::string>(
+  auto kqlQuery = std::make_shared<std::string>(
       "(event.severity: \"WARNING\" OR event.severity: \"ERROR\") AND "
       "((event.type: \"network\" AND event.subtype: \"connection\") OR "
       "(event.type: \"storage\" AND event.subtype: \"disk*\"))");
@@ -262,7 +262,7 @@ TEST_F(ClpConnectorTest, test2Pushdown) {
 }
 
 TEST_F(ClpConnectorTest, test2Hybrid) {
-  const std::shared_ptr<std::string> kqlQuery = std::make_shared<std::string>(
+  auto kqlQuery = std::make_shared<std::string>(
       "((event.type: \"network\" AND event.subtype: \"connection\") OR "
       "(event.type: \"storage\" AND event.subtype: \"disk*\"))");
   auto plan =
