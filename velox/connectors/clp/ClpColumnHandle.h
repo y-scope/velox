@@ -25,12 +25,10 @@ class ClpColumnHandle : public ColumnHandle {
   ClpColumnHandle(
       const std::string& columnName,
       const std::string& originalColumnName,
-      const TypePtr& columnType,
-      bool nullable)
+      const TypePtr& columnType)
       : columnName_(columnName),
         originalColumnName_(originalColumnName),
-        columnType_(columnType),
-        nullable_(nullable) {}
+        columnType_(columnType) {}
 
   const std::string& columnName() const {
     return columnName_;
@@ -44,15 +42,10 @@ class ClpColumnHandle : public ColumnHandle {
     return columnType_;
   }
 
-  bool nullable() const {
-    return nullable_;
-  }
-
  private:
   const std::string columnName_;
   const std::string originalColumnName_;
   const TypePtr columnType_;
-  const bool nullable_;
 };
 
 } // namespace facebook::velox::connector::clp
