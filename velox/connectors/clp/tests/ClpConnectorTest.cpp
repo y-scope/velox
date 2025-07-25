@@ -99,13 +99,13 @@ TEST_F(ClpConnectorTest, test1NoPushdown) {
                   .assignments({
                       {"requestId",
                        std::make_shared<ClpColumnHandle>(
-                           "requestId", "requestId", VARCHAR(), true)},
+                           "requestId", "requestId", VARCHAR())},
                       {"userId",
                        std::make_shared<ClpColumnHandle>(
-                           "userId", "userId", VARCHAR(), true)},
+                           "userId", "userId", VARCHAR())},
                       {"method",
                        std::make_shared<ClpColumnHandle>(
-                           "method", "method", VARCHAR(), true)},
+                           "method", "method", VARCHAR())},
                   })
                   .endTableScan()
                   .filter("method = 'GET'")
@@ -134,26 +134,26 @@ TEST_F(ClpConnectorTest, test1NoPushdown) {
 TEST_F(ClpConnectorTest, test1Pushdown) {
   auto kqlQuery =
       std::make_shared<std::string>("method: \"POST\" AND status: 200");
-  auto plan = PlanBuilder()
-                  .startTableScan()
-                  .outputType(
-                      ROW({"requestId", "userId", "path"},
-                          {VARCHAR(), VARCHAR(), VARCHAR()}))
-                  .tableHandle(std::make_shared<ClpTableHandle>(
-                      kClpConnectorId, "test_1"))
-                  .assignments({
-                      {"requestId",
-                       std::make_shared<ClpColumnHandle>(
-                           "requestId", "requestId", VARCHAR(), true)},
-                      {"userId",
-                       std::make_shared<ClpColumnHandle>(
-                           "userId", "userId", VARCHAR(), true)},
-                      {"path",
-                       std::make_shared<ClpColumnHandle>(
-                           "path", "path", VARCHAR(), true)},
-                  })
-                  .endTableScan()
-                  .planNode();
+  auto plan =
+      PlanBuilder()
+          .startTableScan()
+          .outputType(
+              ROW({"requestId", "userId", "path"},
+                  {VARCHAR(), VARCHAR(), VARCHAR()}))
+          .tableHandle(
+              std::make_shared<ClpTableHandle>(kClpConnectorId, "test_1"))
+          .assignments({
+              {"requestId",
+               std::make_shared<ClpColumnHandle>(
+                   "requestId", "requestId", VARCHAR())},
+              {"userId",
+               std::make_shared<ClpColumnHandle>(
+                   "userId", "userId", VARCHAR())},
+              {"path",
+               std::make_shared<ClpColumnHandle>("path", "path", VARCHAR())},
+          })
+          .endTableScan()
+          .planNode();
 
   auto output = getResults(
       plan, {makeClpSplit(getExampleFilePath("test_1.clps"), kqlQuery)});
@@ -182,14 +182,13 @@ TEST_F(ClpConnectorTest, test2NoPushdown) {
           .assignments(
               {{"timestamp",
                 std::make_shared<ClpColumnHandle>(
-                    "timestamp", "timestamp", TIMESTAMP(), true)},
+                    "timestamp", "timestamp", TIMESTAMP())},
                {"event",
                 std::make_shared<ClpColumnHandle>(
                     "event",
                     "event",
                     ROW({"type", "subtype", "severity"},
-                        {VARCHAR(), VARCHAR(), VARCHAR()}),
-                    true)}})
+                        {VARCHAR(), VARCHAR(), VARCHAR()}))}})
           .endTableScan()
           .filter(
               "event.severity IN ('WARNING', 'ERROR') AND "
@@ -232,14 +231,13 @@ TEST_F(ClpConnectorTest, test2Pushdown) {
                   .assignments(
                       {{"timestamp",
                         std::make_shared<ClpColumnHandle>(
-                            "timestamp", "timestamp", TIMESTAMP(), true)},
+                            "timestamp", "timestamp", TIMESTAMP())},
                        {"event",
                         std::make_shared<ClpColumnHandle>(
                             "event",
                             "event",
                             ROW({"type", "subtype", "severity"},
-                                {VARCHAR(), VARCHAR(), VARCHAR()}),
-                            true)}})
+                                {VARCHAR(), VARCHAR(), VARCHAR()}))}})
                   .endTableScan()
                   .planNode();
 
@@ -278,14 +276,13 @@ TEST_F(ClpConnectorTest, test2Hybrid) {
           .assignments(
               {{"timestamp",
                 std::make_shared<ClpColumnHandle>(
-                    "timestamp", "timestamp", TIMESTAMP(), true)},
+                    "timestamp", "timestamp", TIMESTAMP())},
                {"event",
                 std::make_shared<ClpColumnHandle>(
                     "event",
                     "event",
                     ROW({"type", "subtype", "severity", "tags"},
-                        {VARCHAR(), VARCHAR(), VARCHAR(), ARRAY(VARCHAR())}),
-                    true)}})
+                        {VARCHAR(), VARCHAR(), VARCHAR(), ARRAY(VARCHAR())}))}})
           .endTableScan()
           .filter("upper(event.severity) IN ('WARNING', 'ERROR')")
           .planNode();
@@ -321,7 +318,7 @@ TEST_F(ClpConnectorTest, test3TimestampMarshalling) {
                   .assignments(
                       {{"timestamp",
                         std::make_shared<ClpColumnHandle>(
-                            "timestamp", "timestamp", TIMESTAMP(), true)}})
+                            "timestamp", "timestamp", TIMESTAMP())}})
                   .endTableScan()
                   .planNode();
 
