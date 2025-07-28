@@ -25,7 +25,6 @@ velox_link_libraries(
   clp-s-search
   PUBLIC clp_s::archive_reader
   PRIVATE
-    clp_s::archive_writer
     clp_s::clp_dependencies
     clp_s::io
     clp_s::search
