@@ -16,15 +16,25 @@
 
 #pragma once
 
+#include <memory>
 #include <string_view>
 
-#include "velox/common/config/Config.h"
+namespace facebook::velox::config {
+class ConfigBase;
+} // facebook::velox::config
 
 namespace facebook::velox::connector::clp {
 
 class ClpS3AuthProviderBase {
  public:
+  explicit ClpS3AuthProviderBase(std::shared_ptr<const config::ConfigBase> config) : config_(config) {}
   virtual ~ClpS3AuthProviderBase() = default;
+
+  /// Construct the actual S3 URL so that CLP-s can access the split.
+  ///
+  /// @param splitPath The current path stored in the split to add.
+  /// @return The constructed S3 URL.
+  virtual const std::string constructS3Url(std::string_view splitPath) = 0;
 
   /// Export the three environment variables needed by CLP-s to system:
   ///   AWS_ENV_VAR_ACCESS_KEY_ID
@@ -32,10 +42,8 @@ class ClpS3AuthProviderBase {
   ///   AWS_ENV_VAR_SESSION_TOKEN (optional)
   /// So that in runtime, CLP-s’s code can execute S3-related logic correctly.
   ///
-  /// @param config The config options parsed from clp.properties. User can
-  /// define customized config options and use then here.
   /// @return Did exportation succeed or not.
-  virtual bool exportAuthEnvironmentVariables(std::shared_ptr<const config::ConfigBase> config) const = 0;
+  virtual bool exportAuthEnvironmentVariables() const = 0;
 
  protected:
   /// Set the environment variables for different OS, then get the environment
@@ -45,6 +53,8 @@ class ClpS3AuthProviderBase {
   /// @param value The environment variable value.
   /// @return Did exportation succeed or not.
   static void setupEnvironmentVariables(std::string_view key, std::string_view value);
+
+  std::shared_ptr<const config::ConfigBase> config_;
 };
 
 } // namespace facebook::velox::connector::clp

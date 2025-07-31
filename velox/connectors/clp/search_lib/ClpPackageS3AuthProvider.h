@@ -18,15 +18,27 @@
 
 #include "velox/connectors/clp/search_lib/ClpS3AuthProviderBase.h"
 
+namespace facebook::velox::config {
+class ConfigBase;
+} // facebook::velox::config
+
 namespace facebook::velox::connector::clp {
 
 class ClpPackageS3AuthProvider : public ClpS3AuthProviderBase {
 public:
+  explicit ClpPackageS3AuthProvider(std::shared_ptr<const config::ConfigBase> config) : ClpS3AuthProviderBase(config) {}
+
   static constexpr const char* kAccessKeyId = "clp.s3-access-key-id";
+  static constexpr const char* kEndPoint = "clp.s3-end-point";
   static constexpr const char* kSecretAccessKey = "clp.s3-secret-access-key";
   static constexpr const char* kSessionToken = "clp.s3-session-token";
 
-  bool exportAuthEnvironmentVariables(std::shared_ptr<const config::ConfigBase> config) const override;
+  const std::string constructS3Url(std::string_view splitPath) override;
+
+  bool exportAuthEnvironmentVariables() const override;
+
+private:
+  std::string endPoint_;
 };
 
 } // namespace facebook::velox::connector::clp

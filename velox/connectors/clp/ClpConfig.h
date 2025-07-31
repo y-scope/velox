@@ -16,13 +16,13 @@
 
 #pragma once
 
-#include "velox/common/config/Config.h"
-
 namespace facebook::velox::config {
 class ConfigBase;
-}
+} // facebook::velox::config
 
 namespace facebook::velox::connector::clp {
+
+class ClpS3AuthProviderBase;
 
 class ClpConfig {
  public:
@@ -46,11 +46,11 @@ class ClpConfig {
   }
 
   StorageType storageType() const;
+  std::shared_ptr<ClpS3AuthProviderBase> s3AuthProvider() const;
 
  private:
   std::shared_ptr<const config::ConfigBase> config_;
-
-  S3AuthProvider s3AuthProvider() const;
+  std::shared_ptr<ClpS3AuthProviderBase> s3AuthProvider_;
 };
 
 } // namespace facebook::velox::connector::clp

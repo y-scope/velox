@@ -19,6 +19,8 @@
 #include "velox/connectors/clp/ClpColumnHandle.h"
 #include "velox/connectors/clp/ClpConnectorSplit.h"
 #include "velox/connectors/clp/ClpDataSource.h"
+
+#include "search_lib/ClpS3AuthProviderBase.h"
 #include "velox/connectors/clp/ClpTableHandle.h"
 #include "velox/connectors/clp/search_lib/ClpCursor.h"
 #include "velox/connectors/clp/search_lib/ClpVectorLoader.h"
@@ -37,6 +39,7 @@ ClpDataSource::ClpDataSource(
     : pool_(pool), outputType_(outputType) {
   auto clpTableHandle = std::dynamic_pointer_cast<ClpTableHandle>(tableHandle);
   storageType_ = clpConfig->storageType();
+  s3AuthProvider_ = clpConfig->s3AuthProvider();
 
   for (const auto& outputName : outputType->names()) {
     auto columnHandle = columnHandles.find(outputName);
@@ -106,7 +109,7 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
         clp_s::InputSource::Filesystem, clpSplit->path_);
   } else if (storageType_ == ClpConfig::StorageType::kS3) {
     cursor_ = std::make_unique<search_lib::ClpCursor>(
-        clp_s::InputSource::Network, clpSplit->path_);
+        clp_s::InputSource::Network, s3AuthProvider_->constructS3Url(clpSplit->path_));
   }
 
   auto pushDownQuery = clpSplit->kqlQuery_;

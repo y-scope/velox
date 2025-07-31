@@ -22,7 +22,7 @@
 
 namespace facebook::velox::config {
 class ConfigBase;
-};
+} // namespace facebook::velox::config
 
 namespace facebook::velox::connector::clp {
 
@@ -45,5 +45,3 @@ void ClpS3AuthProviderBase::setupEnvironmentVariables(std::string_view key, std:
 }
 
 } // namespace facebook::velox::connector::clp
-
-} // namespace facebook::velox::config

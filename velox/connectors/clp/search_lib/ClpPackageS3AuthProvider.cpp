@@ -15,24 +15,36 @@
  */
 
 #include <glog/logging.h>
+
+#include "velox/common/base/Exceptions.h"
+#include "velox/common/config/Config.h"
 #include "velox/connectors/clp/search_lib/ClpPackageS3AuthProvider.h"
 
 namespace facebook::velox::connector::clp {
 
-bool ClpPackageS3AuthProvider::exportAuthEnvironmentVariables(
-    std::shared_ptr<const config::ConfigBase> config) const {
-  auto accessKeyId = config->get<std::string>(kAccessKeyId, "");
-  auto secretAccessKey = config->get<std::string>(kSecretAccessKey, "");
-  auto sessionToken = config->get<std::string>(kSessionToken, "");
+const std::string ClpPackageS3AuthProvider::constructS3Url(std::string_view splitPath) {
+  if (this->endPoint_.empty()) {
+    this->endPoint_ = config_->get<std::string>(kEndPoint, "");
+  }
+  if ('/' == this->endPoint_.back()) {
+    this->endPoint_.pop_back();
+  }
+  return fmt::format("{}/{}", this->endPoint_, splitPath);
+}
+
+bool ClpPackageS3AuthProvider::exportAuthEnvironmentVariables() const {
+  auto accessKeyId = config_->get<std::string>(kAccessKeyId, "");
+  auto secretAccessKey = config_->get<std::string>(kSecretAccessKey, "");
+  auto sessionToken = config_->get<std::string>(kSessionToken, "");
   VELOX_CHECK(!accessKeyId.empty());
   VELOX_CHECK(!secretAccessKey.empty());
-  LOG(INFO) << "Setting AWS_ENV_VAR_ACCESS_KEY_ID environment variable: " << accessKeyId;
-  setupEnvironmentVariables("AWS_ENV_VAR_ACCESS_KEY_ID", accessKeyId);
-  LOG(INFO) << "Setting AWS_ENV_VAR_SECRET_ACCESS_KEY environment variable: " << secretAccessKey;
-  setupEnvironmentVariables("AWS_ENV_VAR_SECRET_ACCESS_KEY", secretAccessKey);
+  LOG(INFO) << "Setting AWS_ACCESS_KEY_ID environment variable: " << accessKeyId;
+  setupEnvironmentVariables("AWS_ACCESS_KEY_ID", accessKeyId);
+  LOG(INFO) << "Setting AWS_SECRET_ACCESS_KEY environment variable: " << secretAccessKey;
+  setupEnvironmentVariables("AWS_SECRET_ACCESS_KEY", secretAccessKey);
   if (!sessionToken.empty()) {
-    LOG(INFO) << "Setting AWS_ENV_VAR_SESSION_TOKEN environment variable: " << sessionToken;
-    setupEnvironmentVariables("AWS_ENV_VAR_SESSION_TOKEN", sessionToken);
+    LOG(INFO) << "Setting AWS_SESSION_TOKEN environment variable: " << sessionToken;
+    setupEnvironmentVariables("AWS_SESSION_TOKEN", sessionToken);
   }
 
   return true;

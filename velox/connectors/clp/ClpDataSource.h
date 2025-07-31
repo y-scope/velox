@@ -101,6 +101,7 @@ class ClpDataSource : public DataSource {
   std::vector<search_lib::Field> fields_;
 
   std::unique_ptr<search_lib::ClpCursor> cursor_;
+  std::shared_ptr<ClpS3AuthProviderBase> s3AuthProvider_;
 };
 
 } // namespace facebook::velox::connector::clp

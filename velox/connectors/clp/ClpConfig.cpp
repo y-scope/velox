@@ -16,6 +16,8 @@
 
 #include <boost/algorithm/string.hpp>
 
+#include "velox/common/base/Exceptions.h"
+#include "velox/common/config/Config.h"
 #include "velox/connectors/clp/ClpConfig.h"
 #include "velox/connectors/clp/search_lib/ClpPackageS3AuthProvider.h"
 
@@ -47,22 +49,22 @@ ClpConfig::StorageType stringToStorageType(const std::string& strValue) {
 
 ClpConfig::ClpConfig(std::shared_ptr<const config::ConfigBase> config) {
   VELOX_CHECK_NOT_NULL(config, "Config is null for CLP initialization");
+  config_ = std::move(config);
 
   // Setup S3 environment variables needed by CLP by user-specific ways
-  switch (s3AuthProvider()) {
+  switch (stringToS3AuthProvider(config_->get<std::string>(kAuthProvider, ""))) {
     case ClpConfig::S3AuthProvider::kClpPackage:
-      VELOX_CHECK(std::make_unique<ClpPackageS3AuthProvider>()->exportAuthEnvironmentVariables());
+      s3AuthProvider_ = std::make_shared<ClpPackageS3AuthProvider>(config_);
       break;
     default:
       VELOX_FAIL();
   }
-
-  config_ = std::move(config);
+  VELOX_CHECK(s3AuthProvider_->exportAuthEnvironmentVariables());
 }
 
 
-ClpConfig::S3AuthProvider ClpConfig::s3AuthProvider() const {
-  return stringToS3AuthProvider(config_->get<std::string>(kAuthProvider, ""));
+std::shared_ptr<ClpS3AuthProviderBase> ClpConfig::s3AuthProvider() const {
+  return s3AuthProvider_;
 }
 
 ClpConfig::StorageType ClpConfig::storageType() const {
