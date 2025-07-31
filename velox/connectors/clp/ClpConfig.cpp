@@ -17,10 +17,20 @@
 #include <boost/algorithm/string.hpp>
 
 #include "velox/connectors/clp/ClpConfig.h"
+#include "velox/connectors/clp/search_lib/ClpPackageS3AuthProvider.h"
 
 namespace facebook::velox::connector::clp {
 
 namespace {
+
+ClpConfig::S3AuthProvider stringToS3AuthProvider(const std::string& strValue) {
+  auto upperValue = boost::algorithm::to_upper_copy(strValue);
+  VELOX_CHECK(!upperValue.empty());
+  if (upperValue == "CLP_PACKAGE") {
+    return ClpConfig::S3AuthProvider::kClpPackage;
+  }
+  VELOX_UNSUPPORTED("Unsupported s3 auth provider type: {}.", strValue);
+}
 
 ClpConfig::StorageType stringToStorageType(const std::string& strValue) {
   auto upperValue = boost::algorithm::to_upper_copy(strValue);
@@ -34,6 +44,26 @@ ClpConfig::StorageType stringToStorageType(const std::string& strValue) {
 }
 
 } // namespace
+
+ClpConfig::ClpConfig(std::shared_ptr<const config::ConfigBase> config) {
+  VELOX_CHECK_NOT_NULL(config, "Config is null for CLP initialization");
+
+  // Setup S3 environment variables needed by CLP by user-specific ways
+  switch (s3AuthProvider()) {
+    case ClpConfig::S3AuthProvider::kClpPackage:
+      VELOX_CHECK(std::make_unique<ClpPackageS3AuthProvider>()->exportAuthEnvironmentVariables());
+      break;
+    default:
+      VELOX_FAIL();
+  }
+
+  config_ = std::move(config);
+}
+
+
+ClpConfig::S3AuthProvider ClpConfig::s3AuthProvider() const {
+  return stringToS3AuthProvider(config_->get<std::string>(kAuthProvider, ""));
+}
 
 ClpConfig::StorageType ClpConfig::storageType() const {
   return stringToStorageType(config_->get<std::string>(kStorageType, "FS"));

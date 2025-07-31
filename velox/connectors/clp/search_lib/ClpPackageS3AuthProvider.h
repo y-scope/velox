@@ -16,41 +16,17 @@
 
 #pragma once
 
-#include "velox/common/config/Config.h"
-
-namespace facebook::velox::config {
-class ConfigBase;
-}
+#include "velox/connectors/clp/search_lib/ClpS3AuthProviderBase.h"
 
 namespace facebook::velox::connector::clp {
 
-class ClpConfig {
- public:
-  enum class S3AuthProvider {
-    kClpPackage,
-  };
+class ClpPackageS3AuthProvider : public ClpS3AuthProviderBase {
+public:
+  static constexpr const char* kAccessKeyId = "clp.s3-access-key-id";
+  static constexpr const char* kSecretAccessKey = "clp.s3-secret-access-key";
+  static constexpr const char* kSessionToken = "clp.s3-session-token";
 
-  enum class StorageType {
-    kFs,
-    kS3,
-  };
-
-  static constexpr const char* kAuthProvider = "clp.s3-auth-provider";
-  static constexpr const char* kStorageType = "clp.storage-type";
-
-  explicit ClpConfig(std::shared_ptr<const config::ConfigBase> config);
-
-  [[nodiscard]] const std::shared_ptr<const config::ConfigBase>& config()
-      const {
-    return config_;
-  }
-
-  StorageType storageType() const;
-
- private:
-  std::shared_ptr<const config::ConfigBase> config_;
-
-  S3AuthProvider s3AuthProvider() const;
+  bool exportAuthEnvironmentVariables(std::shared_ptr<const config::ConfigBase> config) const override;
 };
 
 } // namespace facebook::velox::connector::clp

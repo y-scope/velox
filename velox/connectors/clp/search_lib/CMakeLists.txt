@@ -16,8 +16,11 @@ velox_add_library(
   STATIC
   ClpCursor.cpp
   ClpCursor.h
+  ClpPackageS3AuthProvider.cpp
   ClpQueryRunner.cpp
   ClpQueryRunner.h
+  ClpS3AuthProviderBase.cpp
+  ClpS3AuthProviderBase.h
   ClpVectorLoader.cpp
   ClpVectorLoader.h)
 
