@@ -27,14 +27,125 @@ namespace facebook::velox::connector::clp {
 
 namespace {
 
+class ClpEnvironmentVariableGuard {
+ public:
+  void saveOriginalEnvironmentVariables() {
+    originalEnv_.clear();
+    originalKeys_.clear();
+
+#if defined(_WIN32)
+    LPCH envStrings = GetEnvironmentStringsA();
+    if (!envStrings)
+      return;
+
+    LPCH var = envStrings;
+    while (*var) {
+      std::string entry(var);
+      auto pos = entry.find('=');
+      if (pos != std::string::npos) {
+        std::string key = entry.substr(0, pos);
+        std::string value = entry.substr(pos + 1);
+        originalEnv_[key] = value;
+        originalKeys_.insert(key);
+      }
+      var += entry.size() + 1;
+    }
+    FreeEnvironmentStringsA(envStrings);
+#elif defined(__unix__) || defined(__APPLE__)
+    for (char** current = environ; *current; ++current) {
+      std::string entry(*current);
+      auto pos = entry.find('=');
+      if (pos != std::string::npos) {
+        std::string key = entry.substr(0, pos);
+        std::string value = entry.substr(pos + 1);
+        originalEnv_[key] = value;
+        originalKeys_.insert(key);
+      }
+    }
+#else
+    VELOX_UNSUPPORTED("Unsupported OS");
+#endif
+  }
+
+  void restoreEnvironmentVariables() {
+#if defined(_WIN32)
+    // Remove added vars and restore originals
+    for (auto const& [key, value] : originalEnv_) {
+      _putenv_s(key.c_str(), value.c_str()); // restore original
+    }
+
+    // Collect variables to unset
+    std::vector<std::string> keysToUnset;
+    for (char** env = _environ; *env; ++env) {
+      std::string entry(*env);
+      auto pos = entry.find('=');
+      if (pos != std::string::npos) {
+        std::string key = entry.substr(0, pos);
+        if (originalKeys_.find(key) == originalKeys_.end()) {
+          keysToUnset.push_back(key);
+        }
+      }
+    }
+
+    // Unset them
+    for (const auto& key : keysToUnset) {
+      _putenv((key + "=").c_str());
+    }
+#elif defined(__unix__) || defined(__APPLE__)
+    // Restore original variables
+    for (auto const& [key, value] : originalEnv_) {
+      setenv(key.c_str(), value.c_str(), 1);
+    }
+
+    // Collect keys to unset
+    std::vector<std::string> keysToUnset;
+    for (char** env = environ; *env; ++env) {
+      std::string entry(*env);
+      auto pos = entry.find('=');
+      if (pos != std::string::npos) {
+        std::string key = entry.substr(0, pos);
+        if (originalKeys_.find(key) == originalKeys_.end()) {
+          keysToUnset.push_back(key);
+        }
+      }
+    }
+
+    // Unset them
+    for (const auto& key : keysToUnset) {
+      unsetenv(key.c_str());
+    }
+#else
+    VELOX_UNSUPPORTED("Unsupported OS");
+#endif
+  }
+
+ private:
+  std::map<std::string, std::string> originalEnv_;
+  std::set<std::string> originalKeys_;
+};
+
 class ClpConfigTest : public testing::Test {
  public:
+  explicit ClpConfigTest()
+      : envVarGuard_(std::make_unique<ClpEnvironmentVariableGuard>()) {}
+
+  void SetUp() override {
+    envVarGuard_->saveOriginalEnvironmentVariables();
+  }
+
+  void TearDown() override {
+    envVarGuard_->restoreEnvironmentVariables();
+  }
+
   std::unique_ptr<ClpConfig> buildClpConfig(
       std::unordered_map<std::string, std::string> configMap) {
     auto config =
         std::make_shared<const config::ConfigBase>(std::move(configMap));
     return std::make_unique<ClpConfig>(config);
   }
+
+ private:
+  std::unique_ptr<ClpEnvironmentVariableGuard> envVarGuard_;
 };
 
 class ClpS3AuthProviderBaseTest : public ClpConfigTest {
