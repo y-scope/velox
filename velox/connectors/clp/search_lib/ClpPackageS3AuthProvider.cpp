@@ -39,16 +39,20 @@ bool ClpPackageS3AuthProvider::exportAuthEnvironmentVariables() const {
   auto sessionToken = config_->get<std::string>(kSessionToken, "");
   VELOX_CHECK(!accessKeyId.empty());
   VELOX_CHECK(!secretAccessKey.empty());
-  LOG(INFO) << "Setting AWS_ACCESS_KEY_ID environment variable: "
-            << accessKeyId;
-  setupEnvironmentVariables("AWS_ACCESS_KEY_ID", accessKeyId);
-  LOG(INFO) << "Setting AWS_SECRET_ACCESS_KEY environment variable: "
-            << secretAccessKey;
-  setupEnvironmentVariables("AWS_SECRET_ACCESS_KEY", secretAccessKey);
+  LOG(INFO) << "Setting " << kEnvAwsAccessKeyId
+            << " environment variable: " << accessKeyId;
+  setupEnvironmentVariable(kEnvAwsAccessKeyId, accessKeyId);
+  LOG(INFO) << "Setting " << kEnvAwsSecretAccessKey
+            << " environment variable: " << secretAccessKey;
+  setupEnvironmentVariable(kEnvAwsSecretAccessKey, secretAccessKey);
   if (!sessionToken.empty()) {
-    LOG(INFO) << "Setting AWS_SESSION_TOKEN environment variable: "
-              << sessionToken;
-    setupEnvironmentVariables("AWS_SESSION_TOKEN", sessionToken);
+    LOG(INFO) << "Setting " << kEnvAwsSessionToken
+              << " environment variable: " << sessionToken;
+    setupEnvironmentVariable(kEnvAwsSessionToken, sessionToken);
+  } else {
+    LOG(INFO) << "Unsetting " << kEnvAwsSessionToken
+              << " environment variable.";
+    unsetEnvironmentVariable(kEnvAwsSessionToken);
   }
 
   return true;

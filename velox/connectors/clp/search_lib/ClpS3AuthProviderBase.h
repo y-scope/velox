@@ -48,15 +48,21 @@ class ClpS3AuthProviderBase {
   virtual bool exportAuthEnvironmentVariables() const = 0;
 
  protected:
-  /// Set the environment variables for different OS, then get the environment
-  /// variables to do the sanity check.
+  /// Set the environment variable for different OS, then get the environment
+  /// variable to do the sanity check.
   ///
-  /// @param key The environment variable name.
-  /// @param value The environment variable value.
+  /// @param key The environment variable name to set.
+  /// @param value The environment variable value to set.
   /// @return Did exportation succeed or not.
-  static void setupEnvironmentVariables(
+  static void setupEnvironmentVariable(
       std::string_view key,
       std::string_view value);
+
+  /// Unset the environment variable for different OS, then get the environment
+  /// variable to do the sanity check.
+  ///
+  /// @param key The environment variable name to unset.
+  static void unsetEnvironmentVariable(std::string_view key);
 
   std::shared_ptr<const config::ConfigBase> config_;
 };

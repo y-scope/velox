@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-add_executable(velox_clp_connector_test ClpConnectorTest.cpp)
+add_executable(velox_clp_connector_test ClpConfigTest.cpp ClpConnectorTest.cpp)
 
 add_test(velox_clp_connector_test velox_clp_connector_test)
 
