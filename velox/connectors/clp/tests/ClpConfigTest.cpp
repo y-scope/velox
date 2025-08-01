@@ -17,7 +17,6 @@
 #include <cstdlib>
 #include <unordered_map>
 
-#include "_deps/clp-src/components/core/src/clp/time_types.hpp"
 #include "gtest/gtest.h"
 #include "velox/common/base/tests/GTestUtils.h"
 #include "velox/common/config/Config.h"

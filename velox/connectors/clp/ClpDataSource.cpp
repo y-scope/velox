@@ -109,7 +109,8 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
         clp_s::InputSource::Filesystem, clpSplit->path_);
   } else if (storageType_ == ClpConfig::StorageType::kS3) {
     cursor_ = std::make_unique<search_lib::ClpCursor>(
-        clp_s::InputSource::Network, s3AuthProvider_->constructS3Url(clpSplit->path_));
+        clp_s::InputSource::Network,
+        s3AuthProvider_->constructS3Url(clpSplit->path_));
   }
 
   auto pushDownQuery = clpSplit->kqlQuery_;
