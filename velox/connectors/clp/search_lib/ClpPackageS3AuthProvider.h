@@ -39,9 +39,9 @@ class ClpPackageS3AuthProvider : public ClpS3AuthProviderBase {
   static constexpr const char* kEnvAwsSecretAccessKey = "AWS_SECRET_ACCESS_KEY";
   static constexpr const char* kEnvAwsSessionToken = "AWS_SESSION_TOKEN";
 
-  const std::string constructS3Url(std::string_view splitPath) override;
+  std::string constructS3Url(std::string_view splitPath) override;
 
-  bool exportAuthEnvironmentVariables() const override;
+  bool parseConfigAndExportAuthEnvironmentVariables() override;
 
  private:
   std::string endPoint_;

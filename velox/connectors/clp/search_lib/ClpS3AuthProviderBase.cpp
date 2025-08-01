@@ -30,37 +30,43 @@ void ClpS3AuthProviderBase::setupEnvironmentVariable(
     std::string_view key,
     std::string_view value) {
   int err{0};
+  const auto keyStr = std::string(key);
+  const auto* keyCStr = keyStr.c_str();
+  const auto valueStr = std::string(value);
+  const auto* valueCStr = valueStr.c_str();
 #ifdef _WIN32
   // Windows version
-  err = _putenv_s(std::string(key).c_str(), std::string(value).c_str());
+  err = _putenv_s(keyCStr, valueCStr);
 #elif defined(__unix__) || defined(__APPLE__)
   // Unix/macOS version
-  err = setenv(std::string(key).c_str(), std::string(value).c_str(), 1);
+  err = setenv(keyCStr, valueCStr, 1);
 #else
-  VELOX_UNSUPPORTED("Unsuppported OS");
+  VELOX_UNSUPPORTED("Unsupported OS");
 #endif
   VELOX_CHECK_EQ(0, err);
 
   // Sanity check
-  auto valueForCheck = std::getenv(std::string(key).c_str());
-  VELOX_CHECK_EQ(0, std::strcmp(std::string(value).c_str(), valueForCheck));
+  auto valueForCheck = std::getenv(keyCStr);
+  VELOX_CHECK_EQ(0, std::strcmp(valueCStr, valueForCheck));
 }
 
 void ClpS3AuthProviderBase::unsetEnvironmentVariable(std::string_view key) {
   int err{0};
+  const auto keyStr = std::string(key);
+  const auto* keyCStr = keyStr.c_str();
 #ifdef _WIN32
   // Windows version
-  err = _putenv(fmt::format("{}=", std::string(key).c_str()));
+  err = _putenv(fmt::format("{}=", keyCStr));
 #elif defined(__unix__) || defined(__APPLE__)
   // Unix/macOS version
-  err = unsetenv(std::string(key).c_str());
+  err = unsetenv(keyCStr);
 #else
-  VELOX_UNSUPPORTED("Unsuppported OS");
+  VELOX_UNSUPPORTED("Unsupported OS");
 #endif
   VELOX_CHECK_EQ(0, err);
 
   // Sanity check
-  auto valueForCheck = std::getenv(std::string(key).c_str());
+  auto valueForCheck = std::getenv(keyCStr);
   VELOX_CHECK_NULL(valueForCheck);
 }
 

@@ -14,44 +14,39 @@
  * limitations under the License.
  */
 
-#include <glog/logging.h>
-
+#include "velox/connectors/clp/search_lib/ClpPackageS3AuthProvider.h"
 #include "velox/common/base/Exceptions.h"
 #include "velox/common/config/Config.h"
-#include "velox/connectors/clp/search_lib/ClpPackageS3AuthProvider.h"
 
 namespace facebook::velox::connector::clp {
 
-const std::string ClpPackageS3AuthProvider::constructS3Url(
+std::string ClpPackageS3AuthProvider::constructS3Url(
     std::string_view splitPath) {
-  if (this->endPoint_.empty()) {
-    this->endPoint_ = config_->get<std::string>(kEndPoint, "");
-  }
-  if ('/' == this->endPoint_.back()) {
-    this->endPoint_.pop_back();
-  }
+  VELOX_CHECK(!splitPath.empty(), "splitPath cannot be empty");
   return fmt::format("{}/{}", this->endPoint_, splitPath);
 }
 
-bool ClpPackageS3AuthProvider::exportAuthEnvironmentVariables() const {
+bool ClpPackageS3AuthProvider::parseConfigAndExportAuthEnvironmentVariables() {
+  this->endPoint_ = config_->get<std::string>(kEndPoint, "");
+  VELOX_CHECK(
+      !this->endPoint_.empty(), fmt::format("{} cannot be empty", kEndPoint));
+  if ('/' == this->endPoint_.back()) {
+    this->endPoint_.pop_back();
+  }
+
   auto accessKeyId = config_->get<std::string>(kAccessKeyId, "");
   auto secretAccessKey = config_->get<std::string>(kSecretAccessKey, "");
   auto sessionToken = config_->get<std::string>(kSessionToken, "");
-  VELOX_CHECK(!accessKeyId.empty());
-  VELOX_CHECK(!secretAccessKey.empty());
-  LOG(INFO) << "Setting " << kEnvAwsAccessKeyId
-            << " environment variable: " << accessKeyId;
+  VELOX_CHECK(
+      !accessKeyId.empty(), fmt::format("{} cannot be empty", kAccessKeyId));
+  VELOX_CHECK(
+      !secretAccessKey.empty(),
+      fmt::format("{} cannot be empty", kSecretAccessKey));
   setupEnvironmentVariable(kEnvAwsAccessKeyId, accessKeyId);
-  LOG(INFO) << "Setting " << kEnvAwsSecretAccessKey
-            << " environment variable: " << secretAccessKey;
   setupEnvironmentVariable(kEnvAwsSecretAccessKey, secretAccessKey);
   if (!sessionToken.empty()) {
-    LOG(INFO) << "Setting " << kEnvAwsSessionToken
-              << " environment variable: " << sessionToken;
     setupEnvironmentVariable(kEnvAwsSessionToken, sessionToken);
   } else {
-    LOG(INFO) << "Unsetting " << kEnvAwsSessionToken
-              << " environment variable.";
     unsetEnvironmentVariable(kEnvAwsSessionToken);
   }
 

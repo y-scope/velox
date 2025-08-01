@@ -60,7 +60,7 @@ ClpConfig::ClpConfig(std::shared_ptr<const config::ConfigBase> config) {
     default:
       VELOX_FAIL();
   }
-  VELOX_CHECK(s3AuthProvider_->exportAuthEnvironmentVariables());
+  VELOX_CHECK(s3AuthProvider_->parseConfigAndExportAuthEnvironmentVariables());
 }
 
 std::shared_ptr<ClpS3AuthProviderBase> ClpConfig::s3AuthProvider() const {

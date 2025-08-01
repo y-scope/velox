@@ -28,6 +28,8 @@ class BaseColumnReader;
 
 namespace facebook::velox::connector::clp {
 
+class ClpS3AuthProviderBase;
+
 class ClpDataSource : public DataSource {
  public:
   ClpDataSource(

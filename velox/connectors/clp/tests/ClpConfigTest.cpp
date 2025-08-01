@@ -39,16 +39,26 @@ class ClpConfigTest : public testing::Test {
 
 class ClpS3AuthProviderBaseTest : public ClpConfigTest {
  public:
+  /// Checks whether an environment variable is undefined or equals a given
+  /// value.
+  ///
+  /// @param key The name of the environment variable to check.
+  /// @param expectedValue Optional expected value to compare against. If
+  ///        std::nullopt, the function returns true if the variable is not
+  ///        defined.
+  /// @return True if:
+  ///         - expectedValue is std::nullopt and the variable is not defined,
+  ///         or
+  ///         - expectedValue is set and matches the variable's current value.
   bool checkEnvironmentVariableEquals(
       std::string_view key,
-      std::string_view value) {
-    auto* actualValue = std::getenv(std::string(key).c_str());
-    return 0 == std::strcmp(std::string(value).c_str(), actualValue);
-  }
-
-  bool checkEnvironmentVariableExists(std::string_view key) {
-    auto* value = std::getenv(std::string(key).c_str());
-    return value != nullptr;
+      std::optional<std::string_view> expectedValue) {
+    const char* actualValue = std::getenv(std::string(key).c_str());
+    if (nullptr == actualValue) {
+      return !expectedValue.has_value();
+    }
+    return expectedValue.has_value() &&
+        std::string_view(actualValue) == expectedValue.value();
   }
 };
 
@@ -67,7 +77,6 @@ class ClpPackageS3AuthProviderTest : public ClpS3AuthProviderBaseTest {
 TEST_F(ClpConfigTest, invalidAuthProvider) {
   const std::unordered_map<std::string, std::string> configMap(
       {{ClpConfig::kAuthProvider, "dummy-provider"}});
-  // Both access/secret keys and iam-role cannot be specified
   VELOX_ASSERT_UNSUPPORTED_THROW(
       buildClpConfig(configMap),
       "Unsupported s3 auth provider type: dummy-provider.");
@@ -95,7 +104,8 @@ TEST_F(ClpPackageS3AuthProviderTest, readAndExportAwsAuthEnvironmentVariables) {
        {ClpPackageS3AuthProvider::kSecretAccessKey, cTestSecretAccessKey},
        {ClpPackageS3AuthProvider::kSessionToken, cTestSessionToken}});
   auto clpPackageS3AuthProvider = buildClpPackageS3AuthProvider(configMap);
-  VELOX_CHECK(clpPackageS3AuthProvider->exportAuthEnvironmentVariables());
+  VELOX_CHECK(
+      clpPackageS3AuthProvider->parseConfigAndExportAuthEnvironmentVariables());
   VELOX_CHECK(checkEnvironmentVariableEquals(
       ClpPackageS3AuthProvider::kEnvAwsAccessKeyId, cTestAccessKeyId));
   VELOX_CHECK(checkEnvironmentVariableEquals(
@@ -110,11 +120,10 @@ TEST_F(ClpPackageS3AuthProviderTest, readAndExportAwsAuthEnvironmentVariables) {
       {ClpPackageS3AuthProvider::kEndPoint, cTestEndPoint},
       {ClpPackageS3AuthProvider::kSecretAccessKey, cTestSecretAccessKey}};
   clpPackageS3AuthProvider = buildClpPackageS3AuthProvider(configMap);
-  VELOX_CHECK(clpPackageS3AuthProvider->exportAuthEnvironmentVariables());
   VELOX_CHECK(
-      false ==
-      checkEnvironmentVariableExists(
-          ClpPackageS3AuthProvider::kEnvAwsSessionToken));
+      clpPackageS3AuthProvider->parseConfigAndExportAuthEnvironmentVariables());
+  VELOX_CHECK(checkEnvironmentVariableEquals(
+      ClpPackageS3AuthProvider::kEnvAwsSessionToken, std::nullopt));
 }
 
 } // namespace facebook::velox::connector::clp
