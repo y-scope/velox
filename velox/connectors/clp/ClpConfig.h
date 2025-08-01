@@ -18,7 +18,7 @@
 
 namespace facebook::velox::config {
 class ConfigBase;
-} // facebook::velox::config
+} // namespace facebook::velox::config
 
 namespace facebook::velox::connector::clp {
 

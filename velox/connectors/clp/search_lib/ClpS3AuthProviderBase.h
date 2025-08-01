@@ -21,13 +21,15 @@
 
 namespace facebook::velox::config {
 class ConfigBase;
-} // facebook::velox::config
+} // namespace facebook::velox::config
 
 namespace facebook::velox::connector::clp {
 
 class ClpS3AuthProviderBase {
  public:
-  explicit ClpS3AuthProviderBase(std::shared_ptr<const config::ConfigBase> config) : config_(config) {}
+  explicit ClpS3AuthProviderBase(
+      std::shared_ptr<const config::ConfigBase> config)
+      : config_(config) {}
   virtual ~ClpS3AuthProviderBase() = default;
 
   /// Construct the actual S3 URL so that CLP-s can access the split.
@@ -52,7 +54,9 @@ class ClpS3AuthProviderBase {
   /// @param key The environment variable name.
   /// @param value The environment variable value.
   /// @return Did exportation succeed or not.
-  static void setupEnvironmentVariables(std::string_view key, std::string_view value);
+  static void setupEnvironmentVariables(
+      std::string_view key,
+      std::string_view value);
 
   std::shared_ptr<const config::ConfigBase> config_;
 };

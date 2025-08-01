@@ -22,7 +22,8 @@
 
 namespace facebook::velox::connector::clp {
 
-const std::string ClpPackageS3AuthProvider::constructS3Url(std::string_view splitPath) {
+const std::string ClpPackageS3AuthProvider::constructS3Url(
+    std::string_view splitPath) {
   if (this->endPoint_.empty()) {
     this->endPoint_ = config_->get<std::string>(kEndPoint, "");
   }
@@ -38,17 +39,19 @@ bool ClpPackageS3AuthProvider::exportAuthEnvironmentVariables() const {
   auto sessionToken = config_->get<std::string>(kSessionToken, "");
   VELOX_CHECK(!accessKeyId.empty());
   VELOX_CHECK(!secretAccessKey.empty());
-  LOG(INFO) << "Setting AWS_ACCESS_KEY_ID environment variable: " << accessKeyId;
+  LOG(INFO) << "Setting AWS_ACCESS_KEY_ID environment variable: "
+            << accessKeyId;
   setupEnvironmentVariables("AWS_ACCESS_KEY_ID", accessKeyId);
-  LOG(INFO) << "Setting AWS_SECRET_ACCESS_KEY environment variable: " << secretAccessKey;
+  LOG(INFO) << "Setting AWS_SECRET_ACCESS_KEY environment variable: "
+            << secretAccessKey;
   setupEnvironmentVariables("AWS_SECRET_ACCESS_KEY", secretAccessKey);
   if (!sessionToken.empty()) {
-    LOG(INFO) << "Setting AWS_SESSION_TOKEN environment variable: " << sessionToken;
+    LOG(INFO) << "Setting AWS_SESSION_TOKEN environment variable: "
+              << sessionToken;
     setupEnvironmentVariables("AWS_SESSION_TOKEN", sessionToken);
   }
 
   return true;
 }
-
 
 } // namespace facebook::velox::connector::clp

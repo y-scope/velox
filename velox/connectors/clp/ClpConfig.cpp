@@ -52,7 +52,8 @@ ClpConfig::ClpConfig(std::shared_ptr<const config::ConfigBase> config) {
   config_ = std::move(config);
 
   // Setup S3 environment variables needed by CLP by user-specific ways
-  switch (stringToS3AuthProvider(config_->get<std::string>(kAuthProvider, ""))) {
+  switch (
+      stringToS3AuthProvider(config_->get<std::string>(kAuthProvider, ""))) {
     case ClpConfig::S3AuthProvider::kClpPackage:
       s3AuthProvider_ = std::make_shared<ClpPackageS3AuthProvider>(config_);
       break;
@@ -61,7 +62,6 @@ ClpConfig::ClpConfig(std::shared_ptr<const config::ConfigBase> config) {
   }
   VELOX_CHECK(s3AuthProvider_->exportAuthEnvironmentVariables());
 }
-
 
 std::shared_ptr<ClpS3AuthProviderBase> ClpConfig::s3AuthProvider() const {
   return s3AuthProvider_;

@@ -26,7 +26,9 @@ class ConfigBase;
 
 namespace facebook::velox::connector::clp {
 
-void ClpS3AuthProviderBase::setupEnvironmentVariables(std::string_view key, std::string_view value) {
+void ClpS3AuthProviderBase::setupEnvironmentVariables(
+    std::string_view key,
+    std::string_view value) {
   int err{0};
 #ifdef _WIN32
   // Windows version
