@@ -33,9 +33,10 @@ struct ClpConnectorSplit : public connector::ConnectorSplit {
 
   [[nodiscard]] std::string toString() const override {
     return fmt::format(
-        "CLP Split: path: {}, kqlQuery: {}",
+        "CLP Split: path: {}, kqlQuery: {}, type: {}",
         path_,
-        kqlQuery_ ? *kqlQuery_ : "<null>");
+        kqlQuery_ ? *kqlQuery_ : "<null>",
+        type_ == Type::kArchive ? "Archive" : "IR");
   }
 
   enum class Type : int { kArchive, kIR };
