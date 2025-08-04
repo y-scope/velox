@@ -24,10 +24,12 @@ struct ClpConnectorSplit : public connector::ConnectorSplit {
   ClpConnectorSplit(
       const std::string& connectorId,
       const std::string& path,
-      std::shared_ptr<std::string> kqlQuery)
+      std::shared_ptr<std::string> kqlQuery,
+      const int type)
       : connector::ConnectorSplit(connectorId),
         path_(path),
-        kqlQuery_(kqlQuery) {}
+        kqlQuery_(std::move(kqlQuery)),
+        type_(static_cast<Type>(type)) {}
 
   [[nodiscard]] std::string toString() const override {
     return fmt::format(
@@ -36,8 +38,11 @@ struct ClpConnectorSplit : public connector::ConnectorSplit {
         kqlQuery_ ? *kqlQuery_ : "<null>");
   }
 
+  enum class Type : int { kArchive, kIR };
+
   const std::string path_;
   std::shared_ptr<std::string> kqlQuery_;
+  const Type type_;
 };
 
 } // namespace facebook::velox::connector::clp
