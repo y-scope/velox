@@ -197,7 +197,8 @@ TEST_F(ClpS3AuthProviderBaseTest, caseInsensitiveAuthProvider) {
   const std::unordered_map<std::string, std::string> configMap(
       {{ClpConfig::kAuthProvider, "ClP_PaCkAgE"},
        {ClpPackageS3AuthProvider::kAccessKeyId, "aaaaaa"},
-       {ClpPackageS3AuthProvider::kSecretAccessKey, "bbbbbb"}});
+        {ClpPackageS3AuthProvider::kEndPoint, "http://aaaaaa"},
+       {ClpPackageS3AuthProvider::kSecretAccessKey, "cccccc"}});
   VELOX_CHECK_NOT_NULL(buildClpConfig(configMap));
 }
 
