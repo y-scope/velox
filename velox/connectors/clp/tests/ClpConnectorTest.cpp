@@ -68,9 +68,10 @@ class ClpConnectorTest : public exec::test::OperatorTestBase {
 
   exec::Split makeClpSplit(
       const std::string& splitPath,
+      ClpConnectorSplit::SplitType type,
       std::shared_ptr<std::string> kqlQuery) {
     return exec::Split(std::make_shared<ClpConnectorSplit>(
-        kClpConnectorId, splitPath, kqlQuery));
+        kClpConnectorId, splitPath, static_cast<int>(type), kqlQuery));
   }
 
   RowVectorPtr getResults(
@@ -112,7 +113,11 @@ TEST_F(ClpConnectorTest, test1NoPushdown) {
                   .planNode();
 
   auto output = getResults(
-      plan, {makeClpSplit(getExampleFilePath("test_1.clps"), kqlQuery)});
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_1.clps"),
+          ClpConnectorSplit::SplitType::kArchive,
+          kqlQuery)});
   auto expected = makeRowVector(
       {// requestId
        makeFlatVector<StringView>(
@@ -156,7 +161,11 @@ TEST_F(ClpConnectorTest, test1Pushdown) {
           .planNode();
 
   auto output = getResults(
-      plan, {makeClpSplit(getExampleFilePath("test_1.clps"), kqlQuery)});
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_1.clps"),
+          ClpConnectorSplit::SplitType::kArchive,
+          kqlQuery)});
   auto expected =
       makeRowVector({// requestId
                      makeFlatVector<StringView>({"req-106"}),
@@ -197,7 +206,11 @@ TEST_F(ClpConnectorTest, test2NoPushdown) {
           .planNode();
 
   auto output = getResults(
-      plan, {makeClpSplit(getExampleFilePath("test_2.clps"), kqlQuery)});
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_2.clps"),
+          ClpConnectorSplit::SplitType::kArchive,
+          kqlQuery)});
   auto expected =
       makeRowVector({// timestamp
                      makeFlatVector<Timestamp>({Timestamp(
@@ -242,7 +255,11 @@ TEST_F(ClpConnectorTest, test2Pushdown) {
                   .planNode();
 
   auto output = getResults(
-      plan, {makeClpSplit(getExampleFilePath("test_2.clps"), kqlQuery)});
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_2.clps"),
+          ClpConnectorSplit::SplitType::kArchive,
+          kqlQuery)});
   auto expected =
       makeRowVector({// timestamp
                      makeFlatVector<Timestamp>({Timestamp(
@@ -288,7 +305,11 @@ TEST_F(ClpConnectorTest, test2Hybrid) {
           .planNode();
 
   auto output = getResults(
-      plan, {makeClpSplit(getExampleFilePath("test_2.clps"), kqlQuery)});
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_2.clps"),
+          ClpConnectorSplit::SplitType::kArchive,
+          kqlQuery)});
   auto expected = makeRowVector(
       {// timestamp
        makeFlatVector<Timestamp>(
@@ -323,7 +344,11 @@ TEST_F(ClpConnectorTest, test3TimestampMarshalling) {
                   .planNode();
 
   auto output = getResults(
-      plan, {makeClpSplit(getExampleFilePath("test_3.clps"), kqlQuery)});
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_3.clps"),
+          ClpConnectorSplit::SplitType::kArchive,
+          kqlQuery)});
   auto expected = makeRowVector({
       // timestamp
       makeFlatVector<Timestamp>(

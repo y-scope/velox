@@ -24,19 +24,25 @@ struct ClpConnectorSplit : public connector::ConnectorSplit {
   ClpConnectorSplit(
       const std::string& connectorId,
       const std::string& path,
+      const int type,
       std::shared_ptr<std::string> kqlQuery)
       : connector::ConnectorSplit(connectorId),
         path_(path),
-        kqlQuery_(kqlQuery) {}
+        type_(static_cast<SplitType>(type)),
+        kqlQuery_(std::move(kqlQuery)) {}
 
   [[nodiscard]] std::string toString() const override {
     return fmt::format(
-        "CLP Split: path: {}, kqlQuery: {}",
+        "CLP Split: path: {}, type: {}, kqlQuery: {}",
         path_,
+        type_ == SplitType::kArchive ? "Archive" : "Ir",
         kqlQuery_ ? *kqlQuery_ : "<null>");
   }
 
+  enum class SplitType : int { kArchive, kIr };
+
   const std::string path_;
+  const SplitType type_;
   std::shared_ptr<std::string> kqlQuery_;
 };
 
