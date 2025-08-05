@@ -50,17 +50,17 @@ class ClpS3AuthProviderBase {
   virtual bool parseConfigAndExportAuthEnvironmentVariables() = 0;
 
  protected:
-  /// Set the environment variable for different OS, then get the environment
-  /// variable to do the sanity check.
+  /// Sets an environment variable for different OS, then gets the environment
+  /// variable to do a sanity check.
   ///
   /// @param key The environment variable name to set.
   /// @param value The environment variable value to set.
-  /// @return Did exportation succeed or not.
+  /// @return Whether environment variable export succeeded or not.
   static void setupEnvironmentVariable(
       std::string_view key,
       std::string_view value);
 
-  /// Unset the environment variable for different OS, then get the environment
+  /// Unsets an environment variable for different OS, then gets the environment
   /// variable to do the sanity check.
   ///
   /// @param key The environment variable name to unset.
