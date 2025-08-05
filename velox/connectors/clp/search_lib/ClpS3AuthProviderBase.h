@@ -38,16 +38,15 @@ class ClpS3AuthProviderBase {
   /// @return The constructed S3 URL.
   virtual std::string constructS3Url(std::string_view splitPath) = 0;
 
-  /// Retrieves some customized config option value and save them to the class
-  /// property. Also exports the three environment variables needed by CLP-s
+  /// Exports the three environment variables needed by CLP-s
   /// to system:
-  ///   AWS_ENV_VAR_ACCESS_KEY_ID
-  ///   AWS_ENV_VAR_SECRET_ACCESS_KEY
-  ///   AWS_ENV_VAR_SESSION_TOKEN (optional)
-  /// So that in runtime, CLP-s’s code can execute S3-related logic correctly.
+  ///   AWS_ACCESS_KEY_ID
+  ///   AWS_SECRET_ACCESS_KEY
+  ///   AWS_SESSION_TOKEN (optional)
+  /// So that at runtime CLP-S's code can authenticate with S3.
   ///
-  /// @return Did exportation succeed or not.
-  virtual bool parseConfigAndExportAuthEnvironmentVariables() = 0;
+  /// @return Whether environment variable export succeeded or not.
+  virtual bool exportAuthEnvironmentVariables() = 0;
 
  protected:
   /// Sets an environment variable for different OS, then gets the environment
@@ -56,7 +55,7 @@ class ClpS3AuthProviderBase {
   /// @param key The environment variable name to set.
   /// @param value The environment variable value to set.
   /// @return Whether environment variable export succeeded or not.
-  static void setupEnvironmentVariable(
+  static void setEnvironmentVariable(
       std::string_view key,
       std::string_view value);
 

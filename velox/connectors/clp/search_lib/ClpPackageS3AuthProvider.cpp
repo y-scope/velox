@@ -26,7 +26,7 @@ std::string ClpPackageS3AuthProvider::constructS3Url(
   return fmt::format("{}/{}", this->endPoint_, splitPath);
 }
 
-bool ClpPackageS3AuthProvider::parseConfigAndExportAuthEnvironmentVariables() {
+bool ClpPackageS3AuthProvider::exportAuthEnvironmentVariables() {
   this->endPoint_ = config_->get<std::string>(kEndPoint, "");
   VELOX_CHECK(
       !this->endPoint_.empty(), fmt::format("{} cannot be empty", kEndPoint));
@@ -42,10 +42,10 @@ bool ClpPackageS3AuthProvider::parseConfigAndExportAuthEnvironmentVariables() {
   VELOX_CHECK(
       !secretAccessKey.empty(),
       fmt::format("{} cannot be empty", kSecretAccessKey));
-  setupEnvironmentVariable(kEnvAwsAccessKeyId, accessKeyId);
-  setupEnvironmentVariable(kEnvAwsSecretAccessKey, secretAccessKey);
+  setEnvironmentVariable(kEnvAwsAccessKeyId, accessKeyId);
+  setEnvironmentVariable(kEnvAwsSecretAccessKey, secretAccessKey);
   if (!sessionToken.empty()) {
-    setupEnvironmentVariable(kEnvAwsSessionToken, sessionToken);
+    setEnvironmentVariable(kEnvAwsSessionToken, sessionToken);
   } else {
     unsetEnvironmentVariable(kEnvAwsSessionToken);
   }

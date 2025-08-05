@@ -41,7 +41,7 @@ class ClpPackageS3AuthProvider : public ClpS3AuthProviderBase {
 
   std::string constructS3Url(std::string_view splitPath) override;
 
-  bool parseConfigAndExportAuthEnvironmentVariables() override;
+  bool exportAuthEnvironmentVariables() override;
 
  private:
   std::string endPoint_;

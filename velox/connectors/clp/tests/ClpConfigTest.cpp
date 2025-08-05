@@ -196,7 +196,7 @@ TEST_F(ClpS3AuthProviderBaseTest, caseInsensitiveAuthProvider) {
   const std::unordered_map<std::string, std::string> configMap(
       {{ClpConfig::kAuthProvider, "ClP_PaCkAgE"},
        {ClpPackageS3AuthProvider::kAccessKeyId, "aaaaaa"},
-        {ClpPackageS3AuthProvider::kEndPoint, "http://aaaaaa"},
+       {ClpPackageS3AuthProvider::kEndPoint, "http://aaaaaa"},
        {ClpPackageS3AuthProvider::kSecretAccessKey, "cccccc"}});
   VELOX_CHECK_NOT_NULL(buildClpConfig(configMap));
 }
@@ -215,8 +215,7 @@ TEST_F(ClpPackageS3AuthProviderTest, readAndExportAwsAuthEnvironmentVariables) {
        {ClpPackageS3AuthProvider::kSecretAccessKey, cTestSecretAccessKey},
        {ClpPackageS3AuthProvider::kSessionToken, cTestSessionToken}});
   auto clpPackageS3AuthProvider = buildClpPackageS3AuthProvider(configMap);
-  VELOX_CHECK(
-      clpPackageS3AuthProvider->parseConfigAndExportAuthEnvironmentVariables());
+  VELOX_CHECK(clpPackageS3AuthProvider->exportAuthEnvironmentVariables());
   VELOX_CHECK(checkEnvironmentVariableEquals(
       ClpPackageS3AuthProvider::kEnvAwsAccessKeyId, cTestAccessKeyId));
   VELOX_CHECK(checkEnvironmentVariableEquals(
@@ -231,8 +230,7 @@ TEST_F(ClpPackageS3AuthProviderTest, readAndExportAwsAuthEnvironmentVariables) {
       {ClpPackageS3AuthProvider::kEndPoint, cTestEndPoint},
       {ClpPackageS3AuthProvider::kSecretAccessKey, cTestSecretAccessKey}};
   clpPackageS3AuthProvider = buildClpPackageS3AuthProvider(configMap);
-  VELOX_CHECK(
-      clpPackageS3AuthProvider->parseConfigAndExportAuthEnvironmentVariables());
+  VELOX_CHECK(clpPackageS3AuthProvider->exportAuthEnvironmentVariables());
   VELOX_CHECK(checkEnvironmentVariableEquals(
       ClpPackageS3AuthProvider::kEnvAwsSessionToken, std::nullopt));
 }
