@@ -18,11 +18,11 @@
 #include <gtest/gtest.h>
 
 #include "velox/common/base/Fs.h"
-#include "velox/common/base/tests/GTestUtils.h"
 #include "velox/connectors/clp/ClpColumnHandle.h"
 #include "velox/connectors/clp/ClpConnector.h"
 #include "velox/connectors/clp/ClpConnectorSplit.h"
 #include "velox/connectors/clp/ClpTableHandle.h"
+#include "velox/connectors/clp/search_lib/ClpPackageS3AuthProvider.h"
 #include "velox/exec/tests/utils/AssertQueryBuilder.h"
 #include "velox/exec/tests/utils/OperatorTestBase.h"
 #include "velox/exec/tests/utils/PlanBuilder.h"
@@ -55,7 +55,12 @@ class ClpConnectorTest : public exec::test::OperatorTestBase {
                 kClpConnectorId,
                 std::make_shared<config::ConfigBase>(
                     std::unordered_map<std::string, std::string>{
-                        {"clp.split-source", "local"}}));
+                        {"clp.split-source", "local"},
+                        {ClpConfig::kAuthProvider, "clp_package"},
+                        {ClpPackageS3AuthProvider::kAccessKeyId, "aaaaaa"},
+                        {ClpPackageS3AuthProvider::kEndPoint, "http://aaaaaa"},
+                        {ClpPackageS3AuthProvider::kSecretAccessKey,
+                         "cccccc"}}));
     connector::registerConnector(clpConnector);
   }
 
