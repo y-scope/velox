@@ -150,8 +150,7 @@ class ClpConfigTest : public testing::Test {
 
 class ClpS3AuthProviderBaseTest : public ClpConfigTest {
  public:
-  /// Checks whether an environment variable is undefined or equals a given
-  /// value.
+  /// Checks whether an environment variable matches a given value.
   ///
   /// @param key The name of the environment variable to check.
   /// @param expectedValue Optional expected value to compare against. If
