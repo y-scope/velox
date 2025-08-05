@@ -51,7 +51,8 @@ ClpConfig::ClpConfig(std::shared_ptr<const config::ConfigBase> config) {
   VELOX_CHECK_NOT_NULL(config, "Config is null for CLP initialization");
   config_ = std::move(config);
 
-  // Setup S3 environment variables needed by CLP using configured auth provider
+  // Set up S3 environment variables needed by CLP using configured auth
+  // provider
   switch (
       stringToS3AuthProvider(config_->get<std::string>(kAuthProvider, ""))) {
     case ClpConfig::S3AuthProvider::kClpPackage:
