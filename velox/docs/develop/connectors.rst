@@ -124,26 +124,45 @@ This is the behavior when the proxy settings are enabled:
 
 CLP Connector
 -------------
-The CLP Connector is used to read CLP archives stored on a local file system or S3. It implements similar
-interfaces as the Hive Connector except for the ``DataSink`` interface. Here we only describe the ``DataSource``
-interface and the ``ConnectorSplit`` interface implementation since `Connector` and ``ConnectorFactory`` are
-similar to the Hive Connector.
+The CLP Connector is used to read CLP splits stored on a local file system or S3. It implements similar interfaces as
+the Hive Connector except for the ``DataSink`` interface. Here we only describe the ``DataSource`` interface and the
+``ConnectorSplit`` interface implementation since ``Connector`` and ``ConnectorFactory`` are similar to the Hive
+Connector. We also describe ``ClpS3AuthProviderBase``, an interface that allows users to customize S3 authentication.
 
 ClpConnectorSplit
 ~~~~~~~~~~~~~~~~~
-``ClpConnectorSplit`` describes a data chunk using ``path``, which is the path to the archive file.
+``ClpConnectorSplit`` describes a data chunk using ``path``. This path may be the absolute file path to the split file
+if it is stored on a local file system, or the complete (or partial) URL of the split if it is stored on S3. In the
+latter case, when only a partial URL is provided, ``ClpS3AuthProviderBase`` provides a hook in ``ClpDataSource`` to
+assist in constructing the full URL. Refer to :ref:`ClpS3AuthProviderBase<ClpS3AuthProviderBase>` for details.
 
 ClpDataSource
 ~~~~~~~~~~~~~
 ``ClpDataSource`` implements the ``addSplit`` API that consumes a ``ClpConnectorSplit`` and ``next`` API that
 processes the split and returns a batch of rows.
 
-During initialization, it records the KQL query and archive source (S3 or local). It then iterates through
+During initialization, it records the KQL query and split source (S3 or local). It then iterates through
 each output column, accessing its handle to get its type and original name. For row types, it recursively
 traverses the nested structure to process each field; for non-row types, it directly maps the Velox column
 type to a CLP column type.
 
-When a split is added, a ``ClpCursor`` is created with the archive path and input source. The query is parsed
+When a split is added, a ``ClpCursor`` is created with the split path and input source. The query is parsed
 and simplified into an AST. On ``next``, the cursor finds matching row indices and, if any exist,
 ``ClpDataSource`` recursively creates a row vector composed of lazy vectors, which use CLP column readers to
 decode and load data as needed during execution.
+
+.. _ClpS3AuthProviderBase
+
+ClpS3AuthProviderBase
+~~~~~~~~~~~~~~~~~~~~~
+``ClpS3AuthProviderBase`` defines an interface for obtaining S3 authentication information and constructing the
+complete split URL from the current URL stored in ``ClpConnectorSplit``. It provides the following two functions:
+
+1. ``exportAuthEnvironmentVariables()`` – Parses user-defined configuration options and exports the three environment
+   variables required by CLP-s to the system. This ensures that, at runtime, CLP-s can execute S3-related operations
+   correctly. This function is invoked immediately after the configuration is parsed.
+2. ``constructS3Url()`` – Builds the full S3 URL for a split. It takes the ``path`` property of ``ClpConnectorSplit``
+    as its argument, allowing customization in URL construction.
+
+Additionally, this interface maintains a reference to ``config_``, enabling users to define custom configuration
+options for passing any required information.

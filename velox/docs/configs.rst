@@ -910,6 +910,39 @@ CLP Connector
      - Type
      - Default Value
      - Description
+   * - clp.s3-auth-provider
+     - string
+     -
+     - Specifies the S3 auth provider used by CLP to obtain authentication information (typically
+       the three environment variables ``AWS_ACCESS_KEY_ID``, ``AWS_SECRET_ACCESS_KEY``, and the
+       optional ``AWS_SESSION_TOKEN``). This option is required when the ``clp.storage-type``
+       option is set to ``S3``. The CLP package includes a default provider, but users can
+       implement their own by extending the ``ClpS3AuthProviderBase`` interface. Custom providers
+       may also introduce their own config options to help determine how these values are
+       retrieved. The ``clp.s3-``-prefixed options described below apply only when ``CLP_PACKAGE``
+       is set as the value for this option, allowing the auth information to be directly specified
+       in the config file. **Allowed values:** ``CLP_PACKAGE``.
+   * - clp.s3-access-key-id
+     - string
+     -
+     - The S3 access key ID, exported as the ``AWS_ACCESS_KEY_ID`` environment variable and used
+       for authentication.
+   * - clp.s3-end-point
+     - string
+     -
+     - The S3 endpoint. For the CLP package, the complete split URL is formatted as
+       ``<clp.s3-end-point>/<split_path>``, where ``<split_path>`` is obtained from the CLP
+       package's metadata database and stored in the ``ClpConnectorSplit`` class.
+   * - clp.s3-secret-access-key
+     - string
+     -
+     - The S3 secret access key, exported as the ``AWS_SECRET_ACCESS_KEY`` environment variable
+       and used for authentication.
+   * - clp.s3-session-token
+     - string
+     -
+     - The S3 session token, exported as the ``AWS_SESSION_TOKEN`` environment variable and used
+       for authentication. This option is optional.
    * - clp.storage-type
      - string
      - FS
