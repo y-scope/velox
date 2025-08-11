@@ -162,7 +162,8 @@ complete split URL from the current URL stored in ``ClpConnectorSplit``. It prov
    variables required by CLP-s to the system. This ensures that, at runtime, CLP-s can execute S3-related operations
    correctly. This function is invoked immediately after the configuration is parsed.
 2. ``constructS3Url()`` – Builds the full S3 URL for a split. It takes the ``path`` property of ``ClpConnectorSplit``
-    as its argument, allowing customization in URL construction.
+    as its argument, allowing customization in URL construction. For example, the ``path`` could be ``"prefix/split"``,
+    which must be prefixed with ``"https://bucket.s3.region.amazonaws.com/"`` to form the complete URL.
 
 Additionally, this interface maintains a reference to ``config_``, enabling users to define custom configuration
 options for passing any required information.

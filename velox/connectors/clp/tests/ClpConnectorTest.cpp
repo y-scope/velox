@@ -22,7 +22,6 @@
 #include "velox/connectors/clp/ClpConnector.h"
 #include "velox/connectors/clp/ClpConnectorSplit.h"
 #include "velox/connectors/clp/ClpTableHandle.h"
-#include "velox/connectors/clp/search_lib/ClpPackageS3AuthProvider.h"
 #include "velox/exec/tests/utils/AssertQueryBuilder.h"
 #include "velox/exec/tests/utils/OperatorTestBase.h"
 #include "velox/exec/tests/utils/PlanBuilder.h"
