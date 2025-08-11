@@ -51,6 +51,7 @@ class ClpConfig {
  private:
   std::shared_ptr<const config::ConfigBase> config_;
   std::shared_ptr<ClpS3AuthProviderBase> s3AuthProvider_;
+  StorageType storageType_;
 };
 
 } // namespace facebook::velox::connector::clp

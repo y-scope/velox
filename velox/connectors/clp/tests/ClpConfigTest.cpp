@@ -186,7 +186,8 @@ class ClpPackageS3AuthProviderTest : public ClpS3AuthProviderBaseTest {
 
 TEST_F(ClpConfigTest, invalidAuthProvider) {
   const std::unordered_map<std::string, std::string> configMap(
-      {{ClpConfig::kAuthProvider, "dummy-provider"}});
+      {{"clp.storage-type", "s3"},
+       {ClpConfig::kAuthProvider, "dummy-provider"}});
   VELOX_ASSERT_UNSUPPORTED_THROW(
       buildClpConfig(configMap),
       "Unsupported s3 auth provider type: dummy-provider.");
@@ -194,7 +195,8 @@ TEST_F(ClpConfigTest, invalidAuthProvider) {
 
 TEST_F(ClpS3AuthProviderBaseTest, caseInsensitiveAuthProvider) {
   const std::unordered_map<std::string, std::string> configMap(
-      {{ClpConfig::kAuthProvider, "ClP_PaCkAgE"},
+      {{"clp.storage-type", "s3"},
+       {ClpConfig::kAuthProvider, "ClP_PaCkAgE"},
        {ClpPackageS3AuthProvider::kAccessKeyId, "aaaaaa"},
        {ClpPackageS3AuthProvider::kEndPoint, "http://aaaaaa"},
        {ClpPackageS3AuthProvider::kSecretAccessKey, "cccccc"}});
@@ -209,7 +211,8 @@ TEST_F(ClpPackageS3AuthProviderTest, readAndExportAwsAuthEnvironmentVariables) {
 
   // Test all properties
   std::unordered_map<std::string, std::string> configMap(
-      {{ClpConfig::kAuthProvider, "clp_package"},
+      {{"clp.storage-type", "s3"},
+       {ClpConfig::kAuthProvider, "clp_package"},
        {ClpPackageS3AuthProvider::kAccessKeyId, cTestAccessKeyId},
        {ClpPackageS3AuthProvider::kEndPoint, cTestEndPoint},
        {ClpPackageS3AuthProvider::kSecretAccessKey, cTestSecretAccessKey},
@@ -225,6 +228,7 @@ TEST_F(ClpPackageS3AuthProviderTest, readAndExportAwsAuthEnvironmentVariables) {
 
   // Test auth without the session token
   configMap = {
+      {"clp.storage-type", "s3"},
       {ClpConfig::kAuthProvider, "clp_package"},
       {ClpPackageS3AuthProvider::kAccessKeyId, cTestAccessKeyId},
       {ClpPackageS3AuthProvider::kEndPoint, cTestEndPoint},

@@ -54,13 +54,7 @@ class ClpConnectorTest : public exec::test::OperatorTestBase {
             ->newConnector(
                 kClpConnectorId,
                 std::make_shared<config::ConfigBase>(
-                    std::unordered_map<std::string, std::string>{
-                        {"clp.split-source", "local"},
-                        {ClpConfig::kAuthProvider, "clp_package"},
-                        {ClpPackageS3AuthProvider::kAccessKeyId, "aaaaaa"},
-                        {ClpPackageS3AuthProvider::kEndPoint, "http://aaaaaa"},
-                        {ClpPackageS3AuthProvider::kSecretAccessKey,
-                         "cccccc"}}));
+                    std::unordered_map<std::string, std::string>{}));
     connector::registerConnector(clpConnector);
   }
 

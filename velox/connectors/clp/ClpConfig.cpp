@@ -51,17 +51,22 @@ ClpConfig::ClpConfig(std::shared_ptr<const config::ConfigBase> config) {
   VELOX_CHECK_NOT_NULL(config, "Config is null for CLP initialization");
   config_ = std::move(config);
 
-  // Set up S3 environment variables needed by CLP using configured auth
-  // provider
-  switch (
-      stringToS3AuthProvider(config_->get<std::string>(kAuthProvider, ""))) {
-    case ClpConfig::S3AuthProvider::kClpPackage:
-      s3AuthProvider_ = std::make_shared<ClpPackageS3AuthProvider>(config_);
-      break;
-    default:
-      VELOX_FAIL();
+  storageType_ =
+      stringToStorageType(config_->get<std::string>(kStorageType, "FS"));
+
+  if (StorageType::kS3 == storageType_) {
+    // Set up S3 environment variables needed by CLP using configured auth
+    // provider
+    switch (
+        stringToS3AuthProvider(config_->get<std::string>(kAuthProvider, ""))) {
+      case S3AuthProvider::kClpPackage:
+        s3AuthProvider_ = std::make_shared<ClpPackageS3AuthProvider>(config_);
+        break;
+      default:
+        VELOX_FAIL();
+    }
+    VELOX_CHECK(s3AuthProvider_->exportAuthEnvironmentVariables());
   }
-  VELOX_CHECK(s3AuthProvider_->exportAuthEnvironmentVariables());
 }
 
 std::shared_ptr<ClpS3AuthProviderBase> ClpConfig::s3AuthProvider() const {
@@ -69,7 +74,7 @@ std::shared_ptr<ClpS3AuthProviderBase> ClpConfig::s3AuthProvider() const {
 }
 
 ClpConfig::StorageType ClpConfig::storageType() const {
-  return stringToStorageType(config_->get<std::string>(kStorageType, "FS"));
+  return storageType_;
 }
 
 } // namespace facebook::velox::connector::clp
