@@ -19,8 +19,8 @@
 #include <string>
 #include <vector>
 
+#include "archive/ClpQueryRunner.h"
 #include "connectors/clp/ClpConnectorSplit.h"
-#include "velox/connectors/clp/search_lib/ClpQueryRunner.h"
 
 namespace clp_s {
 enum class InputSource : uint8_t;

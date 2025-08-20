@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "velox/connectors/clp/search_lib/ClpQueryRunner.h"
+#include "ClpQueryRunner.h"
 
 using namespace clp_s;
 using namespace clp_s::search;
