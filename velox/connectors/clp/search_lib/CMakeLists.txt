@@ -23,17 +23,8 @@ velox_add_library(
   ClpVectorLoader.cpp
   ClpVectorLoader.h)
 
-target_include_directories(clp-s-search PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
 add_subdirectory(archive)
 
-velox_link_libraries(
-  clp-s-search
-  PUBLIC clp_s::archive_reader
-  PRIVATE
-    clp_s::clp_dependencies
-    clp_s::io
-    clp_s::search
-    clp_s::search::kql
-    velox_vector)
+velox_link_libraries(clp-s-search PUBLIC clp-s-archive-search)
+
 target_compile_features(clp-s-search PRIVATE cxx_std_20)

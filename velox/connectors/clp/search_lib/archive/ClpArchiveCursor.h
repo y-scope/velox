@@ -31,6 +31,8 @@ namespace facebook::velox::connector::clp::search_lib {
 
 class ClpQueryRunner;
 
+/// A query execution implementation that manages the lifecycle of a query on a
+/// CLP-S archive.
 class ClpArchiveCursor final : public BaseClpCursor {
  public:
   explicit ClpArchiveCursor(

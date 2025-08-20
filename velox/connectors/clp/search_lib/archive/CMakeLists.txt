@@ -11,9 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-target_sources(
-  clp-s-search
-  PRIVATE ClpArchiveCursor.cpp ClpArchiveCursor.h ClpQueryRunner.cpp
-          ClpQueryRunner.h)
+velox_add_library(
+  clp-s-archive-search
+  STATIC
+  ClpArchiveCursor.cpp
+  ClpArchiveCursor.h
+  ClpQueryRunner.cpp
+  ClpQueryRunner.h)
 
-target_include_directories(clp-s-search PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+velox_link_libraries(
+  clp-s-archive-search
+  PUBLIC clp_s::archive_reader
+  PRIVATE
+    clp_s::clp_dependencies
+    clp_s::io
+    clp_s::search
+    clp_s::search::kql
+    velox_vector)
