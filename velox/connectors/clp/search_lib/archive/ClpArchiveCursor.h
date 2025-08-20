@@ -18,7 +18,18 @@
 
 #include "velox/connectors/clp/search_lib/BaseClpCursor.h"
 
+namespace clp_s {
+class ArchiveReader;
+} // namespace clp_s
+
+namespace clp_s::search {
+class Projection;
+class SchemaMatch;
+} // namespace clp_s::search
+
 namespace facebook::velox::connector::clp::search_lib {
+
+class ClpQueryRunner;
 
 class ClpArchiveCursor final : public BaseClpCursor {
  public:

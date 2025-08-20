@@ -16,13 +16,13 @@
 
 #include <optional>
 
-#include "search_lib/ClpS3AuthProviderBase.h"
-#include "search_lib/archive/ClpArchiveCursor.h"
 #include "velox/connectors/clp/ClpColumnHandle.h"
 #include "velox/connectors/clp/ClpConnectorSplit.h"
 #include "velox/connectors/clp/ClpDataSource.h"
 #include "velox/connectors/clp/ClpTableHandle.h"
+#include "velox/connectors/clp/search_lib/ClpS3AuthProviderBase.h"
 #include "velox/connectors/clp/search_lib/ClpVectorLoader.h"
+#include "velox/connectors/clp/search_lib/archive/ClpArchiveCursor.h"
 #include "velox/vector/FlatVector.h"
 
 namespace facebook::velox::connector::clp {

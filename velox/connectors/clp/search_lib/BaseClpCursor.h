@@ -16,22 +16,17 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
-#include "archive/ClpQueryRunner.h"
-#include "connectors/clp/ClpConnectorSplit.h"
+#include "clp_s/InputConfig.hpp"
+#include "velox/connectors/clp/ClpConnectorSplit.h"
 
 namespace clp_s {
-enum class InputSource : uint8_t;
-class ArchiveReader;
 class BaseColumnReader;
 } // namespace clp_s
-
-namespace clp_s::search {
-class Projection;
-class SchemaMatch;
-} // namespace clp_s::search
 
 namespace clp_s::search::ast {
 class Expression;
