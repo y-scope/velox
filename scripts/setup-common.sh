@@ -90,7 +90,11 @@ function install_duckdb {
 }
 
 function install_boost {
-  wget_and_untar https://github.com/boostorg/boost/releases/download/${BOOST_VERSION}/${BOOST_VERSION}.tar.gz boost
+  if wget --spider -q "https://github.com/boostorg/boost/releases/download/${BOOST_VERSION}/${BOOST_VERSION}.tar.gz"; then
+    wget_and_untar https://github.com/boostorg/boost/releases/download/${BOOST_VERSION}/${BOOST_VERSION}.tar.gz boost
+  else
+    wget_and_untar https://github.com/boostorg/boost/releases/download/${BOOST_VERSION}/${BOOST_VERSION}-b2-nodocs.tar.gz boost
+  fi 
   (
     cd ${DEPENDENCY_DIR}/boost
     if [[ "$(uname)" == "Linux" && ${USE_CLANG} != "false" ]]; then
