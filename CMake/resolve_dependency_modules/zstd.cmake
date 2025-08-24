@@ -16,9 +16,9 @@ include_guard(GLOBAL)
 # Version you want to build
 set(VELOX_ZSTD_BUILD_VERSION 1.5.7)
 set(VELOX_ZSTD_BUILD_SHA256_CHECKSUM
-  eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3)
+    eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3)
 set(VELOX_ZSTD_SOURCE_URL
-  "https://github.com/facebook/zstd/releases/download/v${VELOX_ZSTD_BUILD_VERSION}/zstd-${VELOX_ZSTD_BUILD_VERSION}.tar.gz"
+    "https://github.com/facebook/zstd/releases/download/v${VELOX_ZSTD_BUILD_VERSION}/zstd-${VELOX_ZSTD_BUILD_VERSION}.tar.gz"
 )
 
 velox_resolve_dependency_url(ZSTD)
@@ -26,20 +26,27 @@ velox_resolve_dependency_url(ZSTD)
 message(STATUS "Building zstd from source")
 
 # Force static lib, keep build minimal
-set(ZSTD_BUILD_STATIC   ON  CACHE BOOL "" FORCE)
-set(ZSTD_BUILD_SHARED   OFF CACHE BOOL "" FORCE)
-set(ZSTD_BUILD_PROGRAMS OFF CACHE BOOL "" FORCE)
-set(ZSTD_BUILD_TESTS    OFF CACHE BOOL "" FORCE)
-set(ZSTD_LEGACY_SUPPORT OFF CACHE BOOL "" FORCE)
+set(ZSTD_BUILD_STATIC
+    ON
+    CACHE BOOL "" FORCE)
+set(ZSTD_BUILD_SHARED
+    OFF
+    CACHE BOOL "" FORCE)
+set(ZSTD_BUILD_PROGRAMS
+    OFF
+    CACHE BOOL "" FORCE)
+set(ZSTD_BUILD_TESTS
+    OFF
+    CACHE BOOL "" FORCE)
+set(ZSTD_LEGACY_SUPPORT
+    OFF
+    CACHE BOOL "" FORCE)
 
 FetchContent_Declare(
   zstd
   URL ${VELOX_ZSTD_SOURCE_URL}
   URL_HASH ${VELOX_ZSTD_BUILD_SHA256_CHECKSUM}
-  OVERRIDE_FIND_PACKAGE
-  EXCLUDE_FROM_ALL
-  SYSTEM
-)
+  OVERRIDE_FIND_PACKAGE EXCLUDE_FROM_ALL SYSTEM)
 
 FetchContent_MakeAvailable(zstd)
 add_library(zstd::libzstd_static INTERFACE IMPORTED)

@@ -543,7 +543,7 @@ if(${VELOX_ENABLE_CLP_CONNECTOR})
 
   velox_set_source(spdlog)
   velox_resolve_dependency(spdlog)
- 
+
   velox_set_source(microsoft_gsl)
   velox_resolve_dependency(microsoft_gsl)
 
