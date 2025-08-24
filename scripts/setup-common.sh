@@ -90,15 +90,11 @@ function install_duckdb {
 }
 
 function install_boost {
-  if wget --spider -q "https://github.com/boostorg/boost/releases/download/${BOOST_VERSION}/${BOOST_VERSION}.tar.gz"; then
-    wget_and_untar https://github.com/boostorg/boost/releases/download/${BOOST_VERSION}/${BOOST_VERSION}.tar.gz boost
-  else
-    wget_and_untar https://github.com/boostorg/boost/releases/download/${BOOST_VERSION}/${BOOST_VERSION}-b2-nodocs.tar.gz boost
-  fi 
+  wget_and_untar https://github.com/boostorg/boost/releases/download/${BOOST_VERSION}/${BOOST_VERSION}.tar.gz boost
   (
     cd ${DEPENDENCY_DIR}/boost
     if [[ "$(uname)" == "Linux" && ${USE_CLANG} != "false" ]]; then
-      ./bootstrap.sh --prefix=${INSTALL_PREFIX} --with-toolset="clang-15" --with-libraries=system
+      ./bootstrap.sh --prefix=${INSTALL_PREFIX} --with-toolset="clang-15"
       # Switch the compiler from the clang-15 toolset which doesn't exist (clang-15.jam) to
       # clang of version 15 when toolset clang-15 is used.
       # This reconciles the project-config.jam generation with what the b2 build system allows for customization.

@@ -181,7 +181,7 @@ ErrorCode ClpCursor::loadArchive() {
   }
 
   projection_ = std::make_shared<Projection>(
-      outputColumns_.empty() ? ReturnAllColumns : ReturnSelectedColumns, true);
+      outputColumns_.empty() ? ReturnAllColumns : ReturnSelectedColumns);
   try {
     for (auto const& column : outputColumns_) {
       std::vector<std::string> descriptorTokens;
