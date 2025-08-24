@@ -550,6 +550,9 @@ if(${VELOX_ENABLE_CLP_CONNECTOR})
   velox_set_source(log_surgeon)
   velox_resolve_dependency(log_surgeon)
 
+  set(zstd_SOURCE BUNDLED)
+  velox_resolve_dependency(zstd)
+
   set(ystdlib_cpp_SOURCE BUNDLED)
   velox_resolve_dependency(ystdlib_cpp)
 

@@ -98,7 +98,7 @@ function install_boost {
   (
     cd ${DEPENDENCY_DIR}/boost
     if [[ "$(uname)" == "Linux" && ${USE_CLANG} != "false" ]]; then
-      ./bootstrap.sh --prefix=${INSTALL_PREFIX} --with-toolset="clang-15"
+      ./bootstrap.sh --prefix=${INSTALL_PREFIX} --with-toolset="clang-15" --with-libraries=system
       # Switch the compiler from the clang-15 toolset which doesn't exist (clang-15.jam) to
       # clang of version 15 when toolset clang-15 is used.
       # This reconciles the project-config.jam generation with what the b2 build system allows for customization.

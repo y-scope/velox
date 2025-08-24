@@ -20,3 +20,6 @@ FetchContent_Declare(
   OVERRIDE_FIND_PACKAGE)
 
 FetchContent_MakeAvailable(log_surgeon)
+
+# To address the error: CMake Error: install(EXPORT "log_surgeon-targets" ...) includes target "log_surgeon" which requires target "GSL" that is not in any export set.
+install(TARGETS GSL EXPORT log_surgeon-targets)
