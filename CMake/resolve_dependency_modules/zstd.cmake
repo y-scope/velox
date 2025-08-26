@@ -27,7 +27,7 @@ message(STATUS "Building zstd from source")
 
 # Force static lib, keep build minimal
 set(ZSTD_BUILD_STATIC
-    OFF
+    ON
     CACHE BOOL "" FORCE)
 set(ZSTD_BUILD_SHARED
     OFF
@@ -49,4 +49,4 @@ FetchContent_Declare(
   OVERRIDE_FIND_PACKAGE EXCLUDE_FROM_ALL SYSTEM)
 
 FetchContent_MakeAvailable(zstd)
-add_library(zstd::libzstd_shared INTERFACE IMPORTED)
+add_library(zstd::libzstd_static INTERFACE IMPORTED)

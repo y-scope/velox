@@ -15,8 +15,8 @@ include_guard(GLOBAL)
 
 FetchContent_Declare(
   clp
-  GIT_REPOSITORY https://github.com/y-scope/clp.git
-  GIT_TAG 8e0712553dbaebbc86ba70f8aeff3de8484e70df)
+  GIT_REPOSITORY https://github.com/anlowee/clp.git
+  GIT_TAG 598ba4622e5a968f01d9c9a1a378df0b36e5bf08)
 
 set(CLP_BUILD_CLP_REGEX_UTILS
     OFF
@@ -36,9 +36,6 @@ set(CLP_BUILD_EXECUTABLES
 set(CLP_BUILD_TESTING
     OFF
     CACHE BOOL "Build CLP tests")
-set(CLP_USE_STATIC_LIBS
-    OFF
-    CACHE BOOL "Not link static libraries")
 
 FetchContent_Populate(clp)
 
