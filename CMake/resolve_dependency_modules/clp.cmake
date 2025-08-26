@@ -15,8 +15,8 @@ include_guard(GLOBAL)
 
 FetchContent_Declare(
   clp
-  GIT_REPOSITORY https://github.com/anlowee/clp.git
-  GIT_TAG 598ba4622e5a968f01d9c9a1a378df0b36e5bf08)
+  GIT_REPOSITORY https://github.com/y-scope/clp.git
+  GIT_TAG 8e0712553dbaebbc86ba70f8aeff3de8484e70df)
 
 set(CLP_BUILD_CLP_REGEX_UTILS
     OFF
@@ -39,6 +39,5 @@ set(CLP_BUILD_TESTING
 
 FetchContent_Populate(clp)
 
-list(APPEND CMAKE_MODULE_PATH "${clp_SOURCE_DIR}/components/core/cmake/Modules")
 add_subdirectory(${clp_SOURCE_DIR}/components/core
                  ${clp_BINARY_DIR}/components/core)
