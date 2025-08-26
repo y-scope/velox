@@ -36,6 +36,9 @@ set(CLP_BUILD_EXECUTABLES
 set(CLP_BUILD_TESTING
     OFF
     CACHE BOOL "Build CLP tests")
+set(CLP_USE_STATIC_LIBS
+    OFF
+    CACHE BOOL "Not link static libraries")
 
 FetchContent_Populate(clp)
 
