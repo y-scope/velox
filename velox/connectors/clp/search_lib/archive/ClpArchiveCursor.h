@@ -18,8 +18,21 @@
 
 #include "velox/connectors/clp/search_lib/BaseClpCursor.h"
 
+namespace clp_s {
+class ArchiveReader;
+} // namespace clp_s
+
+namespace clp_s::search {
+class Projection;
+class SchemaMatch;
+} // namespace clp_s::search
+
 namespace facebook::velox::connector::clp::search_lib {
 
+class ClpQueryRunner;
+
+/// A query execution implementation that manages the lifecycle of a query on a
+/// CLP-S archive.
 class ClpArchiveCursor final : public BaseClpCursor {
  public:
   explicit ClpArchiveCursor(

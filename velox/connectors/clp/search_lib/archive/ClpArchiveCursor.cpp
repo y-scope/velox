@@ -16,12 +16,13 @@
 
 #include <glog/logging.h>
 
-#include "ClpArchiveCursor.h"
+#include "velox/connectors/clp/search_lib/archive/ClpArchiveCursor.h"
 
 #include "clp_s/ArchiveReader.hpp"
 #include "clp_s/search/EvaluateTimestampIndex.hpp"
 #include "clp_s/search/ast/EmptyExpr.hpp"
 #include "clp_s/search/ast/SearchUtils.hpp"
+#include "velox/connectors/clp/search_lib/archive/ClpQueryRunner.h"
 
 using namespace clp_s;
 using namespace clp_s::search;
@@ -53,12 +54,6 @@ uint64_t ClpArchiveCursor::fetchNext(
     if (ErrorCode::Success != errorCode_) {
       return 0;
     }
-
-    archiveReader_->open_packed_streams();
-    currentSplitLoaded_ = true;
-    queryRunner_ = std::make_shared<ClpQueryRunner>(
-        schemaMatch_, expr_, archiveReader_, false, projection_);
-    queryRunner_->global_init();
   }
 
   while (currentSchemaIndex_ < matchedSchemas_.size()) {
@@ -207,6 +202,12 @@ ErrorCode ClpArchiveCursor::loadSplit() {
 
   currentSchemaIndex_ = 0;
   currentSchemaTableLoaded_ = false;
+
+  archiveReader_->open_packed_streams();
+  currentSplitLoaded_ = true;
+  queryRunner_ = std::make_shared<ClpQueryRunner>(
+      schemaMatch_, expr_, archiveReader_, false, projection_);
+  queryRunner_->global_init();
   return ErrorCode::Success;
 }
 

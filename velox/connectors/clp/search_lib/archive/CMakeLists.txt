@@ -12,22 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 velox_add_library(
-  clp-s-search
+  clp-s-archive-search
   STATIC
-  BaseClpCursor.cpp
-  BaseClpCursor.h
-  ClpPackageS3AuthProvider.cpp
-  ClpPackageS3AuthProvider.h
-  ClpS3AuthProviderBase.cpp
-  ClpS3AuthProviderBase.h
-  ClpVectorLoader.cpp
-  ClpVectorLoader.h)
-
-add_subdirectory(archive)
+  ClpArchiveCursor.cpp
+  ClpArchiveCursor.h
+  ClpQueryRunner.cpp
+  ClpQueryRunner.h)
 
 velox_link_libraries(
-  clp-s-search
-  PUBLIC clp-s-archive-search
-  PUBLIC clp-s-ir-search)
-
-target_compile_features(clp-s-search PRIVATE cxx_std_20)
+  clp-s-archive-search
+  PUBLIC clp_s::archive_reader
+  PRIVATE
+    clp_s::clp_dependencies
+    clp_s::io
+    clp_s::search
+    clp_s::search::kql
+    velox_vector)

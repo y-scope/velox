@@ -16,22 +16,17 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
-#include "connectors/clp/ClpConnectorSplit.h"
-#include "velox/connectors/clp/search_lib/ClpQueryRunner.h"
+#include "clp_s/InputConfig.hpp"
+#include "velox/connectors/clp/ClpConnectorSplit.h"
 
 namespace clp_s {
-enum class InputSource : uint8_t;
-class ArchiveReader;
 class BaseColumnReader;
 } // namespace clp_s
-
-namespace clp_s::search {
-class Projection;
-class SchemaMatch;
-} // namespace clp_s::search
 
 namespace clp_s::search::ast {
 class Expression;
@@ -66,9 +61,9 @@ struct Field {
 };
 
 /// A query execution interface that manages the lifecycle of a query on a CLP-S
-/// archive, including parsing and validating the query, loading the relevant
-/// schemas and archives, applying filters, and iterating over the results. It
-/// abstracts away the low-level details of archive access and schema matching
+/// split (archive or IR), including parsing and validating the query, loading
+/// the relevant splits, applying filters, and iterating over the results. It
+/// abstracts away the low-level details of split access
 /// while supporting projection and batch-oriented retrieval of filtered rows.
 class BaseClpCursor {
  public:
@@ -91,8 +86,8 @@ class BaseClpCursor {
       const std::string& query,
       const std::vector<Field>& outputColumns);
 
-  /// Fetches the next set of rows from the cursor. If the split and schema
-  /// are not yet loaded, this function will perform the necessary loading.
+  /// Fetches the next set of rows from the cursor. If the split is not yet
+  /// loaded, this function will perform the necessary loading.
   ///
   /// @param numRows The maximum number of rows to fetch.
   /// @param filteredRowIndices A vector of row indices that match the filter.

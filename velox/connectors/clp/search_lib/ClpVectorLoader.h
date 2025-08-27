@@ -16,11 +16,12 @@
 
 #pragma once
 
+#include <simdjson.h>
+
 #include "clp_s/ColumnReader.hpp"
 #include "clp_s/SchemaTree.hpp"
-#include "connectors/clp/ClpConnectorSplit.h"
+#include "velox/connectors/clp/ClpConnectorSplit.h"
 
-#include "velox/connectors/clp/search_lib/BaseClpCursor.h"
 #include "velox/type/Timestamp.h"
 #include "velox/vector/FlatVector.h"
 #include "velox/vector/LazyVector.h"
@@ -30,6 +31,8 @@ class BaseColumnReader;
 } // namespace clp_s
 
 namespace facebook::velox::connector::clp::search_lib {
+
+enum class ColumnType;
 
 /// A custom Velox VectorLoader that populates Velox vectors from a CLP-based
 /// column reader. It supports various column types including integers, floats,
