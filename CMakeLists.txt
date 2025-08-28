@@ -507,8 +507,7 @@ if(${VELOX_BUILD_MINIMAL_WITH_DWIO} OR ${VELOX_ENABLE_HIVE_CONNECTOR})
   # TODO: make these optional and pluggable.
   find_package(ZLIB REQUIRED)
   find_package(lzo2 REQUIRED)
-
-  set(VELOX_NEEDS_ZSTD ON)
+  velox_find_package_zstd()
   find_package(Snappy REQUIRED)
 endif()
 
@@ -543,7 +542,7 @@ if(${VELOX_ENABLE_CLP_CONNECTOR})
   velox_set_source(log_surgeon)
   velox_resolve_dependency(log_surgeon)
 
-  set(VELOX_NEEDS_ZSTD ON)
+  velox_find_package_zstd()
 
   set(ystdlib_cpp_SOURCE BUNDLED)
   velox_resolve_dependency(ystdlib_cpp)
@@ -707,21 +706,6 @@ endif()
 if(VELOX_ENABLE_GEO)
   velox_set_source(geos)
   velox_resolve_dependency(geos)
-endif()
-
-if(VELOX_NEEDS_ZSTD)
-  set(zstd_SOURCE BUNDLED)
-  velox_resolve_dependency(zstd)
-  find_package(zstd REQUIRED)
-
-  # Define namespaced-targets ALIAS targets since Zstd's CMake scripts won't do this without
-  # installing the library.
-  if(NOT TARGET zstd::zstd)
-    add_library(zstd::zstd ALIAS libzstd_static)
-  endif()
-  if(NOT TARGET zstd::libzstd_static)
-    add_library(zstd::libzstd_static ALIAS libzstd_static)
-  endif()
 endif()
 
 add_subdirectory(velox)

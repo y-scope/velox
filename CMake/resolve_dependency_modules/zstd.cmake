@@ -49,3 +49,18 @@ FetchContent_Declare(
         OVERRIDE_FIND_PACKAGE EXCLUDE_FROM_ALL SYSTEM)
 
 FetchContent_MakeAvailable(zstd)
+
+macro(velox_find_package_zstd)
+  set(zstd_SOURCE BUNDLED)
+  velox_resolve_dependency(zstd)
+  find_package(zstd REQUIRED)
+
+  # Define namespaced-targets ALIAS targets since Zstd's CMake scripts won't do this without
+  # installing the library.
+  if(NOT TARGET zstd::zstd)
+    add_library(zstd::zstd ALIAS libzstd_static)
+  endif()
+  if(NOT TARGET zstd::libzstd_static)
+    add_library(zstd::libzstd_static ALIAS libzstd_static)
+  endif()
+endif()
