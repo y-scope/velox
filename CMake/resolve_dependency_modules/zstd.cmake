@@ -16,9 +16,9 @@ include_guard(GLOBAL)
 # Version you want to build
 set(VELOX_ZSTD_BUILD_VERSION 1.4.8)
 set(VELOX_ZSTD_BUILD_SHA256_CHECKSUM
-        32478297ca1500211008d596276f5367c54198495cf677e9439f4791a4c69f24)
+    32478297ca1500211008d596276f5367c54198495cf677e9439f4791a4c69f24)
 set(VELOX_ZSTD_SOURCE_URL
-        "https://github.com/facebook/zstd/releases/download/v${VELOX_ZSTD_BUILD_VERSION}/zstd-${VELOX_ZSTD_BUILD_VERSION}.tar.gz"
+    "https://github.com/facebook/zstd/releases/download/v${VELOX_ZSTD_BUILD_VERSION}/zstd-${VELOX_ZSTD_BUILD_VERSION}.tar.gz"
 )
 
 velox_resolve_dependency_url(ZSTD)
@@ -27,35 +27,38 @@ message(STATUS "Building zstd from source")
 
 # Force static lib, keep build minimal
 set(ZSTD_BUILD_STATIC
-        ON
-        CACHE BOOL "" FORCE)
+    ON
+    CACHE BOOL "" FORCE)
 set(ZSTD_BUILD_SHARED
-        OFF
-        CACHE BOOL "" FORCE)
+    OFF
+    CACHE BOOL "" FORCE)
 set(ZSTD_BUILD_PROGRAMS
-        OFF
-        CACHE BOOL "" FORCE)
+    OFF
+    CACHE BOOL "" FORCE)
 set(ZSTD_BUILD_TESTS
-        OFF
-        CACHE BOOL "" FORCE)
+    OFF
+    CACHE BOOL "" FORCE)
 set(ZSTD_LEGACY_SUPPORT
-        OFF
-        CACHE BOOL "" FORCE)
+    OFF
+    CACHE BOOL "" FORCE)
 
 FetchContent_Declare(
-        zstd
-        URL ${VELOX_ZSTD_SOURCE_URL}
-        URL_HASH ${VELOX_ZSTD_BUILD_SHA256_CHECKSUM}
-        SOURCE_SUBDIR build/cmake
-        OVERRIDE_FIND_PACKAGE EXCLUDE_FROM_ALL SYSTEM)
+  zstd
+  URL ${VELOX_ZSTD_SOURCE_URL}
+  URL_HASH ${VELOX_ZSTD_BUILD_SHA256_CHECKSUM}
+  SOURCE_SUBDIR
+  build/cmake
+  OVERRIDE_FIND_PACKAGE
+  EXCLUDE_FROM_ALL
+  SYSTEM)
 
 FetchContent_MakeAvailable(zstd)
 
-# Define namespaced-targets ALIAS targets since Zstd's CMake scripts won't do this without
-# installing the library.
+# Define namespaced-targets ALIAS targets since Zstd's CMake scripts won't do
+# this without installing the library.
 if(NOT TARGET zstd::zstd)
-    add_library(zstd::zstd ALIAS libzstd_static)
+  add_library(zstd::zstd ALIAS libzstd_static)
 endif()
 if(NOT TARGET zstd::libzstd_static)
-    add_library(zstd::libzstd_static ALIAS libzstd_static)
+  add_library(zstd::libzstd_static ALIAS libzstd_static)
 endif()
