@@ -49,12 +49,3 @@ FetchContent_Declare(
         OVERRIDE_FIND_PACKAGE EXCLUDE_FROM_ALL SYSTEM)
 
 FetchContent_MakeAvailable(zstd)
-
-# Define namespaced-targets ALIAS targets since Zstd's CMake scripts won't do this without
-# installing the library.
-if(NOT TARGET zstd::zstd)
-    add_library(zstd::zstd ALIAS libzstd_static)
-endif()
-if(NOT TARGET zstd::libzstd_static)
-    add_library(zstd::libzstd_static ALIAS libzstd_static)
-endif()
