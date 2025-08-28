@@ -507,16 +507,12 @@ if(${VELOX_BUILD_MINIMAL_WITH_DWIO} OR ${VELOX_ENABLE_HIVE_CONNECTOR})
   # TODO: make these optional and pluggable.
   find_package(ZLIB REQUIRED)
   find_package(lzo2 REQUIRED)
+
+  set(zstd_SOURCE BUNDLED)
+  velox_resolve_dependency(zstd)
   find_package(zstd REQUIRED)
+
   find_package(Snappy REQUIRED)
-  if(NOT TARGET zstd::zstd)
-    if(TARGET zstd::libzstd_static)
-      set(ZSTD_TYPE static)
-    else()
-      set(ZSTD_TYPE shared)
-    endif()
-    add_library(zstd::zstd ALIAS zstd::libzstd_${ZSTD_TYPE})
-  endif()
 endif()
 
 velox_set_source(re2)
@@ -550,8 +546,9 @@ if(${VELOX_ENABLE_CLP_CONNECTOR})
   velox_set_source(log_surgeon)
   velox_resolve_dependency(log_surgeon)
 
+  set(zstd_SOURCE BUNDLED)
+  velox_resolve_dependency(zstd)
   find_package(zstd REQUIRED)
-  add_library(zstd::libzstd_static INTERFACE IMPORTED)
 
   set(ystdlib_cpp_SOURCE BUNDLED)
   velox_resolve_dependency(ystdlib_cpp)

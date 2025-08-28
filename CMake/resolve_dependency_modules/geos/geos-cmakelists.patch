@@ -1,9 +1,29 @@
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -437,19 +437,5 @@ if(NOT _is_multi_config_generator)
+@@ -389,12 +389,14 @@
+ # Uninstall
+ #-----------------------------------------------------------------------------
+
+-configure_file("${PROJECT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
+-  "${PROJECT_BINARY_DIR}/cmake/cmake_uninstall.cmake"
+-  IMMEDIATE @ONLY)
++if(NOT TARGET uninstall)
++  configure_file("${PROJECT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
++    "${PROJECT_BINARY_DIR}/cmake/cmake_uninstall.cmake"
++    IMMEDIATE @ONLY)
+
+-add_custom_target(uninstall
+-  "${CMAKE_COMMAND}" -P "${PROJECT_BINARY_DIR}/cmake/cmake_uninstall.cmake")
++  add_custom_target(uninstall
++    "${CMAKE_COMMAND}" -P "${PROJECT_BINARY_DIR}/cmake/cmake_uninstall.cmake")
++endif()
+
+ #-----------------------------------------------------------------------------
+ # "make dist" workalike
+@@ -437,19 +439,5 @@
    message(STATUS "GEOS: Configured 'dist' target")
  endif()
- 
+
 -#-----------------------------------------------------------------------------
 -# "make check" workalike
 -#-----------------------------------------------------------------------------
@@ -18,5 +38,5 @@
 -  AddMakeDistCheck()
 -  message(STATUS "GEOS: Configured 'distcheck' target")
 -endif()
- 
+
  unset(_is_multi_config_generator)
