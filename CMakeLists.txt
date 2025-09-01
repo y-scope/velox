@@ -515,6 +515,7 @@ velox_set_source(re2)
 velox_resolve_dependency(re2)
 
 if(${VELOX_ENABLE_CLP_CONNECTOR})
+  # Independent dependencies
   velox_set_source(absl)
   velox_resolve_dependency(absl)
 
@@ -523,6 +524,9 @@ if(${VELOX_ENABLE_CLP_CONNECTOR})
 
   velox_set_source(date)
   velox_resolve_dependency(date)
+
+  velox_set_source(microsoft_gsl)
+  velox_resolve_dependency(microsoft_gsl)
 
   velox_set_source(msgpack-cxx)
   velox_resolve_dependency(msgpack-cxx)
@@ -536,9 +540,7 @@ if(${VELOX_ENABLE_CLP_CONNECTOR})
   velox_set_source(spdlog)
   velox_resolve_dependency(spdlog)
 
-  velox_set_source(microsoft_gsl)
-  velox_resolve_dependency(microsoft_gsl)
-
+  # Dependencies which depend on other dependencies
   velox_set_source(log_surgeon)
   velox_resolve_dependency(log_surgeon)
 

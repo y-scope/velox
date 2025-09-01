@@ -49,11 +49,13 @@ if(NOT TARGET zstd::zstd)
   set_target_properties(
     zstd::zstd PROPERTIES IMPORTED_LINK_INTERFACE_LANGUAGES "C"
                           IMPORTED_LOCATION "${ZSTD_LIBRARIES}")
+endif()
 
+# Create canonical alias targets regardless of how zstd::zstd was provided.
+if(TARGET zstd::zstd)
   if(NOT TARGET zstd::libzstd_shared)
     add_library(zstd::libzstd_shared ALIAS zstd::zstd)
   endif()
-
   if(NOT TARGET zstd::libzstd_static)
     add_library(zstd::libzstd_static ALIAS zstd::zstd)
   endif()
