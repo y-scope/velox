@@ -540,7 +540,7 @@ if(${VELOX_ENABLE_CLP_CONNECTOR})
   velox_set_source(spdlog)
   velox_resolve_dependency(spdlog)
 
-  # Dependencies which depend on other dependencies
+  # Dependencies that depend on other dependencies
   velox_set_source(log_surgeon)
   velox_resolve_dependency(log_surgeon)
 
