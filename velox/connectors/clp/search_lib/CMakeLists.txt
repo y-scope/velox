@@ -24,6 +24,7 @@ velox_add_library(
   ClpVectorLoader.h)
 
 add_subdirectory(archive)
+add_subdirectory(ir)
 
 velox_link_libraries(
   clp-s-search

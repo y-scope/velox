@@ -21,3 +21,4 @@ FetchContent_Declare(
 FetchContent_Populate(ystdlib_cpp)
 
 set(CLP_YSTDLIB_SOURCE_DIRECTORY "${ystdlib_cpp_SOURCE_DIR}")
+include_directories(${ystdlib_cpp_SOURCE_DIR}/src)
