@@ -72,8 +72,7 @@ class BaseClpCursor {
       std::string_view splitPath)
       : errorCode_(ErrorCode::QueryNotInitialized),
         inputSource_(inputSource),
-        splitPath_(std::string(splitPath)),
-        splitType_(ClpConnectorSplit::SplitType::kArchive) {}
+        splitPath_(std::string(splitPath)) {}
   virtual ~BaseClpCursor() = default;
 
   /// Executes a query. This function parses, validates, and prepares the given
@@ -96,19 +95,24 @@ class BaseClpCursor {
       uint64_t numRows,
       const std::shared_ptr<std::vector<uint64_t>>& filteredRowIndices) = 0;
 
-  /// Retrieves the projected columns.
+  /// Creates a Vector of the specified type and size.
   ///
-  /// @return A vector of BaseColumnReader pointers representing the projected
-  /// columns.
-  virtual const std::vector<clp_s::BaseColumnReader*>& getProjectedColumns()
-      const = 0;
-
-  /// Get the type of the split that the cursor is processing.
+  /// This method recursively creates vectors for complex types like ROW. For
+  /// primitive types, it creates a LazyVector that will load the data from the
+  /// underlying data source when it is accessed.
   ///
-  /// @return The split type.
-  ClpConnectorSplit::SplitType getSplitType() const {
-    return splitType_;
-  }
+  /// @param pool The memory pool used by ClpDataSource to create the vector
+  /// @param vectorType
+  /// @param vectorSize
+  /// @param filteredRows The rows to be read.
+  /// @param readerIndex The index of the column reader.
+  /// @return A Vector of the specified type and size.
+  virtual VectorPtr createVector(
+      memory::MemoryPool* pool,
+      const TypePtr& vectorType,
+      size_t vectorSize,
+      const std::shared_ptr<std::vector<uint64_t>>& filteredRows,
+      size_t& readerIndex) = 0;
 
  protected:
   ///
@@ -119,7 +123,6 @@ class BaseClpCursor {
 
   clp_s::InputSource inputSource_{clp_s::InputSource::Filesystem};
   std::string splitPath_;
-  ClpConnectorSplit::SplitType splitType_;
   std::string query_;
   std::vector<Field> outputColumns_;
 

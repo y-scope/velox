@@ -16,6 +16,8 @@ velox_add_library(
   STATIC
   ClpArchiveCursor.cpp
   ClpArchiveCursor.h
+  ClpArchiveVectorLoader.cpp
+  ClpArchiveVectorLoader.h
   ClpQueryRunner.cpp
   ClpQueryRunner.h)
 
