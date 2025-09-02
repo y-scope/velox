@@ -19,9 +19,7 @@ velox_add_library(
   ClpPackageS3AuthProvider.cpp
   ClpPackageS3AuthProvider.h
   ClpS3AuthProviderBase.cpp
-  ClpS3AuthProviderBase.h
-  ClpVectorLoader.cpp
-  ClpVectorLoader.h)
+  ClpS3AuthProviderBase.h)
 
 add_subdirectory(archive)
 

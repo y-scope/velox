@@ -21,8 +21,8 @@
 #include "clp_s/ColumnReader.hpp"
 #include "clp_s/SchemaTree.hpp"
 
+#include "ClpArchiveVectorLoader.h"
 #include "velox/connectors/clp/search_lib/BaseClpCursor.h"
-#include "velox/connectors/clp/search_lib/ClpVectorLoader.h"
 #include "velox/type/Timestamp.h"
 #include "velox/vector/ComplexVector.h"
 #include "velox/vector/FlatVector.h"
@@ -122,18 +122,16 @@ auto convertToVeloxTimestamp(int64_t timestamp) -> Timestamp {
 
 } // namespace
 
-ClpVectorLoader::ClpVectorLoader(
+ClpArchiveVectorLoader::ClpArchiveVectorLoader(
     clp_s::BaseColumnReader* columnReader,
     ColumnType nodeType,
-    std::shared_ptr<std::vector<uint64_t>> filteredRowIndices,
-    ClpConnectorSplit::SplitType splitType)
+    std::shared_ptr<std::vector<uint64_t>> filteredRowIndices)
     : columnReader_(columnReader),
       nodeType_(nodeType),
-      filteredRowIndices_(std::move(filteredRowIndices)),
-      splitType_(splitType) {}
+      filteredRowIndices_(std::move(filteredRowIndices)) {}
 
 template <typename T, typename VectorPtr>
-void ClpVectorLoader::populateData(RowSet rows, VectorPtr vector) {
+void ClpArchiveVectorLoader::populateData(RowSet rows, VectorPtr vector) {
   if (columnReader_ == nullptr) {
     for (int vectorIndex : rows) {
       vector->setNull(vectorIndex, true);
@@ -158,7 +156,7 @@ void ClpVectorLoader::populateData(RowSet rows, VectorPtr vector) {
 }
 
 template <clp_s::NodeType Type>
-void ClpVectorLoader::populateTimestampData(
+void ClpArchiveVectorLoader::populateTimestampData(
     RowSet rows,
     FlatVector<facebook::velox::Timestamp>* vector) {
   bool supportedNodeType{false};
@@ -202,7 +200,7 @@ void ClpVectorLoader::populateTimestampData(
   }
 }
 
-void ClpVectorLoader::loadInternal(
+void ClpArchiveVectorLoader::loadInternal(
     RowSet rows,
     ValueHook* hook,
     vector_size_t resultSize,
@@ -310,29 +308,32 @@ void ClpVectorLoader::loadInternal(
 }
 
 // Explicit template instantiations for linker
-template void ClpVectorLoader::populateData<int64_t>(
+template void ClpArchiveVectorLoader::populateData<int64_t>(
     RowSet rows,
     FlatVector<int64_t>* vector);
-template void ClpVectorLoader::populateData<double>(
+template void ClpArchiveVectorLoader::populateData<double>(
     RowSet rows,
     FlatVector<double>* vector);
-template void ClpVectorLoader::populateData<uint8_t>(
+template void ClpArchiveVectorLoader::populateData<uint8_t>(
     RowSet rows,
     FlatVector<bool>* vector);
-template void ClpVectorLoader::populateData<std::string>(
+template void ClpArchiveVectorLoader::populateData<std::string>(
     RowSet rows,
     FlatVector<StringView>* vector);
-template void ClpVectorLoader::populateTimestampData<clp_s::NodeType::Float>(
-    RowSet rows,
-    FlatVector<facebook::velox::Timestamp>* vector);
-template void ClpVectorLoader::populateTimestampData<clp_s::NodeType::Integer>(
+template void
+ClpArchiveVectorLoader::populateTimestampData<clp_s::NodeType::Float>(
     RowSet rows,
     FlatVector<facebook::velox::Timestamp>* vector);
 template void
-ClpVectorLoader::populateTimestampData<clp_s::NodeType::DateString>(
+ClpArchiveVectorLoader::populateTimestampData<clp_s::NodeType::Integer>(
     RowSet rows,
     FlatVector<facebook::velox::Timestamp>* vector);
-template void ClpVectorLoader::populateTimestampData<clp_s::NodeType::Unknown>(
+template void
+ClpArchiveVectorLoader::populateTimestampData<clp_s::NodeType::DateString>(
+    RowSet rows,
+    FlatVector<facebook::velox::Timestamp>* vector);
+template void
+ClpArchiveVectorLoader::populateTimestampData<clp_s::NodeType::Unknown>(
     RowSet rows,
     FlatVector<facebook::velox::Timestamp>* vector);
 

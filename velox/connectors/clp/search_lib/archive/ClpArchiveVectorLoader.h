@@ -20,7 +20,6 @@
 
 #include "clp_s/ColumnReader.hpp"
 #include "clp_s/SchemaTree.hpp"
-#include "velox/connectors/clp/ClpConnectorSplit.h"
 
 #include "velox/type/Timestamp.h"
 #include "velox/vector/FlatVector.h"
@@ -37,13 +36,12 @@ enum class ColumnType;
 /// A custom Velox VectorLoader that populates Velox vectors from a CLP-based
 /// column reader. It supports various column types including integers, floats,
 /// booleans, strings, and arrays of strings.
-class ClpVectorLoader : public VectorLoader {
+class ClpArchiveVectorLoader : public VectorLoader {
  public:
-  ClpVectorLoader(
+  ClpArchiveVectorLoader(
       clp_s::BaseColumnReader* columnReader,
       ColumnType nodeType,
-      std::shared_ptr<std::vector<uint64_t>> filteredRowIndices,
-      ClpConnectorSplit::SplitType splitType);
+      std::shared_ptr<std::vector<uint64_t>> filteredRowIndices);
 
  private:
   void loadInternal(
@@ -63,7 +61,6 @@ class ClpVectorLoader : public VectorLoader {
   clp_s::BaseColumnReader* columnReader_;
   ColumnType nodeType_;
   std::shared_ptr<std::vector<uint64_t>> filteredRowIndices_;
-  ClpConnectorSplit::SplitType splitType_;
 
   inline static thread_local std::unique_ptr<simdjson::ondemand::parser>
       arrayParser_ = std::make_unique<simdjson::ondemand::parser>();

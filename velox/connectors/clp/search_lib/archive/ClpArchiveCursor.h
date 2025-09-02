@@ -45,8 +45,12 @@ class ClpArchiveCursor final : public BaseClpCursor {
       const std::shared_ptr<std::vector<uint64_t>>& filteredRowIndices)
       override;
 
-  const std::vector<clp_s::BaseColumnReader*>& getProjectedColumns()
-      const override;
+  VectorPtr createVector(
+      memory::MemoryPool* pool,
+      const TypePtr& vectorType,
+      size_t vectorSize,
+      const std::shared_ptr<std::vector<uint64_t>>& filteredRows,
+      size_t& readerIndex) override;
 
  protected:
   ErrorCode loadSplit() override;
@@ -62,6 +66,16 @@ class ClpArchiveCursor final : public BaseClpCursor {
   std::shared_ptr<clp_s::search::Projection> projection_;
 
   std::shared_ptr<clp_s::ArchiveReader> archiveReader_;
+
+  const std::vector<clp_s::BaseColumnReader*>& getProjectedColumns() const;
+
+  VectorPtr createVectorHelper(
+      memory::MemoryPool* pool,
+      const TypePtr& vectorType,
+      size_t vectorSize,
+      const std::vector<clp_s::BaseColumnReader*>& projectedColumns,
+      const std::shared_ptr<std::vector<uint64_t>>& filteredRows,
+      size_t& readerIndex);
 };
 
 } // namespace facebook::velox::connector::clp::search_lib
