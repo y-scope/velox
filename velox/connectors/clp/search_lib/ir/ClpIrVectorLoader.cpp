@@ -14,8 +14,27 @@
  * limitations under the License.
  */
 
-#include "velox/connectors/clp/search_lib/ir/ClpIrQueryHandler.h"
+#include "velox/connectors/clp/search_lib/ir/ClpIrVectorLoader.h"
+#include "velox/connectors/clp/search_lib/BaseClpCursor.h"
 
 namespace facebook::velox::connector::clp::search_lib {
+
+void ClpIrVectorLoader::loadInternal(
+    RowSet rows,
+    ValueHook* hook,
+    vector_size_t resultSize,
+    VectorPtr* result) {
+  auto vector = *result;
+  for (int vectorIndex : rows) {
+    filteredLogEvents_->at(vectorIndex)->
+  }
+  switch (nodeType_) {
+    case ColumnType::Integer: {
+      auto intVector = vector->asFlatVector<int64_t>();
+    }
+    case ColumnType::Float: {
+    }
+  }
+}
 
 } // namespace facebook::velox::connector::clp::search_lib

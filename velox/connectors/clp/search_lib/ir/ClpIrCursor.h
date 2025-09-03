@@ -32,17 +32,16 @@ class ClpIrCursor final : public BaseClpCursor {
       bool ignoreCase)
       : BaseClpCursor(inputSource, splitPath), ignoreCase_(ignoreCase) {}
 
-  uint64_t fetchNext(
-      uint64_t numRows,
-      const std::shared_ptr<std::vector<uint64_t>>& filteredRowIndices)
-      override;
+  // TODO: Need to expose an API in CLP to get the internal counter of scanned
+  // log events. Currently this returns the same number of filtered rows.
+  uint64_t fetchNext(uint64_t numRows) override;
+
+  size_t getNumFilteredRows() override;
 
   VectorPtr createVector(
       memory::MemoryPool* pool,
       const TypePtr& vectorType,
-      size_t vectorSize,
-      const std::shared_ptr<std::vector<uint64_t>>& filteredRows,
-      size_t& readerIndex) override;
+      size_t vectorSize) override;
 
  protected:
   ErrorCode loadSplit() override;

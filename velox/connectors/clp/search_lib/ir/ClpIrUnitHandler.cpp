@@ -24,6 +24,8 @@ namespace facebook::velox::connector::clp::search_lib {
 auto ClpIrUnitHandler::handle_log_event(
     ::clp::ffi::KeyValuePairLogEvent log_event)
     -> ::clp::ffi::ir_stream::IRErrorCode {
+  filteredLogEvents_->push_back(
+      std::make_unique<::clp::ffi::KeyValuePairLogEvent>(std::move(log_event)));
   return ::clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
 }
 

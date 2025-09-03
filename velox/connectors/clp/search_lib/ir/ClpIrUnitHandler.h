@@ -22,7 +22,10 @@ namespace facebook::velox::connector::clp::search_lib {
 
 class ClpIrUnitHandler {
  public:
-  ClpIrUnitHandler() {}
+  ClpIrUnitHandler() {
+    filteredLogEvents_ = std::make_shared<
+        std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>();
+  }
 
   // Destructor
   ~ClpIrUnitHandler() = default;
@@ -50,6 +53,17 @@ class ClpIrUnitHandler {
       -> ::clp::ffi::ir_stream::IRErrorCode {
     return ::clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
   }
+
+  std::shared_ptr<
+      const std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
+  getFilteredLogEvents() {
+    return filteredLogEvents_;
+  }
+
+ private:
+  std::shared_ptr<
+      std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
+      filteredLogEvents_;
 };
 
 } // namespace facebook::velox::connector::clp::search_lib

@@ -19,7 +19,9 @@ velox_add_library(
   ClpIrQueryHandler.cpp
   ClpIrQueryHandler.h
   ClpIrUnitHandler.cpp
-  ClpIrUnitHandler.h)
+  ClpIrUnitHandler.h
+  ClpIrVectorLoader.cpp
+  ClpIrVectorLoader.h)
 
 velox_link_libraries(
   clp-s-ir-search

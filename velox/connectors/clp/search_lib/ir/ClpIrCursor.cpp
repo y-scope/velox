@@ -24,9 +24,7 @@ using namespace clp_s;
 
 namespace facebook::velox::connector::clp::search_lib {
 
-uint64_t ClpIrCursor::fetchNext(
-    uint64_t numRows,
-    const std::shared_ptr<std::vector<uint64_t>>& filteredRowIndices) {
+uint64_t ClpIrCursor::fetchNext(uint64_t numRows) {
   if (ErrorCode::Success != errorCode_) {
     return 0;
   }
@@ -38,39 +36,22 @@ uint64_t ClpIrCursor::fetchNext(
     }
   }
 
-  size_t rowsFetched{0ULL};
-  deserialize();
-  // while (rowsFetched < numRows && kvir_deserializer_.has_value()) {
-  //   auto const
-  //   result{kvir_deserializer_.value().deserialize_next_ir_unit(kvir_decompressor_)};
-  //   if (result.has_error() && std::errc::no_message != result.error()) {
-  //     if (ErrorCode::Success != load_next_kvir_stream()) {
-  //       return rowsFetched;
-  //     }
-  //     continue;
-  //   }
-  //   if (result.value() == ::clp::ffi::ir_stream::IrUnitType::EndOfStream) {
-  //     if (ErrorCode::Success != load_next_kvir_stream()) {
-  //       return rowsFetched;
-  //     }
-  //     continue;
-  //   }
-  //   if (result.value() == ::clp::ffi::ir_stream::IrUnitType::LogEvent) {
-  //     auto const& ir_unit_handler =
-  //     kvir_deserializer_.value().get_ir_unit_handler();
-  //     marshal_row(rowsFetched, column_vectors, ir_unit_handler);
-  //     ++rowsFetched;
-  //   }
-  // }
-  return rowsFetched;
+  auto deserializeResult = deserialize();
+  if (ystdlib::error_handling::success() != deserializeResult) {
+    VELOX_FAIL(
+        "IR file {} might be broken, failed to deserialize", this->splitPath_);
+  }
+  return irDeserializer_->get_ir_unit_handler().getFilteredLogEvents()->size();
+}
+
+size_t ClpIrCursor::getNumFilteredRows() {
+  return irDeserializer_->get_ir_unit_handler().getFilteredLogEvents()->size();
 }
 
 VectorPtr ClpIrCursor::createVector(
     memory::MemoryPool* pool,
     const TypePtr& vectorType,
-    size_t vectorSize,
-    const std::shared_ptr<std::vector<uint64_t>>& filteredRows,
-    size_t& readerIndex) {
+    size_t vectorSize) {
   return nullptr;
 }
 
