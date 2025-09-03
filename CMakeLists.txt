@@ -509,20 +509,13 @@ if(${VELOX_BUILD_MINIMAL_WITH_DWIO} OR ${VELOX_ENABLE_HIVE_CONNECTOR})
   find_package(lzo2 REQUIRED)
   find_package(zstd REQUIRED)
   find_package(Snappy REQUIRED)
-  if(NOT TARGET zstd::zstd)
-    if(TARGET zstd::libzstd_static)
-      set(ZSTD_TYPE static)
-    else()
-      set(ZSTD_TYPE shared)
-    endif()
-    add_library(zstd::zstd ALIAS zstd::libzstd_${ZSTD_TYPE})
-  endif()
 endif()
 
 velox_set_source(re2)
 velox_resolve_dependency(re2)
 
 if(${VELOX_ENABLE_CLP_CONNECTOR})
+  # Independent dependencies
   velox_set_source(absl)
   velox_resolve_dependency(absl)
 
@@ -531,6 +524,9 @@ if(${VELOX_ENABLE_CLP_CONNECTOR})
 
   velox_set_source(date)
   velox_resolve_dependency(date)
+
+  velox_set_source(microsoft_gsl)
+  velox_resolve_dependency(microsoft_gsl)
 
   velox_set_source(msgpack-cxx)
   velox_resolve_dependency(msgpack-cxx)
@@ -543,6 +539,10 @@ if(${VELOX_ENABLE_CLP_CONNECTOR})
 
   velox_set_source(spdlog)
   velox_resolve_dependency(spdlog)
+
+  # Dependencies that depend on other dependencies
+  velox_set_source(log_surgeon)
+  velox_resolve_dependency(log_surgeon)
 
   set(ystdlib_cpp_SOURCE BUNDLED)
   velox_resolve_dependency(ystdlib_cpp)
