@@ -43,9 +43,10 @@ ClpArchiveCursor::~ClpArchiveCursor() {
   }
 }
 
-uint64_t ClpArchiveCursor::fetchNext(
-    uint64_t numRows,
-    const std::shared_ptr<std::vector<uint64_t>>& filteredRowIndices) {
+uint64_t ClpArchiveCursor::fetchNext(uint64_t numRows) {
+  filteredRowIndices_->clear();
+  readerIndex_ = 0;
+
   if (ErrorCode::Success != errorCode_) {
     return 0;
   }
@@ -76,8 +77,8 @@ uint64_t ClpArchiveCursor::fetchNext(
       currentSchemaTableLoaded_ = true;
     }
 
-    auto rowsScanned = queryRunner_->fetchNext(numRows, filteredRowIndices);
-    if (false == filteredRowIndices->empty()) {
+    auto rowsScanned = queryRunner_->fetchNext(numRows, filteredRowIndices_);
+    if (false == filteredRowIndices_->empty()) {
       return rowsScanned;
     }
 
@@ -88,12 +89,14 @@ uint64_t ClpArchiveCursor::fetchNext(
   return 0;
 }
 
+size_t ClpArchiveCursor::getNumFilteredRows() {
+  return filteredRowIndices_->size();
+}
+
 VectorPtr ClpArchiveCursor::createVector(
     memory::MemoryPool* pool,
     const TypePtr& vectorType,
-    size_t vectorSize,
-    const std::shared_ptr<std::vector<uint64_t>>& filteredRows,
-    size_t& readerIndex) {
+    size_t vectorSize) {
   auto projectedColumns = getProjectedColumns();
   VELOX_CHECK_EQ(
       projectedColumns.size(),
@@ -101,33 +104,20 @@ VectorPtr ClpArchiveCursor::createVector(
       "Projected columns size {} does not match fields size {}",
       projectedColumns.size(),
       outputColumns_.size());
-  return createVectorHelper(
-      pool,
-      vectorType,
-      vectorSize,
-      projectedColumns,
-      filteredRows,
-      readerIndex);
+  return createVectorHelper(pool, vectorType, vectorSize, projectedColumns);
 }
 
 VectorPtr ClpArchiveCursor::createVectorHelper(
     memory::MemoryPool* pool,
     const TypePtr& vectorType,
     size_t vectorSize,
-    const std::vector<clp_s::BaseColumnReader*>& projectedColumns,
-    const std::shared_ptr<std::vector<uint64_t>>& filteredRows,
-    size_t& readerIndex) {
+    const std::vector<clp_s::BaseColumnReader*>& projectedColumns) {
   if (vectorType->kind() == TypeKind::ROW) {
     std::vector<VectorPtr> children;
     auto& rowType = vectorType->as<TypeKind::ROW>();
     for (uint32_t i = 0; i < rowType.size(); ++i) {
       children.push_back(createVectorHelper(
-          pool,
-          rowType.childAt(i),
-          vectorSize,
-          projectedColumns,
-          filteredRows,
-          readerIndex));
+          pool, rowType.childAt(i), vectorSize, projectedColumns));
     }
     return std::make_shared<RowVector>(
         pool, vectorType, nullptr, vectorSize, std::move(children));
@@ -136,16 +126,16 @@ VectorPtr ClpArchiveCursor::createVectorHelper(
   vector->setNulls(allocateNulls(vectorSize, pool, bits::kNull));
 
   VELOX_CHECK_LT(
-      readerIndex, projectedColumns.size(), "Reader index out of bounds");
-  auto projectedColumn = projectedColumns[readerIndex];
-  auto projectedType = outputColumns_[readerIndex].type;
-  readerIndex++;
+      readerIndex_, projectedColumns.size(), "Reader index out of bounds");
+  auto projectedColumn = projectedColumns[readerIndex_];
+  auto projectedType = outputColumns_[readerIndex_].type;
+  readerIndex_++;
   return std::make_shared<LazyVector>(
       pool,
       vectorType,
       vectorSize,
       std::make_unique<ClpArchiveVectorLoader>(
-          projectedColumn, projectedType, filteredRows),
+          projectedColumn, projectedType, filteredRowIndices_),
       std::move(vector));
 }
 

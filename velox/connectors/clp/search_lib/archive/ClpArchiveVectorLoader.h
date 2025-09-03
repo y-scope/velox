@@ -41,7 +41,7 @@ class ClpArchiveVectorLoader : public VectorLoader {
   ClpArchiveVectorLoader(
       clp_s::BaseColumnReader* columnReader,
       ColumnType nodeType,
-      std::shared_ptr<std::vector<uint64_t>> filteredRowIndices);
+      const std::shared_ptr<std::vector<uint64_t>> filteredRowIndices);
 
  private:
   void loadInternal(

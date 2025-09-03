@@ -89,11 +89,8 @@ class BaseClpCursor {
   /// loaded, this function will perform the necessary loading.
   ///
   /// @param numRows The maximum number of rows to fetch.
-  /// @param filteredRowIndices A vector of row indices that match the filter.
   /// @return The number of rows scanned.
-  virtual uint64_t fetchNext(
-      uint64_t numRows,
-      const std::shared_ptr<std::vector<uint64_t>>& filteredRowIndices) = 0;
+  virtual uint64_t fetchNext(uint64_t numRows) = 0;
 
   /// Creates a Vector of the specified type and size.
   ///
@@ -104,15 +101,13 @@ class BaseClpCursor {
   /// @param pool The memory pool used by ClpDataSource to create the vector
   /// @param vectorType
   /// @param vectorSize
-  /// @param filteredRows The rows to be read.
-  /// @param readerIndex The index of the column reader.
   /// @return A Vector of the specified type and size.
   virtual VectorPtr createVector(
       memory::MemoryPool* pool,
       const TypePtr& vectorType,
-      size_t vectorSize,
-      const std::shared_ptr<std::vector<uint64_t>>& filteredRows,
-      size_t& readerIndex) = 0;
+      size_t vectorSize) = 0;
+
+  virtual size_t getNumFilteredRows() = 0;
 
  protected:
   ///

@@ -133,16 +133,14 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
 std::optional<RowVectorPtr> ClpDataSource::next(
     uint64_t size,
     ContinueFuture& future) {
-  auto filteredRows = std::make_shared<std::vector<uint64_t>>();
-  auto rowsScanned = cursor_->fetchNext(size, filteredRows);
-  auto rowsFiltered = filteredRows->size();
+  auto rowsScanned = cursor_->fetchNext(size);
+  auto rowsFiltered = cursor_->getNumFilteredRows();
   if (rowsFiltered == 0) {
     return nullptr;
   }
   completedRows_ += rowsScanned;
-  size_t readerIndex = 0;
-  return std::dynamic_pointer_cast<RowVector>(cursor_->createVector(
-      pool_, outputType_, rowsFiltered, filteredRows, readerIndex));
+  return std::dynamic_pointer_cast<RowVector>(
+      cursor_->createVector(pool_, outputType_, rowsFiltered));
 }
 
 } // namespace facebook::velox::connector::clp
