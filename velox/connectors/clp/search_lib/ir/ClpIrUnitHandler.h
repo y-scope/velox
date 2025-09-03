@@ -20,21 +20,12 @@
 
 namespace facebook::velox::connector::clp::search_lib {
 
-class ClpVeloxIrUnitHandler {
+class ClpIrUnitHandler {
  public:
-  ClpVeloxIrUnitHandler() {
-    autoGenNodeIdNameMap =
-        std::unordered_map<::clp::ffi::SchemaTree::Node::id_t, std::string>{};
-    autoGenNodeNameIdMap =
-        std::unordered_map<std::string, ::clp::ffi::SchemaTree::Node::id_t>{};
-    userGenNodeIdNameMap =
-        std::unordered_map<::clp::ffi::SchemaTree::Node::id_t, std::string>{};
-    userGenNodeNameIdMap =
-        std::unordered_map<std::string, ::clp::ffi::SchemaTree::Node::id_t>{};
-  }
+  ClpIrUnitHandler() {}
 
   // Destructor
-  ~ClpVeloxIrUnitHandler() = default;
+  ~ClpIrUnitHandler() = default;
 
   // Methods implementing `IrUnitHandlerInterface`
   [[nodiscard]] auto handle_log_event(
@@ -59,19 +50,6 @@ class ClpVeloxIrUnitHandler {
       -> ::clp::ffi::ir_stream::IRErrorCode {
     return ::clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
   }
-
-  ::clp::ffi::SchemaTree::Node::id_t findNodeIdByName(
-      std::string_view name) const;
-
- private:
-  std::unordered_map<::clp::ffi::SchemaTree::Node::id_t, std::string>
-      autoGenNodeIdNameMap;
-  std::unordered_map<std::string, ::clp::ffi::SchemaTree::Node::id_t>
-      autoGenNodeNameIdMap;
-  std::unordered_map<::clp::ffi::SchemaTree::Node::id_t, std::string>
-      userGenNodeIdNameMap;
-  std::unordered_map<std::string, ::clp::ffi::SchemaTree::Node::id_t>
-      userGenNodeNameIdMap;
 };
 
 } // namespace facebook::velox::connector::clp::search_lib

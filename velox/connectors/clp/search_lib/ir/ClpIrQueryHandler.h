@@ -32,7 +32,7 @@ using QueryHandlerType = ::clp::ffi::ir_stream::search::QueryHandler<
     decltype(handleProjectionResolution)>;
 } // namespace ir
 
-class ClpVeloxIrQueryHandler {
+class ClpIrQueryHandler {
  private:
   std::map<std::string, size_t> projectedColumnToIdx_;
   std::vector<std::vector<std::pair<::clp::ffi::SchemaTree::Node::id_t, bool>>>

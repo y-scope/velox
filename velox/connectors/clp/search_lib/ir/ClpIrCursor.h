@@ -19,8 +19,8 @@
 #include "ffi/ir_stream/Deserializer.hpp"
 #include "streaming_compression/Decompressor.hpp"
 #include "velox/connectors/clp/search_lib/BaseClpCursor.h"
-#include "velox/connectors/clp/search_lib/ir/ClpVeloxIrQueryHandler.h"
-#include "velox/connectors/clp/search_lib/ir/ClpVeloxIrUnitHandler.h"
+#include "velox/connectors/clp/search_lib/ir/ClpIrQueryHandler.h"
+#include "velox/connectors/clp/search_lib/ir/ClpIrUnitHandler.h"
 
 namespace facebook::velox::connector::clp::search_lib {
 
@@ -37,8 +37,12 @@ class ClpIrCursor final : public BaseClpCursor {
       const std::shared_ptr<std::vector<uint64_t>>& filteredRowIndices)
       override;
 
-  const std::vector<clp_s::BaseColumnReader*>& getProjectedColumns()
-      const override;
+  VectorPtr createVector(
+      memory::MemoryPool* pool,
+      const TypePtr& vectorType,
+      size_t vectorSize,
+      const std::shared_ptr<std::vector<uint64_t>>& filteredRows,
+      size_t& readerIndex) override;
 
  protected:
   ErrorCode loadSplit() override;
@@ -47,10 +51,14 @@ class ClpIrCursor final : public BaseClpCursor {
   std::shared_ptr<::clp::ReaderInterface> irReader_{nullptr};
   bool ignoreCase_;
   std::shared_ptr<::clp::ffi::ir_stream::
-                      Deserializer<ClpVeloxIrUnitHandler, ir::QueryHandlerType>>
+                      Deserializer<ClpIrUnitHandler, ir::QueryHandlerType>>
       irDeserializer_;
 
   ystdlib::error_handling::Result<void> deserialize() const;
+
+  std::vector<
+      std::pair<std::string, clp_s::search::ast::literal_type_bitmask_t>>
+  splitFieldsToNamesAndTypes() const;
 };
 
 } // namespace facebook::velox::connector::clp::search_lib

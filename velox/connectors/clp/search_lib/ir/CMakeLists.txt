@@ -16,10 +16,10 @@ velox_add_library(
   STATIC
   ClpIrCursor.cpp
   ClpIrCursor.h
-  ClpVeloxIrQueryHandler.cpp
-  ClpVeloxIrQueryHandler.h
-  ClpVeloxIrUnitHandler.cpp
-  ClpVeloxIrUnitHandler.h)
+  ClpIrQueryHandler.cpp
+  ClpIrQueryHandler.h
+  ClpIrUnitHandler.cpp
+  ClpIrUnitHandler.h)
 
 velox_link_libraries(
   clp-s-ir-search

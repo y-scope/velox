@@ -65,6 +65,15 @@ uint64_t ClpIrCursor::fetchNext(
   return rowsFetched;
 }
 
+VectorPtr ClpIrCursor::createVector(
+    memory::MemoryPool* pool,
+    const TypePtr& vectorType,
+    size_t vectorSize,
+    const std::shared_ptr<std::vector<uint64_t>>& filteredRows,
+    size_t& readerIndex) {
+  return nullptr;
+}
+
 ystdlib::error_handling::Result<void> ClpIrCursor::deserialize() const {
   while (::clp::ffi::ir_stream::IrUnitType::EndOfStream !=
          YSTDLIB_ERROR_HANDLING_TRYX(
@@ -73,25 +82,19 @@ ystdlib::error_handling::Result<void> ClpIrCursor::deserialize() const {
   return ystdlib::error_handling::success();
 }
 
-const std::vector<clp_s::BaseColumnReader*>& ClpIrCursor::getProjectedColumns()
-    const {
-  auto projectedColumns =
-      std::make_unique<std::vector<clp_s::BaseColumnReader*>>();
-  for (Field field : outputColumns_) {
-    auto nodeId =
-        irDeserializer_->get_ir_unit_handler().findNodeIdByName(field.name);
-  }
-}
-
 ErrorCode ClpIrCursor::loadSplit() {
   auto networkAuthOption = inputSource_ == InputSource::Filesystem
       ? NetworkAuthOption{.method = AuthMethod::None}
       : NetworkAuthOption{.method = AuthMethod::S3PresignedUrlV4};
 
-  auto irHandler{ClpVeloxIrUnitHandler{}};
+  auto irHandler{ClpIrUnitHandler{}};
 
+  auto projections = splitFieldsToNamesAndTypes();
   auto queryHandlerResult{ir::QueryHandlerType::create(
-      ir::handleProjectionResolution, std::move(expr_), {}, ignoreCase_)};
+      ir::handleProjectionResolution,
+      std::move(expr_),
+      projections,
+      ignoreCase_)};
   if (!queryHandlerResult) {
     VLOG(2) << "Failed to create query handler for deserialization.";
     return ErrorCode::InternalError;
@@ -113,10 +116,45 @@ ErrorCode ClpIrCursor::loadSplit() {
     return ErrorCode::InternalError;
   }
   irDeserializer_ = std::make_shared<::clp::ffi::ir_stream::Deserializer<
-      ClpVeloxIrUnitHandler,
+      ClpIrUnitHandler,
       ir::QueryHandlerType>>(std::move(deserializerResult).value());
 
   return ErrorCode::Success;
+}
+
+std::vector<std::pair<std::string, clp_s::search::ast::literal_type_bitmask_t>>
+ClpIrCursor::splitFieldsToNamesAndTypes() const {
+  auto result = std::vector<
+      std::pair<std::string, clp_s::search::ast::literal_type_bitmask_t>>{};
+  for (size_t i{0}; i < outputColumns_.size(); ++i) {
+    auto column = outputColumns_[i];
+    clp_s::search::ast::literal_type_bitmask_t literalType;
+    switch (column.type) {
+      case ColumnType::Array:
+        literalType = clp_s::search::ast::LiteralType::ArrayT;
+        break;
+      case ColumnType::Boolean:
+        literalType = clp_s::search::ast::LiteralType::BooleanT;
+        break;
+      case ColumnType::Float:
+        literalType = clp_s::search::ast::LiteralType::FloatT;
+        break;
+      case ColumnType::Integer:
+        literalType = clp_s::search::ast::LiteralType::IntegerT;
+        break;
+      case ColumnType::String:
+        literalType = clp_s::search::ast::LiteralType::VarStringT;
+        break;
+      case ColumnType::Timestamp:
+        literalType = clp_s::search::ast::LiteralType::EpochDateT;
+        break;
+      default:
+        literalType = clp_s::search::ast::LiteralType::UnknownT;
+        break;
+    }
+    result.emplace_back(column.name, literalType);
+  }
+  return result;
 }
 
 } // namespace facebook::velox::connector::clp::search_lib
