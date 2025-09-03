@@ -18,7 +18,6 @@
 
 using namespace clp_s;
 using namespace clp_s::search;
-using namespace clp_s::search::clp_search;
 
 namespace facebook::velox::connector::clp::search_lib {
 

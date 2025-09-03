@@ -50,3 +50,11 @@ if(NOT TARGET zstd::zstd)
     zstd::zstd PROPERTIES IMPORTED_LINK_INTERFACE_LANGUAGES "C"
                           IMPORTED_LOCATION "${ZSTD_LIBRARIES}")
 endif()
+
+if(NOT TARGET zstd::libzstd_shared)
+  add_library(zstd::libzstd_shared ALIAS zstd::zstd)
+endif()
+
+if(NOT TARGET zstd::libzstd_static)
+  add_library(zstd::libzstd_static ALIAS zstd::zstd)
+endif()

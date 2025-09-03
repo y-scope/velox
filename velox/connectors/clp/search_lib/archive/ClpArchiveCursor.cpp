@@ -179,7 +179,7 @@ ErrorCode ClpArchiveCursor::loadSplit() {
   }
 
   projection_ = std::make_shared<Projection>(
-      outputColumns_.empty() ? ReturnAllColumns : ReturnSelectedColumns);
+      outputColumns_.empty() ? ReturnAllColumns : ReturnSelectedColumns, true);
   try {
     for (auto const& column : outputColumns_) {
       std::vector<std::string> descriptorTokens;
