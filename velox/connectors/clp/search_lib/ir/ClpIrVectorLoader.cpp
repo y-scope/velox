@@ -26,13 +26,106 @@ void ClpIrVectorLoader::loadInternal(
     VectorPtr* result) {
   auto vector = *result;
   for (int vectorIndex : rows) {
-    filteredLogEvents_->at(vectorIndex)->
-  }
-  switch (nodeType_) {
-    case ColumnType::Integer: {
-      auto intVector = vector->asFlatVector<int64_t>();
+    auto& logEvent = filteredLogEvents_->at(vectorIndex);
+    // TODO: also need to support auto gen
+    auto userGenNodeIdValueMap = logEvent->get_user_gen_node_id_value_pairs();
+    vector->setNull(vectorIndex, true);
+    if (0 == userGenNodeIdValueMap.count(nodeId_)) {
+      continue;
     }
-    case ColumnType::Float: {
+    auto value = userGenNodeIdValueMap.at(nodeId_);
+    if (!value.has_value()) {
+      continue;
+    }
+    switch (nodeType_) {
+      case ColumnType::String: {
+        auto stringVector = vector->asFlatVector<StringView>();
+        if (value->is<std::string>()) {
+          auto stringValue = value->get_immutable_view<std::string>();
+          stringVector->set(vectorIndex, StringView(stringValue));
+        } else if (value->is<::clp::ir::EightByteEncodedTextAst>()) {
+          auto decodeResult =
+              value->get_immutable_view<::clp::ir::EightByteEncodedTextAst>()
+                  .decode_and_unparse();
+          if (!decodeResult.has_value()) {
+            continue;
+          }
+          stringVector->set(vectorIndex, StringView(decodeResult.value()));
+        } else if (value->is<::clp::ir::FourByteEncodedTextAst>()) {
+          auto decodeResult =
+              value->get_immutable_view<::clp::ir::FourByteEncodedTextAst>()
+                  .decode_and_unparse();
+          if (!decodeResult.has_value()) {
+            continue;
+          }
+          stringVector->set(vectorIndex, StringView(decodeResult.value()));
+        } else {
+          continue;
+        }
+        vector->setNull(vectorIndex, false);
+        break;
+      }
+      case ColumnType::Integer: {
+        auto intVector = vector->asFlatVector<int64_t>();
+        intVector->set(
+            vectorIndex, value->get_immutable_view<::clp::ffi::value_int_t>());
+        vector->setNull(vectorIndex, false);
+        break;
+      }
+      case ColumnType::Float: {
+        auto floatVector = vector->asFlatVector<float>();
+        floatVector->set(
+            vectorIndex,
+            value->get_immutable_view<::clp::ffi::value_float_t>());
+        vector->setNull(vectorIndex, false);
+        break;
+      }
+      case ColumnType::Boolean: {
+        auto boolVector = vector->asFlatVector<bool>();
+        boolVector->set(
+            vectorIndex, value->get_immutable_view<::clp::ffi::value_bool_t>());
+        vector->setNull(vectorIndex, false);
+        break;
+      }
+      case ColumnType::Array: {
+        auto arrayVector = std::dynamic_pointer_cast<ArrayVector>(vector);
+        std::string jsonString;
+        if (value->is<::clp::ir::EightByteEncodedTextAst>()) {
+          auto decodeResult =
+              value->get_immutable_view<::clp::ir::EightByteEncodedTextAst>()
+                  .decode_and_unparse();
+          if (!decodeResult.has_value()) {
+            continue;
+          }
+          jsonString = std::move(decodeResult.value());
+        } else {
+          auto decodeResult =
+              value->get_immutable_view<::clp::ir::FourByteEncodedTextAst>()
+                  .decode_and_unparse();
+          if (!decodeResult.has_value()) {
+            continue;
+          }
+          jsonString = std::move(decodeResult.value());
+        }
+
+        size_t numElements{0ULL};
+        auto elements = arrayVector->elements()->asFlatVector<StringView>();
+        auto obj = arrayParser_->iterate(jsonString);
+        std::vector<std::string_view> rawElements;
+        for (auto arrayElement : obj.get_array()) {
+          auto raw_element = simdjson::to_json_string(arrayElement).value();
+          rawElements.emplace_back(raw_element);
+        }
+        elements->resize(rawElements.size());
+        for (auto& raw_element : rawElements) {
+          elements->set(numElements++, StringView(raw_element));
+        }
+        arrayVector->setOffsetAndSize(vectorIndex, 0ULL, numElements);
+        arrayVector->setNull(vectorIndex, false);
+        break;
+      }
+      default:
+        VELOX_FAIL("Unsupported column type");
     }
   }
 }

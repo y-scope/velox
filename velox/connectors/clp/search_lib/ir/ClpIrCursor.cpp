@@ -16,6 +16,7 @@
 
 #include "velox/connectors/clp/search_lib/ir/ClpIrCursor.h"
 #include "ffi/ir_stream/search/QueryHandler.hpp"
+#include "velox/connectors/clp/search_lib/ir/ClpIrVectorLoader.h"
 
 #include "clp_s/ColumnReader.hpp"
 #include "clp_s/InputConfig.hpp"
@@ -25,6 +26,7 @@ using namespace clp_s;
 namespace facebook::velox::connector::clp::search_lib {
 
 uint64_t ClpIrCursor::fetchNext(uint64_t numRows) {
+  readerIndex_ = 0;
   if (ErrorCode::Success != errorCode_) {
     return 0;
   }
@@ -36,7 +38,7 @@ uint64_t ClpIrCursor::fetchNext(uint64_t numRows) {
     }
   }
 
-  auto deserializeResult = deserialize();
+  auto deserializeResult = deserialize(numRows);
   if (ystdlib::error_handling::success() != deserializeResult) {
     VELOX_FAIL(
         "IR file {} might be broken, failed to deserialize", this->splitPath_);
@@ -52,13 +54,59 @@ VectorPtr ClpIrCursor::createVector(
     memory::MemoryPool* pool,
     const TypePtr& vectorType,
     size_t vectorSize) {
-  return nullptr;
+  VELOX_CHECK_EQ(
+      projectedColumnNameNodeIdMap_.size(),
+      outputColumns_.size(),
+      "Projected columns size {} does not match fields size {}",
+      projectedColumnNameNodeIdMap_.size(),
+      outputColumns_.size());
+  return createVectorHelper(pool, vectorType, vectorSize);
 }
 
-ystdlib::error_handling::Result<void> ClpIrCursor::deserialize() const {
-  while (::clp::ffi::ir_stream::IrUnitType::EndOfStream !=
-         YSTDLIB_ERROR_HANDLING_TRYX(
-             irDeserializer_->deserialize_next_ir_unit(*irReader_))) {
+VectorPtr ClpIrCursor::createVectorHelper(
+    memory::MemoryPool* pool,
+    const TypePtr& vectorType,
+    size_t vectorSize) {
+  if (vectorType->kind() == TypeKind::ROW) {
+    std::vector<VectorPtr> children;
+    auto& rowType = vectorType->as<TypeKind::ROW>();
+    for (uint32_t i = 0; i < rowType.size(); ++i) {
+      children.push_back(
+          createVectorHelper(pool, rowType.childAt(i), vectorSize));
+    }
+    return std::make_shared<RowVector>(
+        pool, vectorType, nullptr, vectorSize, std::move(children));
+  }
+  auto vector = BaseVector::create(vectorType, vectorSize, pool);
+  vector->setNulls(allocateNulls(vectorSize, pool, bits::kNull));
+  VELOX_CHECK_LT(
+      readerIndex_,
+      projectedColumnNameNodeIdMap_.size(),
+      "Reader index out of bounds");
+  auto projectedColumn = outputColumns_[readerIndex_];
+  auto projectedColumnType = projectedColumn.type;
+  auto projectedColumnNodeId =
+      projectedColumnNameNodeIdMap_.at(projectedColumn.name);
+  readerIndex_++;
+  return std::make_shared<LazyVector>(
+      pool,
+      vectorType,
+      vectorSize,
+      std::make_unique<ClpIrVectorLoader>(
+          projectedColumnType,
+          projectedColumnNodeId,
+          irDeserializer_->get_ir_unit_handler().getFilteredLogEvents()),
+      std::move(vector));
+}
+
+ystdlib::error_handling::Result<void> ClpIrCursor::deserialize(
+    uint64_t numRows) const {
+  uint64_t cnt{0};
+  while (cnt < numRows &&
+         ::clp::ffi::ir_stream::IrUnitType::EndOfStream !=
+             YSTDLIB_ERROR_HANDLING_TRYX(
+                 irDeserializer_->deserialize_next_ir_unit(*irReader_))) {
+    cnt++;
   }
   return ystdlib::error_handling::success();
 }
@@ -71,11 +119,8 @@ ErrorCode ClpIrCursor::loadSplit() {
   auto irHandler{ClpIrUnitHandler{}};
 
   auto projections = splitFieldsToNamesAndTypes();
-  auto queryHandlerResult{ir::QueryHandlerType::create(
-      ir::handleProjectionResolution,
-      std::move(expr_),
-      projections,
-      ignoreCase_)};
+  auto queryHandlerResult{QueryHandlerType::create(
+      handleProjectionResolution, std::move(expr_), projections, ignoreCase_)};
   if (!queryHandlerResult) {
     VLOG(2) << "Failed to create query handler for deserialization.";
     return ErrorCode::InternalError;
@@ -96,10 +141,11 @@ ErrorCode ClpIrCursor::loadSplit() {
     VLOG(2) << "Failed to create deserializer for deserialization.";
     return ErrorCode::InternalError;
   }
-  irDeserializer_ = std::make_shared<::clp::ffi::ir_stream::Deserializer<
-      ClpIrUnitHandler,
-      ir::QueryHandlerType>>(std::move(deserializerResult).value());
+  irDeserializer_ = std::make_shared<
+      ::clp::ffi::ir_stream::Deserializer<ClpIrUnitHandler, QueryHandlerType>>(
+      std::move(deserializerResult).value());
 
+  currentSplitLoaded_ = true;
   return ErrorCode::Success;
 }
 

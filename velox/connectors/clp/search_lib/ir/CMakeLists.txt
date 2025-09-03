@@ -16,8 +16,6 @@ velox_add_library(
   STATIC
   ClpIrCursor.cpp
   ClpIrCursor.h
-  ClpIrQueryHandler.cpp
-  ClpIrQueryHandler.h
   ClpIrUnitHandler.cpp
   ClpIrUnitHandler.h
   ClpIrVectorLoader.cpp

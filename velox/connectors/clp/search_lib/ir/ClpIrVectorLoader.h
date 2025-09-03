@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <simdjson.h>
+#include "connectors/clp/search_lib/BaseClpCursor.h"
 #include "ffi/ir_stream/Deserializer.hpp"
 
 #include "velox/type/Timestamp.h"
@@ -29,11 +31,14 @@ enum class ColumnType;
 class ClpIrVectorLoader : public VectorLoader {
  public:
   ClpIrVectorLoader(
+      ColumnType nodeType,
       ::clp::ffi::SchemaTree::Node::id_t nodeId,
-      const std::shared_ptr<
-          std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
+      std::shared_ptr<
+          const std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
           filteredLogEvents)
-      : nodeId_(nodeId), filteredLogEvents_(filteredLogEvents) {}
+      : nodeType_(nodeType),
+        nodeId_(nodeId),
+        filteredLogEvents_(filteredLogEvents) {}
 
  private:
   void loadInternal(
@@ -42,10 +47,13 @@ class ClpIrVectorLoader : public VectorLoader {
       vector_size_t resultSize,
       VectorPtr* result) override;
 
+  ColumnType nodeType_;
   ::clp::ffi::SchemaTree::Node::id_t nodeId_;
   std::shared_ptr<
-      std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
+      const std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
       filteredLogEvents_;
+  inline static thread_local std::unique_ptr<simdjson::ondemand::parser>
+      arrayParser_ = std::make_unique<simdjson::ondemand::parser>();
 };
 
 } // namespace facebook::velox::connector::clp::search_lib
