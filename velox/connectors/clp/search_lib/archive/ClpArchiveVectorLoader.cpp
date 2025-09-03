@@ -125,7 +125,7 @@ auto convertToVeloxTimestamp(int64_t timestamp) -> Timestamp {
 ClpArchiveVectorLoader::ClpArchiveVectorLoader(
     clp_s::BaseColumnReader* columnReader,
     ColumnType nodeType,
-    std::shared_ptr<std::vector<uint64_t>> filteredRowIndices)
+    const std::shared_ptr<std::vector<uint64_t>> filteredRowIndices)
     : columnReader_(columnReader),
       nodeType_(nodeType),
       filteredRowIndices_(std::move(filteredRowIndices)) {}
@@ -140,7 +140,7 @@ void ClpArchiveVectorLoader::populateData(RowSet rows, VectorPtr vector) {
   }
 
   for (int vectorIndex : rows) {
-    auto messageIndex = (*filteredRowIndices_)[vectorIndex];
+    auto messageIndex = filteredRowIndices_->at(vectorIndex);
 
     if constexpr (std::is_same_v<T, std::string>) {
       auto string_value =
@@ -177,7 +177,7 @@ void ClpArchiveVectorLoader::populateTimestampData(
   }
 
   for (int vectorIndex : rows) {
-    auto messageIndex = (*filteredRowIndices_)[vectorIndex];
+    auto messageIndex = filteredRowIndices_->at(vectorIndex);
 
     if (clp_s::NodeType::Float == Type) {
       auto reader = static_cast<clp_s::FloatColumnReader*>(columnReader_);
@@ -241,7 +241,7 @@ void ClpArchiveVectorLoader::loadInternal(
       vector_size_t elementIndex = 0;
 
       for (int vectorIndex : rows) {
-        auto messageIndex = (*filteredRowIndices_)[vectorIndex];
+        auto messageIndex = filteredRowIndices_->at(vectorIndex);
 
         auto jsonString =
             std::get<std::string>(columnReader_->extract_value(messageIndex));
