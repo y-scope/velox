@@ -92,6 +92,12 @@ class BaseClpCursor {
   /// @return The number of rows scanned.
   virtual uint64_t fetchNext(uint64_t numRows) = 0;
 
+  /// Gets the count of rows that satisfy the query (used to size the result
+  /// vector).
+  ///
+  /// @return Count of rows matching the query.
+  virtual size_t getNumFilteredRows() = 0;
+
   /// Creates a Vector of the specified type and size.
   ///
   /// This method recursively creates vectors for complex types like ROW. For
@@ -107,23 +113,19 @@ class BaseClpCursor {
       const TypePtr& vectorType,
       size_t vectorSize) = 0;
 
-  virtual size_t getNumFilteredRows() = 0;
-
  protected:
+  /// Loads the split from archive or IR stream.
   ///
   /// @return The error code.
   virtual ErrorCode loadSplit() = 0;
 
-  ErrorCode errorCode_;
-
-  clp_s::InputSource inputSource_{clp_s::InputSource::Filesystem};
-  std::string splitPath_;
-  std::string query_;
-  std::vector<Field> outputColumns_;
-
   bool currentSplitLoaded_{false};
-
+  ErrorCode errorCode_;
   std::shared_ptr<clp_s::search::ast::Expression> expr_;
+  clp_s::InputSource inputSource_{clp_s::InputSource::Filesystem};
+  std::vector<Field> outputColumns_;
+  std::string query_;
+  std::string splitPath_;
 
  private:
   /// Preprocesses the query, performing parsing, validation, and optimization.

@@ -21,8 +21,8 @@
 #include "clp_s/ColumnReader.hpp"
 #include "clp_s/SchemaTree.hpp"
 
-#include "ClpArchiveVectorLoader.h"
 #include "velox/connectors/clp/search_lib/BaseClpCursor.h"
+#include "velox/connectors/clp/search_lib/archive/ClpArchiveVectorLoader.h"
 #include "velox/type/Timestamp.h"
 #include "velox/vector/ComplexVector.h"
 #include "velox/vector/FlatVector.h"
