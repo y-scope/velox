@@ -32,8 +32,8 @@ class ClpIrUnitHandler {
 
   // Methods implementing `IrUnitHandlerInterface`
   [[nodiscard]] auto handle_log_event(
-      ::clp::ffi::KeyValuePairLogEvent log_event)
-      -> ::clp::ffi::ir_stream::IRErrorCode;
+      ::clp::ffi::KeyValuePairLogEvent log_event,
+      size_t log_event_idx) -> ::clp::ffi::ir_stream::IRErrorCode;
 
   [[nodiscard]] auto handle_utc_offset_change(
       [[maybe_unused]] ::clp::UtcOffset utc_offset_old,
@@ -51,19 +51,29 @@ class ClpIrUnitHandler {
 
   [[nodiscard]] auto handle_end_of_stream()
       -> ::clp::ffi::ir_stream::IRErrorCode {
+    endOfStream_ = true;
     return ::clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
   }
 
   std::shared_ptr<
       const std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
-  getFilteredLogEvents() {
+  getFilteredLogEvents() const {
     return filteredLogEvents_;
+  }
+
+  void clearFilteredLogEvents() {
+    filteredLogEvents_->clear();
+  }
+
+  bool isEndOfStream() {
+    return endOfStream_;
   }
 
  private:
   std::shared_ptr<
       std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
       filteredLogEvents_;
+  bool endOfStream_{false};
 };
 
 } // namespace facebook::velox::connector::clp::search_lib

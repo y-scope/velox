@@ -39,9 +39,13 @@ uint64_t ClpIrCursor::fetchNext(uint64_t numRows) {
   }
 
   auto deserializeResult = deserialize(numRows);
-  if (ystdlib::error_handling::success() != deserializeResult) {
+  if (deserializeResult.has_error()) {
+    auto error = deserializeResult.error();
     VELOX_FAIL(
-        "IR file {} might be broken, failed to deserialize", this->splitPath_);
+        "IR file {} might be broken, failed to deserialize. {}: {}",
+        this->splitPath_,
+        error.category().name(),
+        error.message());
   }
   return irDeserializer_->get_ir_unit_handler().getFilteredLogEvents()->size();
 }
@@ -101,11 +105,19 @@ VectorPtr ClpIrCursor::createVectorHelper(
 
 ystdlib::error_handling::Result<void> ClpIrCursor::deserialize(
     uint64_t numRows) const {
+  irDeserializer_->get_ir_unit_handler().clearFilteredLogEvents();
   uint64_t cnt{0};
-  while (cnt < numRows &&
-         ::clp::ffi::ir_stream::IrUnitType::EndOfStream !=
-             YSTDLIB_ERROR_HANDLING_TRYX(
-                 irDeserializer_->deserialize_next_ir_unit(*irReader_))) {
+  while (cnt < numRows) {
+    auto deserializeResult =
+        irDeserializer_->deserialize_next_ir_unit(*irReader_);
+    if (deserializeResult.has_error()) {
+      auto error = deserializeResult.error();
+      if (std::errc::result_out_of_range == error ||
+          irDeserializer_->get_ir_unit_handler().isEndOfStream()) {
+        break;
+      }
+      return error;
+    }
     cnt++;
   }
   return ystdlib::error_handling::success();
