@@ -42,7 +42,7 @@ class ClpArchiveCursor final : public BaseClpCursor {
 
   uint64_t fetchNext(uint64_t numRows) override;
 
-  size_t getNumFilteredRows() override;
+  size_t getNumFilteredRows() const override;
 
   VectorPtr createVector(
       memory::MemoryPool* pool,

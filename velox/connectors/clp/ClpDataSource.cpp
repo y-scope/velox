@@ -16,7 +16,6 @@
 
 #include <optional>
 
-#include "search_lib/archive/ClpArchiveVectorLoader.h"
 #include "velox/connectors/clp/ClpColumnHandle.h"
 #include "velox/connectors/clp/ClpConnectorSplit.h"
 #include "velox/connectors/clp/ClpDataSource.h"
