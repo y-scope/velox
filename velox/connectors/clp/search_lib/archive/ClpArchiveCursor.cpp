@@ -89,7 +89,7 @@ uint64_t ClpArchiveCursor::fetchNext(uint64_t numRows) {
   return 0;
 }
 
-size_t ClpArchiveCursor::getNumFilteredRows() {
+size_t ClpArchiveCursor::getNumFilteredRows() const {
   return filteredRowIndices_->size();
 }
 

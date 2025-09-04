@@ -96,7 +96,7 @@ class BaseClpCursor {
   /// vector).
   ///
   /// @return Count of rows matching the query.
-  virtual size_t getNumFilteredRows() = 0;
+  virtual size_t getNumFilteredRows() const = 0;
 
   /// Creates a Vector of the specified type and size.
   ///
@@ -122,7 +122,7 @@ class BaseClpCursor {
   bool currentSplitLoaded_{false};
   ErrorCode errorCode_;
   std::shared_ptr<clp_s::search::ast::Expression> expr_;
-  clp_s::InputSource inputSource_{clp_s::InputSource::Filesystem};
+  clp_s::InputSource inputSource_;
   std::vector<Field> outputColumns_;
   std::string query_;
   std::string splitPath_;

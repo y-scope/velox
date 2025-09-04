@@ -18,6 +18,7 @@
 
 #include "velox/connectors/clp/search_lib/BaseClpCursor.h"
 
+#include <glog/logging.h>
 #include "clp_s/search/ast/ConvertToExists.hpp"
 #include "clp_s/search/ast/EmptyExpr.hpp"
 #include "clp_s/search/ast/NarrowTypes.hpp"
