@@ -44,6 +44,13 @@ class ClpArchiveVectorLoader : public VectorLoader {
       const std::shared_ptr<std::vector<uint64_t>> filteredRowIndices);
 
  private:
+  inline static thread_local std::unique_ptr<simdjson::ondemand::parser>
+      arrayParser_ = std::make_unique<simdjson::ondemand::parser>();
+
+  clp_s::BaseColumnReader* columnReader_;
+  ColumnType nodeType_;
+  std::shared_ptr<std::vector<uint64_t>> filteredRowIndices_;
+
   void loadInternal(
       RowSet rows,
       ValueHook* hook,
@@ -57,13 +64,6 @@ class ClpArchiveVectorLoader : public VectorLoader {
   void populateTimestampData(
       RowSet rows,
       FlatVector<facebook::velox::Timestamp>* vector);
-
-  clp_s::BaseColumnReader* columnReader_;
-  ColumnType nodeType_;
-  std::shared_ptr<std::vector<uint64_t>> filteredRowIndices_;
-
-  inline static thread_local std::unique_ptr<simdjson::ondemand::parser>
-      arrayParser_ = std::make_unique<simdjson::ondemand::parser>();
 };
 
 } // namespace facebook::velox::connector::clp::search_lib

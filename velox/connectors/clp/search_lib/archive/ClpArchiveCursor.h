@@ -42,30 +42,28 @@ class ClpArchiveCursor final : public BaseClpCursor {
 
   uint64_t fetchNext(uint64_t numRows) override;
 
+  size_t getNumFilteredRows() override;
+
   VectorPtr createVector(
       memory::MemoryPool* pool,
       const TypePtr& vectorType,
       size_t vectorSize) override;
 
-  size_t getNumFilteredRows() override;
-
  protected:
   ErrorCode loadSplit() override;
 
  private:
-  size_t readerIndex_{0};
+  std::shared_ptr<clp_s::ArchiveReader> archiveReader_;
+  int32_t currentSchemaId_{-1};
+  size_t currentSchemaIndex_{0};
+  bool currentSchemaTableLoaded_{false};
   std::shared_ptr<std::vector<uint64_t>> filteredRowIndices_ =
       std::make_shared<std::vector<uint64_t>>();
   std::vector<int32_t> matchedSchemas_;
-  size_t currentSchemaIndex_{0};
-  int32_t currentSchemaId_{-1};
-  bool currentSchemaTableLoaded_{false};
-
-  std::shared_ptr<clp_s::search::SchemaMatch> schemaMatch_;
-  std::shared_ptr<ClpQueryRunner> queryRunner_;
   std::shared_ptr<clp_s::search::Projection> projection_;
-
-  std::shared_ptr<clp_s::ArchiveReader> archiveReader_;
+  std::shared_ptr<ClpQueryRunner> queryRunner_;
+  size_t readerIndex_{0};
+  std::shared_ptr<clp_s::search::SchemaMatch> schemaMatch_;
 
   const std::vector<clp_s::BaseColumnReader*>& getProjectedColumns() const;
 
