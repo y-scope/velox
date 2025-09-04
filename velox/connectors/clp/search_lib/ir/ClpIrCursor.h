@@ -34,7 +34,7 @@ class ClpIrCursor final : public BaseClpCursor {
   // log events. Currently this returns the same number of filtered rows.
   uint64_t fetchNext(uint64_t numRows) override;
 
-  size_t getNumFilteredRows() override;
+  size_t getNumFilteredRows() const override;
 
   VectorPtr createVector(
       memory::MemoryPool* pool,
@@ -45,8 +45,6 @@ class ClpIrCursor final : public BaseClpCursor {
   ErrorCode loadSplit() override;
 
  private:
-  std::shared_ptr<::clp::ReaderInterface> irReader_{nullptr};
-  bool ignoreCase_;
   std::function<ystdlib::error_handling::Result<void>(
       bool,
       ::clp::ffi::SchemaTree::Node::id_t,
@@ -64,18 +62,20 @@ class ClpIrCursor final : public BaseClpCursor {
   };
   using QueryHandlerType = ::clp::ffi::ir_stream::search::QueryHandler<
       decltype(handleProjectionResolution)>;
+  bool ignoreCase_;
   std::shared_ptr<
       ::clp::ffi::ir_stream::Deserializer<ClpIrUnitHandler, QueryHandlerType>>
       irDeserializer_;
-
-  ystdlib::error_handling::Result<void> deserialize(uint64_t numRows) const;
-
-  size_t readerIndex_{0};
+  std::shared_ptr<::clp::ReaderInterface> irReader_{nullptr};
   std::unordered_map<std::string, ::clp::ffi::SchemaTree::Node::id_t>
       projectedColumnNameNodeIdMap_;
+  size_t readerIndex_{0};
+
   std::vector<
       std::pair<std::string, clp_s::search::ast::literal_type_bitmask_t>>
   splitFieldsToNamesAndTypes() const;
+
+  ystdlib::error_handling::Result<void> deserialize(uint64_t numRows) const;
 
   VectorPtr createVectorHelper(
       memory::MemoryPool* pool,

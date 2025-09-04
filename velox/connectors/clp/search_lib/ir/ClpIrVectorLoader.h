@@ -41,19 +41,20 @@ class ClpIrVectorLoader : public VectorLoader {
         filteredLogEvents_(filteredLogEvents) {}
 
  private:
-  void loadInternal(
-      RowSet rows,
-      ValueHook* hook,
-      vector_size_t resultSize,
-      VectorPtr* result) override;
+  inline static thread_local std::unique_ptr<simdjson::ondemand::parser>
+      arrayParser_ = std::make_unique<simdjson::ondemand::parser>();
 
   ColumnType nodeType_;
   ::clp::ffi::SchemaTree::Node::id_t nodeId_;
   std::shared_ptr<
       const std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
       filteredLogEvents_;
-  inline static thread_local std::unique_ptr<simdjson::ondemand::parser>
-      arrayParser_ = std::make_unique<simdjson::ondemand::parser>();
+
+  void loadInternal(
+      RowSet rows,
+      ValueHook* hook,
+      vector_size_t resultSize,
+      VectorPtr* result) override;
 };
 
 } // namespace facebook::velox::connector::clp::search_lib

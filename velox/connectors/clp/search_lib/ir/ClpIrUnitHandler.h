@@ -51,7 +51,6 @@ class ClpIrUnitHandler {
 
   [[nodiscard]] auto handle_end_of_stream()
       -> ::clp::ffi::ir_stream::IRErrorCode {
-    endOfStream_ = true;
     return ::clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
   }
 
@@ -61,19 +60,12 @@ class ClpIrUnitHandler {
     return filteredLogEvents_;
   }
 
-  void clearFilteredLogEvents() {
-    filteredLogEvents_->clear();
-  }
-
-  bool isEndOfStream() {
-    return endOfStream_;
-  }
+  void clearFilteredLogEvents();
 
  private:
   std::shared_ptr<
       std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
       filteredLogEvents_;
-  bool endOfStream_{false};
 };
 
 } // namespace facebook::velox::connector::clp::search_lib

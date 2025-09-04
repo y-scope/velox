@@ -37,4 +37,8 @@ auto ClpIrUnitHandler::handle_schema_tree_node_insertion(
   return ::clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
 }
 
+void ClpIrUnitHandler::clearFilteredLogEvents() {
+  filteredLogEvents_->clear();
+}
+
 } // namespace facebook::velox::connector::clp::search_lib
