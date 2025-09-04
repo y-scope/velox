@@ -86,40 +86,6 @@ class ClpConnectorTest : public exec::test::OperatorTestBase {
   }
 };
 
-TEST_F(ClpConnectorTest, testIr) {
-  const std::shared_ptr<std::string> kqlQuery = nullptr;
-  auto plan =
-      PlanBuilder()
-          .startTableScan()
-          .outputType(
-              ROW({"level", "message", "user"},
-                  {VARCHAR(),
-                   VARCHAR(),
-                   ROW({"uid", "ip"}, {BIGINT(), VARCHAR()})}))
-          .tableHandle(
-              std::make_shared<ClpTableHandle>(kClpConnectorId, "example"))
-          .assignments({
-              {"level",
-               std::make_shared<ClpColumnHandle>("level", "level", VARCHAR())},
-              {"message",
-               std::make_shared<ClpColumnHandle>(
-                   "message", "message", VARCHAR())},
-              {"user",
-               std::make_shared<ClpColumnHandle>(
-                   "user", "user", ROW({"uid", "ip"}, {BIGINT(), VARCHAR()}))},
-          })
-          .endTableScan()
-          .filter("level = 'INFO'")
-          .planNode();
-  auto output = getResults(
-      plan,
-      {makeClpSplit(
-          getExampleFilePath("example2.clps"),
-          ClpConnectorSplit::SplitType::kIr,
-          kqlQuery)});
-  std::cout << "Live" << std::endl;
-}
-
 TEST_F(ClpConnectorTest, test1NoPushdown) {
   const std::shared_ptr<std::string> kqlQuery = nullptr;
   auto plan = PlanBuilder()
@@ -166,6 +132,30 @@ TEST_F(ClpConnectorTest, test1NoPushdown) {
            "GET",
        })});
   test::assertEqualVectors(expected, output);
+
+  // The IR stream will be deserialized in order, so the exepect vector is di
+  auto irExpected = makeRowVector(
+      {// requestId
+       makeFlatVector<StringView>(
+           {"req-100", "req-102", "req-105", "req-107", "req-109"}),
+       // userId
+       makeNullableFlatVector<StringView>(
+           {"user201", std::nullopt, "user204", "user202", "user203"}),
+       // method
+       makeFlatVector<StringView>({
+           "GET",
+           "GET",
+           "GET",
+           "GET",
+           "GET",
+       })});
+  auto irOutput = getResults(
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_1_ir.clps"),
+          ClpConnectorSplit::SplitType::kIr,
+          kqlQuery)});
+  test::assertEqualVectors(irExpected, irOutput);
 }
 
 TEST_F(ClpConnectorTest, test1Pushdown) {
@@ -206,6 +196,14 @@ TEST_F(ClpConnectorTest, test1Pushdown) {
                      // path
                      makeFlatVector<StringView>({"/auth/login"})});
   test::assertEqualVectors(expected, output);
+
+  auto irOutput = getResults(
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_1_ir.clps"),
+          ClpConnectorSplit::SplitType::kIr,
+          kqlQuery)});
+  test::assertEqualVectors(expected, irOutput);
 }
 
 TEST_F(ClpConnectorTest, test2NoPushdown) {
