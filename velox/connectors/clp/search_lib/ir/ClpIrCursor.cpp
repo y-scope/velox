@@ -72,11 +72,14 @@ ErrorCode ClpIrCursor::loadSplit() {
       ? NetworkAuthOption{.method = AuthMethod::None}
       : NetworkAuthOption{.method = AuthMethod::S3PresignedUrlV4};
 
-  auto irHandler{ClpIrUnitHandler{}};
+  auto irHandler = ClpIrUnitHandler{};
 
   auto projections = splitFieldsToNamesAndTypes();
   auto queryHandlerResult{QueryHandlerType::create(
-      handleProjectionResolution, std::move(expr_), projections, ignoreCase_)};
+      projectionResolutionCallback_,
+      std::move(expr_),
+      projections,
+      ignoreCase_)};
   if (!queryHandlerResult) {
     VLOG(2) << "Failed to create query handler for deserialization.";
     return ErrorCode::InternalError;
@@ -92,7 +95,7 @@ ErrorCode ClpIrCursor::loadSplit() {
   }
 
   auto deserializerResult = ::clp::ffi::ir_stream::make_deserializer(
-      *irReader_, irHandler, std::move(queryHandler));
+      *irReader_, std::move(irHandler), std::move(queryHandler));
   if (!deserializerResult) {
     VLOG(2) << "Failed to create deserializer for deserialization.";
     return ErrorCode::InternalError;
@@ -129,6 +132,8 @@ ClpIrCursor::splitFieldsToNamesAndTypes() const {
         literalType = search::ast::LiteralType::VarStringT;
         break;
       case ColumnType::Timestamp:
+        // TODO: IR timestamp support pending; constrain to Unknown to avoid
+        // mismatched projections.
         literalType = search::ast::LiteralType::EpochDateT;
         break;
       default:
@@ -141,7 +146,7 @@ ClpIrCursor::splitFieldsToNamesAndTypes() const {
 }
 
 ystdlib::error_handling::Result<void> ClpIrCursor::deserialize(
-    uint64_t numRows) const {
+    uint64_t numRows) {
   irDeserializer_->get_ir_unit_handler().clearFilteredLogEvents();
   uint64_t cnt{0};
   while (cnt < numRows) {
@@ -182,8 +187,12 @@ VectorPtr ClpIrCursor::createVectorHelper(
       "Reader index out of bounds");
   auto projectedColumn = outputColumns_[readerIndex_];
   auto projectedColumnType = projectedColumn.type;
-  auto projectedColumnNodeId =
-      projectedColumnNameNodeIdMap_.at(projectedColumn.name);
+  auto it = projectedColumnNameNodeIdMap_.find(projectedColumn.name);
+  VELOX_CHECK(
+      it != projectedColumnNameNodeIdMap_.end(),
+      "Projected column '{}' not found in node id map",
+      projectedColumn.name);
+  auto projectedColumnNodeId = it->second;
   readerIndex_++;
   return std::make_shared<LazyVector>(
       pool,

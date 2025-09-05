@@ -16,6 +16,9 @@
 
 #pragma once
 
+#include <memory>
+#include <vector>
+
 #include "ffi/ir_stream/Deserializer.hpp"
 
 namespace facebook::velox::connector::clp::search_lib {

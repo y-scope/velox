@@ -17,24 +17,21 @@
 #pragma once
 
 #include <simdjson.h>
+
 #include "connectors/clp/search_lib/BaseClpCursor.h"
 #include "ffi/ir_stream/Deserializer.hpp"
-
-#include "velox/type/Timestamp.h"
 #include "velox/vector/FlatVector.h"
 #include "velox/vector/LazyVector.h"
 
 namespace facebook::velox::connector::clp::search_lib {
-
-enum class ColumnType;
 
 class ClpIrVectorLoader : public VectorLoader {
  public:
   ClpIrVectorLoader(
       ColumnType nodeType,
       ::clp::ffi::SchemaTree::Node::id_t nodeId,
-      std::shared_ptr<
-          const std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
+      const std::shared_ptr<
+          const std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>&
           filteredLogEvents)
       : nodeType_(nodeType),
         nodeId_(nodeId),

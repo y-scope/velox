@@ -15,9 +15,8 @@
  */
 
 #include "velox/connectors/clp/search_lib/ir/ClpIrUnitHandler.h"
-
 #include "clp_s/SchemaTree.hpp"
-#include "common/base/Exceptions.h"
+#include "velox/common/base/Exceptions.h"
 
 namespace facebook::velox::connector::clp::search_lib {
 

@@ -27,7 +27,7 @@ void ClpIrVectorLoader::loadInternal(
   auto vector = *result;
   for (int vectorIndex : rows) {
     auto& logEvent = filteredLogEvents_->at(vectorIndex);
-    // TODO: also need to support auto gen
+    // TODO: also need to support auto-generated keys
     auto userGenNodeIdValueMap = logEvent->get_user_gen_node_id_value_pairs();
     vector->setNull(vectorIndex, true);
     if (0 == userGenNodeIdValueMap.count(nodeId_)) {
