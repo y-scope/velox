@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
+#include <glog/logging.h>
 #include <sstream>
 
-#include "velox/connectors/clp/search_lib/BaseClpCursor.h"
-
-#include <glog/logging.h>
 #include "clp_s/search/ast/ConvertToExists.hpp"
 #include "clp_s/search/ast/EmptyExpr.hpp"
 #include "clp_s/search/ast/NarrowTypes.hpp"
 #include "clp_s/search/ast/OrOfAndForm.hpp"
 #include "clp_s/search/kql/kql.hpp"
+#include "velox/connectors/clp/search_lib/BaseClpCursor.h"
 
 using namespace clp_s;
 using namespace clp_s::search;

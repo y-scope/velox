@@ -16,12 +16,11 @@
 
 #include <glog/logging.h>
 
-#include "velox/connectors/clp/search_lib/archive/ClpArchiveCursor.h"
-
 #include "clp_s/ArchiveReader.hpp"
 #include "clp_s/search/EvaluateTimestampIndex.hpp"
 #include "clp_s/search/ast/EmptyExpr.hpp"
 #include "clp_s/search/ast/SearchUtils.hpp"
+#include "velox/connectors/clp/search_lib/archive/ClpArchiveCursor.h"
 #include "velox/connectors/clp/search_lib/archive/ClpArchiveVectorLoader.h"
 #include "velox/connectors/clp/search_lib/archive/ClpQueryRunner.h"
 
@@ -35,7 +34,8 @@ ClpArchiveCursor::ClpArchiveCursor(
     clp_s::InputSource inputSource,
     std::string_view splitPath)
     : BaseClpCursor(inputSource, splitPath),
-      archiveReader_(std::make_shared<ArchiveReader>()) {}
+      archiveReader_(std::make_shared<ArchiveReader>()),
+      filteredRowIndices_(std::make_shared<std::vector<uint64_t>>()) {}
 
 ClpArchiveCursor::~ClpArchiveCursor() {
   if (currentSplitLoaded_) {

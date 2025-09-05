@@ -57,8 +57,7 @@ class ClpArchiveCursor final : public BaseClpCursor {
   int32_t currentSchemaId_{-1};
   size_t currentSchemaIndex_{0};
   bool currentSchemaTableLoaded_{false};
-  std::shared_ptr<std::vector<uint64_t>> filteredRowIndices_ =
-      std::make_shared<std::vector<uint64_t>>();
+  std::shared_ptr<std::vector<uint64_t>> filteredRowIndices_;
   std::vector<int32_t> matchedSchemas_;
   std::shared_ptr<clp_s::search::Projection> projection_;
   std::shared_ptr<ClpQueryRunner> queryRunner_;

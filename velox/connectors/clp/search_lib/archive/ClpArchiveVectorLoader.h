@@ -20,7 +20,6 @@
 
 #include "clp_s/ColumnReader.hpp"
 #include "clp_s/SchemaTree.hpp"
-
 #include "velox/type/Timestamp.h"
 #include "velox/vector/FlatVector.h"
 #include "velox/vector/LazyVector.h"
@@ -33,9 +32,9 @@ namespace facebook::velox::connector::clp::search_lib {
 
 enum class ColumnType;
 
-/// A custom Velox VectorLoader that populates Velox vectors from a CLP-based
-/// column reader. It supports various column types including integers, floats,
-/// booleans, strings, and arrays of strings.
+/// A custom Velox VectorLoader that populates Velox vectors using a CLP-based
+/// column reader over archives. It supports various column types including
+/// integers, floats, booleans, strings, and arrays of strings.
 class ClpArchiveVectorLoader : public VectorLoader {
  public:
   ClpArchiveVectorLoader(
