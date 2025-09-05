@@ -39,6 +39,5 @@ set(CLP_BUILD_TESTING
 
 FetchContent_Populate(clp)
 
-list(APPEND CMAKE_MODULE_PATH "${clp_SOURCE_DIR}/components/core/cmake/Modules")
 add_subdirectory(${clp_SOURCE_DIR}/components/core
                  ${clp_BINARY_DIR}/components/core)

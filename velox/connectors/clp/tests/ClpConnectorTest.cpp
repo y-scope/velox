@@ -133,7 +133,8 @@ TEST_F(ClpConnectorTest, test1NoPushdown) {
        })});
   test::assertEqualVectors(expected, output);
 
-  // The IR stream will be deserialized in order, so the exepect vector is di
+  // The IR stream will be deserialized in order, so the expected vector is
+  // different
   auto irExpected = makeRowVector(
       {// requestId
        makeFlatVector<StringView>(
