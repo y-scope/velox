@@ -28,19 +28,21 @@ namespace facebook::velox::connector::clp::search_lib {
 class ClpIrVectorLoader : public VectorLoader {
  public:
   ClpIrVectorLoader(
+      bool isResolved,
       ColumnType nodeType,
       ::clp::ffi::SchemaTree::Node::id_t nodeId,
       const std::shared_ptr<
           const std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>&
           filteredLogEvents)
-      : nodeType_(nodeType),
+      : isResolved_(isResolved),
+        nodeType_(nodeType),
         nodeId_(nodeId),
         filteredLogEvents_(filteredLogEvents) {}
 
  private:
-  inline static thread_local std::unique_ptr<simdjson::ondemand::parser>
-      arrayParser_ = std::make_unique<simdjson::ondemand::parser>();
+  simdjson::ondemand::parser arrayParser_;
 
+  bool isResolved_;
   ColumnType nodeType_;
   ::clp::ffi::SchemaTree::Node::id_t nodeId_;
   std::shared_ptr<
