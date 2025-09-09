@@ -26,17 +26,19 @@ void ClpIrVectorLoader::loadInternal(
     VectorPtr* result) {
   auto vector = *result;
   for (int vectorIndex : rows) {
+    vector->setNull(vectorIndex, true);
+    if (!isResolved_) {
+      continue;
+    }
     auto& logEvent = filteredLogEvents_->at(vectorIndex);
     // TODO: also need to support auto-generated keys
     auto userGenNodeIdValueMap = logEvent->get_user_gen_node_id_value_pairs();
-    vector->setNull(vectorIndex, true);
-    if (0 == userGenNodeIdValueMap.count(nodeId_)) {
+    auto const value_it{userGenNodeIdValueMap.find(nodeId_)};
+    if (userGenNodeIdValueMap.end() == value_it ||
+        false == value_it->second.has_value()) {
       continue;
     }
-    auto value = userGenNodeIdValueMap.at(nodeId_);
-    if (!value.has_value()) {
-      continue;
-    }
+    auto const& value{value_it->second};
     switch (nodeType_) {
       case ColumnType::String: {
         auto stringVector = vector->asFlatVector<StringView>();
@@ -110,7 +112,7 @@ void ClpIrVectorLoader::loadInternal(
 
         size_t numElements{0ULL};
         auto elements = arrayVector->elements()->asFlatVector<StringView>();
-        auto obj = arrayParser_->iterate(jsonString);
+        auto obj = arrayParser_.iterate(jsonString);
         std::vector<std::string_view> rawElements;
         for (auto arrayElement : obj.get_array()) {
           auto raw_element = simdjson::to_json_string(arrayElement).value();

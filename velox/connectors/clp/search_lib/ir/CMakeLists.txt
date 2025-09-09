@@ -16,7 +16,6 @@ velox_add_library(
   STATIC
   ClpIrCursor.cpp
   ClpIrCursor.h
-  ClpIrUnitHandler.cpp
   ClpIrUnitHandler.h
   ClpIrVectorLoader.cpp
   ClpIrVectorLoader.h)
@@ -25,6 +24,8 @@ velox_link_libraries(
   clp-s-ir-search
   PUBLIC clp_s::archive_reader
   PRIVATE
+    # Once the IR-stream-related targets are exported, this should be updated to
+    # use more fine-grained dependencies.
     clp_s::clp_dependencies
     clp_s::io
     clp_s::search

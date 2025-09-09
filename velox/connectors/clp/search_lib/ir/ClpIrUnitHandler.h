@@ -19,7 +19,10 @@
 #include <memory>
 #include <vector>
 
+#include "clp_s/SchemaTree.hpp"
 #include "ffi/ir_stream/Deserializer.hpp"
+#include "velox/common/base/Exceptions.h"
+#include "velox/connectors/clp/search_lib/ir/ClpIrUnitHandler.h"
 
 namespace facebook::velox::connector::clp::search_lib {
 
@@ -36,7 +39,12 @@ class ClpIrUnitHandler {
   // Methods implementing `IrUnitHandlerInterface`
   [[nodiscard]] auto handle_log_event(
       ::clp::ffi::KeyValuePairLogEvent log_event,
-      size_t log_event_idx) -> ::clp::ffi::ir_stream::IRErrorCode;
+      size_t log_event_idx) -> ::clp::ffi::ir_stream::IRErrorCode {
+    filteredLogEvents_->push_back(
+        std::make_unique<::clp::ffi::KeyValuePairLogEvent>(
+            std::move(log_event)));
+    return ::clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
+  }
 
   [[nodiscard]] auto handle_utc_offset_change(
       [[maybe_unused]] ::clp::UtcOffset utc_offset_old,
@@ -50,7 +58,9 @@ class ClpIrUnitHandler {
       [[maybe_unused]] ::clp::ffi::SchemaTree::NodeLocator
           schema_tree_node_locator,
       [[maybe_unused]] std::shared_ptr<::clp::ffi::SchemaTree const> const&
-          schema_tree) -> ::clp::ffi::ir_stream::IRErrorCode;
+          schema_tree) -> ::clp::ffi::ir_stream::IRErrorCode {
+    return ::clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
+  }
 
   [[nodiscard]] auto handle_end_of_stream()
       -> ::clp::ffi::ir_stream::IRErrorCode {
@@ -63,7 +73,9 @@ class ClpIrUnitHandler {
     return filteredLogEvents_;
   }
 
-  void clearFilteredLogEvents();
+  void clearFilteredLogEvents() {
+    filteredLogEvents_->clear();
+  }
 
  private:
   std::shared_ptr<
