@@ -59,10 +59,10 @@ VectorPtr ClpIrCursor::createVector(
     const TypePtr& vectorType,
     size_t vectorSize) {
   VELOX_CHECK_EQ(
-      projectedColumnIdNodeIdMap_.size(),
+      projectedColumnIdxNodeIdMap_.size(),
       outputColumns_.size(),
       "Projected columns size {} does not match fields size {}",
-      projectedColumnIdNodeIdMap_.size(),
+      projectedColumnIdxNodeIdMap_.size(),
       outputColumns_.size());
   return createVectorHelper(pool, vectorType, vectorSize);
 }
@@ -189,8 +189,8 @@ VectorPtr ClpIrCursor::createVectorHelper(
       readerIndex_, outputColumns_.size(), "Reader index out of bounds");
   auto projectedColumn = outputColumns_[readerIndex_];
   auto projectedColumnType = projectedColumn.type;
-  auto it = projectedColumnIdNodeIdMap_.find(readerIndex_);
-  bool isResolved = it != projectedColumnIdNodeIdMap_.end();
+  auto it = projectedColumnIdxNodeIdMap_.find(readerIndex_);
+  bool isResolved = it != projectedColumnIdxNodeIdMap_.end();
   ::clp::ffi::SchemaTree::Node::id_t projectedColumnNodeId;
   if (isResolved) {
     projectedColumnNodeId = it->second;
