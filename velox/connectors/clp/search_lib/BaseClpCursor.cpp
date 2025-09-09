@@ -30,6 +30,73 @@ using namespace clp_s::search::ast;
 
 namespace facebook::velox::connector::clp::search_lib {
 
+template <typename T>
+auto estimatePrecision(T timestamp) -> TimestampPrecision {
+  constexpr int64_t kEpochMilliseconds1971{31536000000};
+  constexpr int64_t kEpochMicroseconds1971{31536000000000};
+  constexpr int64_t kEpochNanoseconds1971{31536000000000000};
+  auto absTimestamp = timestamp >= 0 ? timestamp : -timestamp;
+
+  if (absTimestamp > kEpochNanoseconds1971) {
+    return TimestampPrecision::Nanoseconds;
+  } else if (absTimestamp > kEpochMicroseconds1971) {
+    return TimestampPrecision::Microseconds;
+  } else if (absTimestamp > kEpochMilliseconds1971) {
+    return TimestampPrecision::Milliseconds;
+  } else {
+    return TimestampPrecision::Seconds;
+  }
+}
+
+auto convertToVeloxTimestamp(double timestamp) -> Timestamp {
+  switch (estimatePrecision(timestamp)) {
+    case TimestampPrecision::Nanoseconds:
+      timestamp /= Timestamp::kNanosInSecond;
+      break;
+    case TimestampPrecision::Microseconds:
+      timestamp /= Timestamp::kMicrosecondsInSecond;
+      break;
+    case TimestampPrecision::Milliseconds:
+      timestamp /= Timestamp::kMillisecondsInSecond;
+      break;
+    case TimestampPrecision::Seconds:
+      break;
+  }
+  double seconds{std::floor(timestamp)};
+  double nanoseconds{(timestamp - seconds) * Timestamp::kNanosInSecond};
+  return Timestamp(
+      static_cast<int64_t>(seconds), static_cast<uint64_t>(nanoseconds));
+}
+
+auto convertToVeloxTimestamp(int64_t timestamp) -> Timestamp {
+  int64_t precisionDifference{Timestamp::kNanosInSecond};
+  switch (estimatePrecision(timestamp)) {
+    case TimestampPrecision::Nanoseconds:
+      break;
+    case TimestampPrecision::Microseconds:
+      precisionDifference =
+          Timestamp::kNanosInSecond / Timestamp::kNanosecondsInMicrosecond;
+      break;
+    case TimestampPrecision::Milliseconds:
+      precisionDifference =
+          Timestamp::kNanosInSecond / Timestamp::kNanosecondsInMillisecond;
+      break;
+    case TimestampPrecision::Seconds:
+      precisionDifference =
+          Timestamp::kNanosInSecond / Timestamp::kNanosInSecond;
+      break;
+  }
+  int64_t seconds{timestamp / precisionDifference};
+  int64_t nanoseconds{
+      (timestamp % precisionDifference) *
+      (Timestamp::kNanosInSecond / precisionDifference)};
+  if (nanoseconds < 0) {
+    seconds -= 1;
+    nanoseconds += Timestamp::kNanosInSecond;
+  }
+  return Timestamp(seconds, static_cast<uint64_t>(nanoseconds));
+}
+
 void BaseClpCursor::executeQuery(
     const std::string& query,
     const std::vector<Field>& outputColumns) {

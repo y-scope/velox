@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-#include "velox/connectors/clp/search_lib/ir/ClpIrVectorLoader.h"
+#include <chrono>
+
 #include "velox/connectors/clp/search_lib/BaseClpCursor.h"
+#include "velox/connectors/clp/search_lib/ir/ClpIrVectorLoader.h"
 
 namespace facebook::velox::connector::clp::search_lib {
 
@@ -87,6 +89,34 @@ void ClpIrVectorLoader::loadInternal(
         boolVector->set(
             vectorIndex, value->get_immutable_view<::clp::ffi::value_bool_t>());
         vector->setNull(vectorIndex, false);
+        break;
+      }
+      case ColumnType::Timestamp: {
+        auto timestampVector = vector->asFlatVector<Timestamp>();
+        if (value->is<double>()) {
+          timestampVector->set(
+              vectorIndex,
+              convertToVeloxTimestamp(value->get_immutable_view<double>()));
+        } else if (value->is<int64_t>()) {
+          timestampVector->set(
+              vectorIndex,
+              convertToVeloxTimestamp(value->get_immutable_view<int64_t>()));
+        } else if (value->is<std::string>()) {
+          auto stringValue =
+              std::string(value->get_immutable_view<std::string>().data());
+          std::istringstream in{stringValue.substr(0, 19)};
+          std::tm tm = {};
+          in >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%S");
+          if (in.fail()) {
+            VELOX_FAIL(
+                "Failed to parse the timestamp format: %Y-%m-%dT%H:%M:%S");
+          }
+          time_t epoch_seconds = timegm(&tm);
+          timestampVector->set(
+              vectorIndex, convertToVeloxTimestamp(epoch_seconds));
+        } else {
+          VELOX_FAIL("Unsupported timestamp type");
+        }
         break;
       }
       case ColumnType::Array: {
