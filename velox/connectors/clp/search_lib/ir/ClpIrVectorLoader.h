@@ -18,6 +18,7 @@
 
 #include <simdjson.h>
 
+#include "clp_s/TimestampDictionaryWriter.hpp"
 #include "connectors/clp/search_lib/BaseClpCursor.h"
 #include "ffi/ir_stream/Deserializer.hpp"
 #include "velox/vector/FlatVector.h"
@@ -28,26 +29,29 @@ namespace facebook::velox::connector::clp::search_lib {
 class ClpIrVectorLoader : public VectorLoader {
  public:
   ClpIrVectorLoader(
-      bool isResolved,
-      ColumnType nodeType,
-      ::clp::ffi::SchemaTree::Node::id_t nodeId,
       const std::shared_ptr<
           const std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>&
-          filteredLogEvents)
-      : isResolved_(isResolved),
-        nodeType_(nodeType),
+          filteredLogEvents,
+      bool isResolved,
+      ::clp::ffi::SchemaTree::Node::id_t nodeId,
+      std::string_view nodeName,
+      ColumnType nodeType)
+      : filteredLogEvents_(filteredLogEvents),
+        isResolved_(isResolved),
         nodeId_(nodeId),
-        filteredLogEvents_(filteredLogEvents) {}
+        nodeName_(nodeName),
+        nodeType_(nodeType) {}
 
  private:
   simdjson::ondemand::parser arrayParser_;
-
-  bool isResolved_;
-  ColumnType nodeType_;
-  ::clp::ffi::SchemaTree::Node::id_t nodeId_;
   std::shared_ptr<
       const std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
       filteredLogEvents_;
+  bool isResolved_;
+  ::clp::ffi::SchemaTree::Node::id_t nodeId_;
+  std::string nodeName_;
+  ColumnType nodeType_;
+  clp_s::TimestampDictionaryWriter timestampDict_;
 
   void loadInternal(
       RowSet rows,

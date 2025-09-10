@@ -135,7 +135,10 @@ ClpIrCursor::splitFieldsToNamesAndTypes() const {
       case ColumnType::Timestamp:
         // TODO: IR timestamp support pending; constrain to Unknown to avoid
         // mismatched projections.
-        literalType = search::ast::LiteralType::EpochDateT;
+        literalType = search::ast::LiteralType::FloatT |
+            search::ast::LiteralType::IntegerT |
+            search::ast::LiteralType::VarStringT |
+            search::ast::LiteralType::ClpStringT;
         break;
       default:
         literalType = search::ast::LiteralType::UnknownT;
@@ -201,10 +204,11 @@ VectorPtr ClpIrCursor::createVectorHelper(
       vectorType,
       vectorSize,
       std::make_unique<ClpIrVectorLoader>(
+          irDeserializer_->get_ir_unit_handler().getFilteredLogEvents(),
           isResolved,
-          projectedColumnType,
           projectedColumnNodeId,
-          irDeserializer_->get_ir_unit_handler().getFilteredLogEvents()),
+          projectedColumn.name,
+          projectedColumnType),
       std::move(vector));
 }
 

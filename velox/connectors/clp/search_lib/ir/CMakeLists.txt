@@ -22,7 +22,7 @@ velox_add_library(
 
 velox_link_libraries(
   clp-s-ir-search
-  PUBLIC clp_s::archive_reader
+  PUBLIC clp_s::archive_reader clp_s::archive_writer
   PRIVATE
     # Once the IR-stream-related targets are exported, this should be updated to
     # use more fine-grained dependencies.

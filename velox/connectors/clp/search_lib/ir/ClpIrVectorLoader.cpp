@@ -102,18 +102,11 @@ void ClpIrVectorLoader::loadInternal(
               vectorIndex,
               convertToVeloxTimestamp(value->get_immutable_view<int64_t>()));
         } else if (value->is<std::string>()) {
-          auto stringValue =
-              std::string(value->get_immutable_view<std::string>().data());
-          std::istringstream in{stringValue.substr(0, 19)};
-          std::tm tm = {};
-          in >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%S");
-          if (in.fail()) {
-            VELOX_FAIL(
-                "Failed to parse the timestamp format: %Y-%m-%dT%H:%M:%S");
-          }
-          time_t epoch_seconds = timegm(&tm);
-          timestampVector->set(
-              vectorIndex, convertToVeloxTimestamp(epoch_seconds));
+          auto stringValue = value->get_immutable_view<std::string>().data();
+          uint64_t encodingId{};
+          auto const timestamp = timestampDict_.ingest_entry(
+              nodeName_, nodeId_, stringValue, encodingId);
+          timestampVector->set(vectorIndex, convertToVeloxTimestamp(timestamp));
         } else {
           VELOX_FAIL("Unsupported timestamp type");
         }
