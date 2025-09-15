@@ -33,12 +33,12 @@ class ClpIrVectorLoader : public VectorLoader {
           const std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>&
           filteredLogEvents,
       bool isResolved,
-      ::clp::ffi::SchemaTree::Node::id_t nodeId,
+      std::vector<::clp::ffi::SchemaTree::Node::id_t> nodeIds,
       std::string_view nodeName,
       ColumnType nodeType)
       : filteredLogEvents_(filteredLogEvents),
         isResolved_(isResolved),
-        nodeId_(nodeId),
+        nodeIds_(nodeIds),
         nodeName_(nodeName),
         nodeType_(nodeType) {}
 
@@ -48,7 +48,7 @@ class ClpIrVectorLoader : public VectorLoader {
       const std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
       filteredLogEvents_;
   bool isResolved_;
-  ::clp::ffi::SchemaTree::Node::id_t nodeId_;
+  std::vector<::clp::ffi::SchemaTree::Node::id_t> nodeIds_;
   std::string nodeName_;
   ColumnType nodeType_;
   clp_s::TimestampDictionaryWriter timestampDict_;

@@ -35,12 +35,21 @@ void ClpIrVectorLoader::loadInternal(
     auto& logEvent = filteredLogEvents_->at(vectorIndex);
     // TODO: also need to support auto-generated keys
     auto userGenNodeIdValueMap = logEvent->get_user_gen_node_id_value_pairs();
-    auto const value_it{userGenNodeIdValueMap.find(nodeId_)};
-    if (userGenNodeIdValueMap.end() == value_it ||
-        false == value_it->second.has_value()) {
+    std::unordered_map<id_t, std::optional<::clp::ffi::Value>>::iterator
+        valueIt;
+    ::clp::ffi::SchemaTree::Node::id_t nodeId;
+    for (size_t i{0}; i < nodeIds_.size(); ++i) {
+      valueIt = userGenNodeIdValueMap.find(nodeIds_[i]);
+      if (valueIt != userGenNodeIdValueMap.end()) {
+        nodeId = nodeIds_[i];
+        break;
+      }
+    }
+    if (userGenNodeIdValueMap.end() == valueIt ||
+        false == valueIt->second.has_value()) {
       continue;
     }
-    auto const& value{value_it->second};
+    auto const& value{valueIt->second};
     switch (nodeType_) {
       case ColumnType::String: {
         auto stringVector = vector->asFlatVector<StringView>();
@@ -105,7 +114,7 @@ void ClpIrVectorLoader::loadInternal(
           auto stringValue = value->get_immutable_view<std::string>().data();
           uint64_t encodingId{};
           auto const timestamp = timestampDict_.ingest_entry(
-              nodeName_, nodeId_, stringValue, encodingId);
+              nodeName_, nodeId, stringValue, encodingId);
           timestampVector->set(vectorIndex, convertToVeloxTimestamp(timestamp));
         } else {
           VELOX_FAIL("Unsupported timestamp type");

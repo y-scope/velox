@@ -29,5 +29,6 @@ velox_link_libraries(
     clp_s::clp_dependencies
     clp_s::io
     clp_s::search
+    clp_s::search::ast
     clp_s::search::kql
     velox_vector)

@@ -413,14 +413,64 @@ TEST_F(ClpConnectorTest, test3TimestampMarshalling) {
            Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds)}),
   });
   test::assertEqualVectors(expected, output);
+}
 
-  auto irOutput = getResults(
+TEST_F(ClpConnectorTest, test4IrTimestampNoPushdown) {
+  const std::shared_ptr<std::string> kqlQuery = nullptr;
+  auto plan = PlanBuilder(pool_.get())
+                  .startTableScan()
+                  .outputType(ROW({"timestamp"}, {TIMESTAMP()}))
+                  .tableHandle(std::make_shared<ClpTableHandle>(
+                      kClpConnectorId, "test_4"))
+                  .assignments(
+                      {{"timestamp",
+                        std::make_shared<ClpColumnHandle>(
+                            "timestamp", "timestamp", TIMESTAMP())}})
+                  .endTableScan()
+                  .filter("\"timestamp\" < timestamp '2025-08-24 02:36:45'")
+                  .planNode();
+
+  auto output = getResults(
       plan,
       {makeClpSplit(
-          getExampleFilePath("test_3_ir.clps"),
+          getExampleFilePath("test_4_ir.clps"),
           ClpConnectorSplit::SplitType::kIr,
           kqlQuery)});
-  test::assertEqualVectors(expected, irOutput);
+  auto expected = makeRowVector({
+      // timestamp
+      makeFlatVector<Timestamp>(
+          {Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds)}),
+  });
+  test::assertEqualVectors(expected, output);
+}
+
+TEST_F(ClpConnectorTest, test4IrTimestampPushdown) {
+  const std::shared_ptr<std::string> kqlQuery =
+      std::make_shared<std::string>("(timestamp < 1756003005000000)");
+  auto plan = PlanBuilder(pool_.get())
+                  .startTableScan()
+                  .outputType(ROW({"timestamp"}, {TIMESTAMP()}))
+                  .tableHandle(std::make_shared<ClpTableHandle>(
+                      kClpConnectorId, "test_4"))
+                  .assignments(
+                      {{"timestamp",
+                        std::make_shared<ClpColumnHandle>(
+                            "timestamp", "timestamp", TIMESTAMP())}})
+                  .endTableScan()
+                  .planNode();
+
+  auto output = getResults(
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_4_ir.clps"),
+          ClpConnectorSplit::SplitType::kIr,
+          kqlQuery)});
+  auto expected = makeRowVector({
+      // timestamp
+      makeFlatVector<Timestamp>(
+          {Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds)}),
+  });
+  test::assertEqualVectors(expected, output);
 }
 
 } // namespace
