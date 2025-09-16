@@ -135,12 +135,14 @@ ClpConnectorSplit
 if it is stored on a local file system, or the complete (or partial) URL of the split if it is stored on S3. In the
 latter case, when only a partial URL is provided, ``ClpS3AuthProviderBase`` provides a hook in ``ClpDataSource`` to
 assist in constructing the full URL. Refer to :ref:`ClpS3AuthProviderBase<ClpS3AuthProviderBase>` for details. It also
-includes a ``type`` property that specifies whether the split is an archive or an IR stream.
+includes a ``type`` property that specifies whether the split is an archive or an IR (Intermediate Representation)
+stream.
 
 BaseClpCursor
 ~~~~~~~~~~~~~
-``BaseClpCursor``` is responsible for preparing pushdown operations, loading splits, filtering data, and returning the
-results. Each split type—archive and IR stream—has its own corresponding subclass.
+``BaseClpCursor`` is responsible for preparing pushdown operations, loading splits, filtering data, and returning the
+results. Each split type—archive and IR stream—has its own corresponding subclass. See also: ``ClpArchiveCursor``,
+``ClpIrCursor``.
 
 ClpDataSource
 ~~~~~~~~~~~~~

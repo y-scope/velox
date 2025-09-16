@@ -204,7 +204,7 @@ VectorPtr ClpIrCursor::createVectorHelper(
       std::make_unique<ClpIrVectorLoader>(
           irDeserializer_->get_ir_unit_handler().getFilteredLogEvents(),
           isResolved,
-          projectedColumnNodeIds,
+          std::move(projectedColumnNodeIds),
           projectedColumn.name,
           projectedColumnType),
       std::move(vector));

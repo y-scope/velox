@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-#include <chrono>
-
-#include "velox/connectors/clp/search_lib/BaseClpCursor.h"
 #include "velox/connectors/clp/search_lib/ir/ClpIrVectorLoader.h"
+#include "velox/connectors/clp/search_lib/BaseClpCursor.h"
 
 namespace facebook::velox::connector::clp::search_lib {
 
@@ -35,9 +33,8 @@ void ClpIrVectorLoader::loadInternal(
     auto& logEvent = filteredLogEvents_->at(vectorIndex);
     // TODO: also need to support auto-generated keys
     auto userGenNodeIdValueMap = logEvent->get_user_gen_node_id_value_pairs();
-    std::unordered_map<id_t, std::optional<::clp::ffi::Value>>::iterator
-        valueIt;
-    ::clp::ffi::SchemaTree::Node::id_t nodeId;
+    auto valueIt = userGenNodeIdValueMap.end();
+    ::clp::ffi::SchemaTree::Node::id_t nodeId{};
     for (size_t i{0}; i < nodeIds_.size(); ++i) {
       valueIt = userGenNodeIdValueMap.find(nodeIds_[i]);
       if (valueIt != userGenNodeIdValueMap.end()) {

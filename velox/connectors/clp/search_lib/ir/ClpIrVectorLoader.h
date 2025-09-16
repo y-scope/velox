@@ -38,7 +38,7 @@ class ClpIrVectorLoader : public VectorLoader {
       ColumnType nodeType)
       : filteredLogEvents_(filteredLogEvents),
         isResolved_(isResolved),
-        nodeIds_(nodeIds),
+        nodeIds_(std::move(nodeIds)),
         nodeName_(nodeName),
         nodeType_(nodeType) {}
 
