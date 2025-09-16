@@ -61,7 +61,7 @@ VectorPtr ClpIrCursor::createVector(
   VELOX_CHECK_EQ(
       projectedColumnIdxNodeIdsMap_.size(),
       outputColumns_.size(),
-      "Projected columns size {} does not match fields size {}",
+      "Resolved node-id map size ({}) must not exceed projected columns ({})",
       projectedColumnIdxNodeIdsMap_.size(),
       outputColumns_.size());
   return createVectorHelper(pool, vectorType, vectorSize);
@@ -191,8 +191,9 @@ VectorPtr ClpIrCursor::createVectorHelper(
   auto projectedColumn = outputColumns_[readerIndex_];
   auto projectedColumnType = projectedColumn.type;
   auto it = projectedColumnIdxNodeIdsMap_.find(readerIndex_);
-  bool isResolved = it != projectedColumnIdxNodeIdsMap_.end();
-  std::vector<::clp::ffi::SchemaTree::Node::id_t> projectedColumnNodeIds;
+  std::vector<::clp::ffi::SchemaTree::Node::id_t> projectedColumnNodeIds{};
+  bool isResolved =
+      it != projectedColumnIdxNodeIdsMap_.end() && !it->second.empty();
   if (isResolved) {
     projectedColumnNodeIds = it->second;
   }

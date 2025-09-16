@@ -107,12 +107,6 @@ void ClpIrVectorLoader::loadInternal(
           timestampVector->set(
               vectorIndex,
               convertToVeloxTimestamp(value->get_immutable_view<int64_t>()));
-        } else if (value->is<std::string>()) {
-          auto stringValue = value->get_immutable_view<std::string>().data();
-          uint64_t encodingId{};
-          auto const timestamp = timestampDict_.ingest_entry(
-              nodeName_, nodeId, stringValue, encodingId);
-          timestampVector->set(vectorIndex, convertToVeloxTimestamp(timestamp));
         } else {
           VELOX_FAIL("Unsupported timestamp type");
         }

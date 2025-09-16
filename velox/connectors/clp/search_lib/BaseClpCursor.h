@@ -61,7 +61,7 @@ struct Field {
   std::string name;
 };
 
-enum class TimestampPrecision : uint8_t {
+enum class InputTimestampPrecision : uint8_t {
   Seconds,
   Milliseconds,
   Microseconds,
@@ -84,20 +84,20 @@ enum class TimestampPrecision : uint8_t {
 /// @param timestamp
 /// @return the estimated timestamp precision
 template <typename T>
-auto estimatePrecision(T timestamp) -> TimestampPrecision {
+auto estimatePrecision(T timestamp) -> InputTimestampPrecision {
   constexpr int64_t kEpochMilliseconds1971{31536000000};
   constexpr int64_t kEpochMicroseconds1971{31536000000000};
   constexpr int64_t kEpochNanoseconds1971{31536000000000000};
   auto absTimestamp = timestamp >= 0 ? timestamp : -timestamp;
 
   if (absTimestamp > kEpochNanoseconds1971) {
-    return TimestampPrecision::Nanoseconds;
+    return InputTimestampPrecision::Nanoseconds;
   } else if (absTimestamp > kEpochMicroseconds1971) {
-    return TimestampPrecision::Microseconds;
+    return InputTimestampPrecision::Microseconds;
   } else if (absTimestamp > kEpochMilliseconds1971) {
-    return TimestampPrecision::Milliseconds;
+    return InputTimestampPrecision::Milliseconds;
   } else {
-    return TimestampPrecision::Seconds;
+    return InputTimestampPrecision::Seconds;
   }
 }
 
@@ -105,18 +105,18 @@ auto estimatePrecision(T timestamp) -> TimestampPrecision {
 ///
 /// @param timestamp the input timestamp as a double
 /// @return the corresponding Velox timestamp
-auto inline convertToVeloxTimestamp(double timestamp) -> Timestamp {
+inline auto convertToVeloxTimestamp(double timestamp) -> Timestamp {
   switch (estimatePrecision(timestamp)) {
-    case TimestampPrecision::Nanoseconds:
+    case InputTimestampPrecision::Nanoseconds:
       timestamp /= Timestamp::kNanosInSecond;
       break;
-    case TimestampPrecision::Microseconds:
+    case InputTimestampPrecision::Microseconds:
       timestamp /= Timestamp::kMicrosecondsInSecond;
       break;
-    case TimestampPrecision::Milliseconds:
+    case InputTimestampPrecision::Milliseconds:
       timestamp /= Timestamp::kMillisecondsInSecond;
       break;
-    case TimestampPrecision::Seconds:
+    case InputTimestampPrecision::Seconds:
       break;
   }
   double seconds{std::floor(timestamp)};
@@ -129,20 +129,20 @@ auto inline convertToVeloxTimestamp(double timestamp) -> Timestamp {
 ///
 /// @param timestamp the input timestamp as an integer
 /// @return the corresponding Velox timestamp
-auto inline convertToVeloxTimestamp(int64_t timestamp) -> Timestamp {
+inline auto convertToVeloxTimestamp(int64_t timestamp) -> Timestamp {
   int64_t precisionDifference{Timestamp::kNanosInSecond};
   switch (estimatePrecision(timestamp)) {
-    case TimestampPrecision::Nanoseconds:
+    case InputTimestampPrecision::Nanoseconds:
       break;
-    case TimestampPrecision::Microseconds:
+    case InputTimestampPrecision::Microseconds:
       precisionDifference =
           Timestamp::kNanosInSecond / Timestamp::kNanosecondsInMicrosecond;
       break;
-    case TimestampPrecision::Milliseconds:
+    case InputTimestampPrecision::Milliseconds:
       precisionDifference =
           Timestamp::kNanosInSecond / Timestamp::kNanosecondsInMillisecond;
       break;
-    case TimestampPrecision::Seconds:
+    case InputTimestampPrecision::Seconds:
       precisionDifference =
           Timestamp::kNanosInSecond / Timestamp::kNanosInSecond;
       break;

@@ -18,9 +18,8 @@
 
 #include <simdjson.h>
 
-#include "clp_s/TimestampDictionaryWriter.hpp"
-#include "connectors/clp/search_lib/BaseClpCursor.h"
 #include "ffi/ir_stream/Deserializer.hpp"
+#include "velox/connectors/clp/search_lib/BaseClpCursor.h"
 #include "velox/vector/FlatVector.h"
 #include "velox/vector/LazyVector.h"
 
@@ -51,7 +50,6 @@ class ClpIrVectorLoader : public VectorLoader {
   std::vector<::clp::ffi::SchemaTree::Node::id_t> nodeIds_;
   std::string nodeName_;
   ColumnType nodeType_;
-  clp_s::TimestampDictionaryWriter timestampDict_;
 
   void loadInternal(
       RowSet rows,
