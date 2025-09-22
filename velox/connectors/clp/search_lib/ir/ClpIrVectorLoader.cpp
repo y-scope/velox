@@ -15,7 +15,9 @@
  */
 
 #include "velox/connectors/clp/search_lib/ir/ClpIrVectorLoader.h"
+
 #include "velox/connectors/clp/search_lib/BaseClpCursor.h"
+#include "velox/connectors/clp/search_lib/ClpTimestampsUtils.h"
 
 namespace facebook::velox::connector::clp::search_lib {
 
@@ -35,10 +37,10 @@ void ClpIrVectorLoader::loadInternal(
     auto userGenNodeIdValueMap = logEvent->get_user_gen_node_id_value_pairs();
     auto valueIt = userGenNodeIdValueMap.end();
     ::clp::ffi::SchemaTree::Node::id_t nodeId{};
-    for (size_t i{0}; i < nodeIds_.size(); ++i) {
-      valueIt = userGenNodeIdValueMap.find(nodeIds_[i]);
+    for (auto const candidateNodeId : nodeIds_) {
+      valueIt = userGenNodeIdValueMap.find(candidateNodeId);
       if (valueIt != userGenNodeIdValueMap.end()) {
-        nodeId = nodeIds_[i];
+        nodeId = candidateNodeId;
         break;
       }
     }

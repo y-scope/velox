@@ -46,7 +46,7 @@ class ClpIrVectorLoader : public VectorLoader {
   std::shared_ptr<
       const std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
       filteredLogEvents_;
-  bool isResolved_;
+  bool isResolved_{};
   std::vector<::clp::ffi::SchemaTree::Node::id_t> nodeIds_;
   std::string nodeName_;
   ColumnType nodeType_;
