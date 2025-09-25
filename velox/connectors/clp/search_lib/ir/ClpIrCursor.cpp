@@ -134,8 +134,6 @@ ClpIrCursor::splitFieldsToNamesAndTypes() const {
             search::ast::LiteralType::ClpStringT;
         break;
       case ColumnType::Timestamp:
-        // TODO: IR timestamp support pending; constrain to Unknown to avoid
-        // mismatched projections.
         literalType = search::ast::LiteralType::FloatT |
             search::ast::LiteralType::IntegerT;
         break;
