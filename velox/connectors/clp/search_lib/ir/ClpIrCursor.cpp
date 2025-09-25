@@ -18,7 +18,6 @@
 #include "clp_s/InputConfig.hpp"
 
 #include "ffi/ir_stream/search/QueryHandler.hpp"
-#include "velox/connectors/clp/search_lib/ClpTimestampsUtils.h"
 #include "velox/connectors/clp/search_lib/ir/ClpIrCursor.h"
 #include "velox/connectors/clp/search_lib/ir/ClpIrVectorLoader.h"
 
