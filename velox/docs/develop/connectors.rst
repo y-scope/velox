@@ -151,7 +151,7 @@ and simplified into an AST. On ``next``, the cursor finds matching row indices a
 ``ClpDataSource`` recursively creates a row vector composed of lazy vectors, which use CLP column readers to
 decode and load data as needed during execution.
 
-.. _ClpS3AuthProviderBase
+.. _ClpS3AuthProviderBase:
 
 ClpS3AuthProviderBase
 ~~~~~~~~~~~~~~~~~~~~~
