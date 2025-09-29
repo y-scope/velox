@@ -15,7 +15,9 @@
  */
 
 #include "velox/connectors/clp/search_lib/ir/ClpIrVectorLoader.h"
+
 #include "velox/connectors/clp/search_lib/BaseClpCursor.h"
+#include "velox/connectors/clp/search_lib/ClpTimestampsUtils.h"
 
 namespace facebook::velox::connector::clp::search_lib {
 
@@ -33,12 +35,20 @@ void ClpIrVectorLoader::loadInternal(
     auto& logEvent = filteredLogEvents_->at(vectorIndex);
     // TODO: also need to support auto-generated keys
     auto userGenNodeIdValueMap = logEvent->get_user_gen_node_id_value_pairs();
-    auto const value_it{userGenNodeIdValueMap.find(nodeId_)};
-    if (userGenNodeIdValueMap.end() == value_it ||
-        false == value_it->second.has_value()) {
+    auto valueIt = userGenNodeIdValueMap.end();
+    ::clp::ffi::SchemaTree::Node::id_t nodeId{};
+    for (auto const candidateNodeId : nodeIds_) {
+      valueIt = userGenNodeIdValueMap.find(candidateNodeId);
+      if (valueIt != userGenNodeIdValueMap.end()) {
+        nodeId = candidateNodeId;
+        break;
+      }
+    }
+    if (userGenNodeIdValueMap.end() == valueIt ||
+        false == valueIt->second.has_value()) {
       continue;
     }
-    auto const& value{value_it->second};
+    auto const& value{valueIt->second};
     switch (nodeType_) {
       case ColumnType::String: {
         auto stringVector = vector->asFlatVector<StringView>();
@@ -87,6 +97,21 @@ void ClpIrVectorLoader::loadInternal(
         boolVector->set(
             vectorIndex, value->get_immutable_view<::clp::ffi::value_bool_t>());
         vector->setNull(vectorIndex, false);
+        break;
+      }
+      case ColumnType::Timestamp: {
+        auto timestampVector = vector->asFlatVector<Timestamp>();
+        if (value->is<double>()) {
+          timestampVector->set(
+              vectorIndex,
+              convertToVeloxTimestamp(value->get_immutable_view<double>()));
+        } else if (value->is<int64_t>()) {
+          timestampVector->set(
+              vectorIndex,
+              convertToVeloxTimestamp(value->get_immutable_view<int64_t>()));
+        } else {
+          VELOX_FAIL("Unsupported timestamp type");
+        }
         break;
       }
       case ColumnType::Array: {

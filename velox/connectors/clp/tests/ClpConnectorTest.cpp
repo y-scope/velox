@@ -153,7 +153,7 @@ TEST_F(ClpConnectorTest, test1NoPushdown) {
   auto irOutput = getResults(
       plan,
       {makeClpSplit(
-          getExampleFilePath("test_1_ir.clps"),
+          getExampleFilePath("test_1_ir.clp.zst"),
           ClpConnectorSplit::SplitType::kIr,
           kqlQuery)});
   test::assertEqualVectors(irExpected, irOutput);
@@ -201,7 +201,7 @@ TEST_F(ClpConnectorTest, test1Pushdown) {
   auto irOutput = getResults(
       plan,
       {makeClpSplit(
-          getExampleFilePath("test_1_ir.clps"),
+          getExampleFilePath("test_1_ir.clp.zst"),
           ClpConnectorSplit::SplitType::kIr,
           kqlQuery)});
   test::assertEqualVectors(expected, irOutput);
@@ -257,49 +257,13 @@ TEST_F(ClpConnectorTest, test2NoPushdown) {
                      })});
   test::assertEqualVectors(expected, output);
 
-  // IR stream currently does not support TIMESTAMP type; will merge into the
-  // plan above as soon as this feature is implemented
-  auto irPlan =
-      PlanBuilder(pool_.get())
-          .startTableScan()
-          .outputType(
-              ROW({"event"},
-                  {ROW(
-                      {"type", "subtype", "severity", "tags"},
-                      {VARCHAR(), VARCHAR(), VARCHAR(), ARRAY(VARCHAR())})}))
-          .tableHandle(
-              std::make_shared<ClpTableHandle>(kClpConnectorId, "test_2"))
-          .assignments(
-              {{"event",
-                std::make_shared<ClpColumnHandle>(
-                    "event",
-                    "event",
-                    ROW({"type", "subtype", "severity", "tags"},
-                        {VARCHAR(), VARCHAR(), VARCHAR(), ARRAY(VARCHAR())}))}})
-          .endTableScan()
-          .filter(
-              "event.severity IN ('WARNING', 'ERROR') AND "
-              "((event.type = 'network' AND event.subtype = 'connection') OR "
-              "(event.type = 'storage' AND event.subtype LIKE 'disk_usage%'))")
-          .planNode();
   auto irOutput = getResults(
-      irPlan,
+      plan,
       {makeClpSplit(
-          getExampleFilePath("test_2_ir.clps"),
+          getExampleFilePath("test_2_ir.clp.zst"),
           ClpConnectorSplit::SplitType::kIr,
           kqlQuery)});
-  auto irExpected = makeRowVector(
-      {// event
-       makeRowVector(
-           {// event.type
-            makeFlatVector<StringView>({"storage"}),
-            // event.subtype
-            makeFlatVector<StringView>({"disk_usage"}),
-            // event.severity
-            makeFlatVector<StringView>({"WARNING"}),
-            // event.tags
-            makeArrayVector<StringView>({{"\"backup\"", "\"daily\""}})})});
-  test::assertEqualVectors(irExpected, irOutput);
+  test::assertEqualVectors(expected, irOutput);
 }
 
 TEST_F(ClpConnectorTest, test2Pushdown) {
@@ -350,45 +314,13 @@ TEST_F(ClpConnectorTest, test2Pushdown) {
                      })});
   test::assertEqualVectors(expected, output);
 
-  // IR stream currently does not support TIMESTAMP type; will merge into the
-  // plan above as soon as this feature is implemented
-  auto irPlan =
-      PlanBuilder(pool_.get())
-          .startTableScan()
-          .outputType(
-              ROW({"event"},
-                  {ROW(
-                      {"type", "subtype", "severity", "tags"},
-                      {VARCHAR(), VARCHAR(), VARCHAR(), ARRAY(VARCHAR())})}))
-          .tableHandle(
-              std::make_shared<ClpTableHandle>(kClpConnectorId, "test_2"))
-          .assignments(
-              {{"event",
-                std::make_shared<ClpColumnHandle>(
-                    "event",
-                    "event",
-                    ROW({"type", "subtype", "severity", "tags"},
-                        {VARCHAR(), VARCHAR(), VARCHAR(), ARRAY(VARCHAR())}))}})
-          .endTableScan()
-          .planNode();
   auto irOutput = getResults(
-      irPlan,
+      plan,
       {makeClpSplit(
-          getExampleFilePath("test_2_ir.clps"),
+          getExampleFilePath("test_2_ir.clp.zst"),
           ClpConnectorSplit::SplitType::kIr,
           kqlQuery)});
-  auto irExpected = makeRowVector(
-      {// event
-       makeRowVector({// event.type
-                      makeFlatVector<StringView>({"storage"}),
-                      // event.subtype
-                      makeFlatVector<StringView>({"disk_usage"}),
-                      // event.severity
-                      makeFlatVector<StringView>({"WARNING"}),
-                      // event.tags
-                      makeArrayVector<StringView>(
-                          {{"\"filesystem\"", "\"monitoring\""}})})});
-  test::assertEqualVectors(irExpected, irOutput);
+  test::assertEqualVectors(expected, irOutput);
 }
 
 TEST_F(ClpConnectorTest, test2Hybrid) {
@@ -442,6 +374,14 @@ TEST_F(ClpConnectorTest, test2Hybrid) {
 
       });
   test::assertEqualVectors(expected, output);
+
+  auto irOutput = getResults(
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_2_ir.clp.zst"),
+          ClpConnectorSplit::SplitType::kIr,
+          kqlQuery)});
+  test::assertEqualVectors(expected, irOutput);
 }
 
 TEST_F(ClpConnectorTest, test3TimestampMarshalling) {
@@ -471,6 +411,66 @@ TEST_F(ClpConnectorTest, test3TimestampMarshalling) {
            Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds),
            Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds),
            Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds)}),
+  });
+  test::assertEqualVectors(expected, output);
+}
+
+TEST_F(ClpConnectorTest, test4IrTimestampNoPushdown) {
+  const std::shared_ptr<std::string> kqlQuery = nullptr;
+  auto plan = PlanBuilder(pool_.get())
+                  .startTableScan()
+                  .outputType(ROW({"timestamp"}, {TIMESTAMP()}))
+                  .tableHandle(std::make_shared<ClpTableHandle>(
+                      kClpConnectorId, "test_4"))
+                  .assignments(
+                      {{"timestamp",
+                        std::make_shared<ClpColumnHandle>(
+                            "timestamp", "timestamp", TIMESTAMP())}})
+                  .endTableScan()
+                  .filter("\"timestamp\" < timestamp '2025-08-24 02:36:45'")
+                  .planNode();
+
+  auto output = getResults(
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_4_ir.clp.zst"),
+          ClpConnectorSplit::SplitType::kIr,
+          kqlQuery)});
+  auto expected = makeRowVector({
+      // timestamp
+      makeFlatVector<Timestamp>(
+          {Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds)}),
+  });
+  test::assertEqualVectors(expected, output);
+}
+
+TEST_F(ClpConnectorTest, test4IrTimestampPushdown) {
+  // Only the second event meet the condition, the first event is a date string
+  // which is not supported yet so the value will be NULL.
+  const std::shared_ptr<std::string> kqlQuery =
+      std::make_shared<std::string>("(timestamp < 1756003005000000)");
+  auto plan = PlanBuilder(pool_.get())
+                  .startTableScan()
+                  .outputType(ROW({"timestamp"}, {TIMESTAMP()}))
+                  .tableHandle(std::make_shared<ClpTableHandle>(
+                      kClpConnectorId, "test_4"))
+                  .assignments(
+                      {{"timestamp",
+                        std::make_shared<ClpColumnHandle>(
+                            "timestamp", "timestamp", TIMESTAMP())}})
+                  .endTableScan()
+                  .planNode();
+
+  auto output = getResults(
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_4_ir.clp.zst"),
+          ClpConnectorSplit::SplitType::kIr,
+          kqlQuery)});
+  auto expected = makeRowVector({
+      // timestamp
+      makeFlatVector<Timestamp>(
+          {Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds)}),
   });
   test::assertEqualVectors(expected, output);
 }

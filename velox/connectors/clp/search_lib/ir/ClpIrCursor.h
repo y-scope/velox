@@ -60,8 +60,15 @@ class ClpIrCursor final : public BaseClpCursor {
               [[maybe_unused]] std::pair<std::string_view, size_t>
                   projected_key_and_index)
       -> ystdlib::error_handling::Result<void> {
-    projectedColumnIdxNodeIdMap_.insert(
-        {projected_key_and_index.second, nodeId});
+    auto it =
+        projectedColumnIdxNodeIdsMap_.find(projected_key_and_index.second);
+    if (it == projectedColumnIdxNodeIdsMap_.end()) {
+      projectedColumnIdxNodeIdsMap_.insert(
+          {projected_key_and_index.second,
+           std::vector<::clp::ffi::SchemaTree::Node::id_t>{nodeId}});
+      return ystdlib::error_handling::success();
+    }
+    it->second.emplace_back(nodeId);
     return ystdlib::error_handling::success();
   };
   using QueryHandlerType = ::clp::ffi::ir_stream::search::QueryHandler<
@@ -76,8 +83,8 @@ class ClpIrCursor final : public BaseClpCursor {
   std::shared_ptr<::clp::ReaderInterface> irReader_{nullptr};
   std::shared_ptr<::clp::streaming_compression::zstd::Decompressor>
       irReaderZstdWrapper_{nullptr};
-  std::unordered_map<size_t, ::clp::ffi::SchemaTree::Node::id_t>
-      projectedColumnIdxNodeIdMap_;
+  std::unordered_map<size_t, std::vector<::clp::ffi::SchemaTree::Node::id_t>>
+      projectedColumnIdxNodeIdsMap_;
   size_t readerIndex_{0};
 
   std::vector<

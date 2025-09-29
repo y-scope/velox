@@ -135,6 +135,14 @@ ClpConnectorSplit
 if it is stored on a local file system, or the complete (or partial) URL of the split if it is stored on S3. In the
 latter case, when only a partial URL is provided, ``ClpS3AuthProviderBase`` provides a hook in ``ClpDataSource`` to
 assist in constructing the full URL. Refer to :ref:`ClpS3AuthProviderBase<ClpS3AuthProviderBase>` for details.
+``ClpConnectorSplit`` also includes a ``type`` property that specifies whether the split is an archive or an IR
+(Internal Representation) stream.
+
+BaseClpCursor
+~~~~~~~~~~~~~
+``BaseClpCursor`` is responsible for preparing pushdown operations, loading splits, filtering data, and returning
+results. Each split type (archive or IR stream) has its own corresponding subclass (``ClpArchiveCursor`` and
+``ClpIrCursor``).
 
 ClpDataSource
 ~~~~~~~~~~~~~
@@ -146,12 +154,13 @@ each output column, accessing its handle to get its type and original name. For 
 traverses the nested structure to process each field; for non-row types, it directly maps the Velox column
 type to a CLP column type.
 
-When a split is added, a ``ClpCursor`` is created with the split path and input source. The query is parsed
-and simplified into an AST. On ``next``, the cursor finds matching row indices and, if any exist,
-``ClpDataSource`` recursively creates a row vector composed of lazy vectors, which use CLP column readers to
-decode and load data as needed during execution.
+When a split is added, a ``BaseClpCursor`` instance is created with the split path and input source (which
+may be either a ``ClpArchiveCursor`` or a ``ClpIrCursor``). The query is parsed and simplified into an AST.
+On ``next``, the cursor finds matching row indices and, if any exist, ``ClpDataSource`` recursively creates
+a row vector composed of lazy vectors, which use CLP column readers to decode and load data as needed during
+execution.
 
-.. _ClpS3AuthProviderBase
+.. _ClpS3AuthProviderBase:
 
 ClpS3AuthProviderBase
 ~~~~~~~~~~~~~~~~~~~~~

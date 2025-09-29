@@ -18,8 +18,8 @@
 
 #include <simdjson.h>
 
-#include "connectors/clp/search_lib/BaseClpCursor.h"
 #include "ffi/ir_stream/Deserializer.hpp"
+#include "velox/connectors/clp/search_lib/BaseClpCursor.h"
 #include "velox/vector/FlatVector.h"
 #include "velox/vector/LazyVector.h"
 
@@ -28,26 +28,28 @@ namespace facebook::velox::connector::clp::search_lib {
 class ClpIrVectorLoader : public VectorLoader {
  public:
   ClpIrVectorLoader(
-      bool isResolved,
-      ColumnType nodeType,
-      ::clp::ffi::SchemaTree::Node::id_t nodeId,
       const std::shared_ptr<
           const std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>&
-          filteredLogEvents)
-      : isResolved_(isResolved),
-        nodeType_(nodeType),
-        nodeId_(nodeId),
-        filteredLogEvents_(filteredLogEvents) {}
+          filteredLogEvents,
+      bool isResolved,
+      std::vector<::clp::ffi::SchemaTree::Node::id_t> nodeIds,
+      std::string_view nodeName,
+      ColumnType nodeType)
+      : filteredLogEvents_(filteredLogEvents),
+        isResolved_(isResolved),
+        nodeIds_(std::move(nodeIds)),
+        nodeName_(nodeName),
+        nodeType_(nodeType) {}
 
  private:
   simdjson::ondemand::parser arrayParser_;
-
-  bool isResolved_;
-  ColumnType nodeType_;
-  ::clp::ffi::SchemaTree::Node::id_t nodeId_;
   std::shared_ptr<
       const std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
       filteredLogEvents_;
+  bool isResolved_{};
+  std::vector<::clp::ffi::SchemaTree::Node::id_t> nodeIds_;
+  std::string nodeName_;
+  ColumnType nodeType_;
 
   void loadInternal(
       RowSet rows,
