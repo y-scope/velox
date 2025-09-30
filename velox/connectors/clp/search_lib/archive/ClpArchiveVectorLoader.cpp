@@ -69,6 +69,8 @@ void ClpArchiveVectorLoader::populateTimestampData(
   bool supportedNodeType{false};
   switch (Type) {
     case clp_s::NodeType::Float:
+    case clp_s::NodeType::FormattedFloat:
+    case clp_s::NodeType::DictionaryFloat:
     case clp_s::NodeType::Integer:
     case clp_s::NodeType::DateString:
       supportedNodeType = true;
@@ -88,6 +90,20 @@ void ClpArchiveVectorLoader::populateTimestampData(
 
     if (clp_s::NodeType::Float == Type) {
       auto reader = static_cast<clp_s::FloatColumnReader*>(columnReader_);
+      vector->set(
+          vectorIndex,
+          convertToVeloxTimestamp(
+              std::get<double>(reader->extract_value(messageIndex))));
+    } else if (clp_s::NodeType::FormattedFloat == Type) {
+      auto reader =
+          static_cast<clp_s::FormattedFloatColumnReader*>(columnReader_);
+      vector->set(
+          vectorIndex,
+          convertToVeloxTimestamp(
+              std::get<double>(reader->extract_value(messageIndex))));
+    } else if (clp_s::NodeType::DictionaryFloat == Type) {
+      auto reader =
+          static_cast<clp_s::DictionaryFloatColumnReader*>(columnReader_);
       vector->set(
           vectorIndex,
           convertToVeloxTimestamp(
@@ -204,6 +220,16 @@ void ClpArchiveVectorLoader::loadInternal(
       } else if (
           nullptr != dynamic_cast<clp_s::FloatColumnReader*>(columnReader_)) {
         populateTimestampData<clp_s::NodeType::Float>(rows, timestampVector);
+      } else if (
+          nullptr !=
+          dynamic_cast<clp_s::FormattedFloatColumnReader*>(columnReader_)) {
+        populateTimestampData<clp_s::NodeType::FormattedFloat>(
+            rows, timestampVector);
+      } else if (
+          nullptr !=
+          dynamic_cast<clp_s::DictionaryFloatColumnReader*>(columnReader_)) {
+        populateTimestampData<clp_s::NodeType::DictionaryFloat>(
+            rows, timestampVector);
       } else {
         populateTimestampData<clp_s::NodeType::Unknown>(rows, timestampVector);
       }
