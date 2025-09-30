@@ -529,7 +529,6 @@ TEST_F(ClpConnectorTest, test5FloatTimestampPushdown) {
   // pushdown.
   const std::shared_ptr<std::string> kqlQuery = std::make_shared<std::string>(
       "(timestamp < 1746003070000000 and timestamp >= 1746003005123457)");
-  ;
   auto plan =
       PlanBuilder(pool_.get())
           .startTableScan()
