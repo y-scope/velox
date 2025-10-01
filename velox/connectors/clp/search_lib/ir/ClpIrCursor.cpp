@@ -58,7 +58,7 @@ VectorPtr ClpIrCursor::createVector(
     memory::MemoryPool* pool,
     const TypePtr& vectorType,
     size_t vectorSize) {
-  VELOX_CHECK_EQ(
+  VELOX_CHECK_LE(
       projectedColumnIdxNodeIdsMap_.size(),
       outputColumns_.size(),
       "Resolved node-id map size ({}) must not exceed projected columns ({})",
