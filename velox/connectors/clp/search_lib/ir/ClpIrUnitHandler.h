@@ -28,10 +28,11 @@ namespace facebook::velox::connector::clp::search_lib {
 
 class ClpIrUnitHandler {
  public:
-  ClpIrUnitHandler() {
-    filteredLogEvents_ = std::make_shared<
-        std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>();
-  }
+  ClpIrUnitHandler(
+      std::shared_ptr<
+          std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
+          filteredLogEvents)
+      : filteredLogEvents_(filteredLogEvents) {}
 
   // Destructor
   ~ClpIrUnitHandler() = default;
@@ -65,16 +66,6 @@ class ClpIrUnitHandler {
   [[nodiscard]] auto handle_end_of_stream()
       -> ::clp::ffi::ir_stream::IRErrorCode {
     return ::clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
-  }
-
-  std::shared_ptr<
-      const std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
-  getFilteredLogEvents() const {
-    return filteredLogEvents_;
-  }
-
-  void clearFilteredLogEvents() {
-    filteredLogEvents_->clear();
   }
 
  private:

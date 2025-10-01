@@ -51,14 +51,14 @@ uint64_t ClpIrCursor::fetchNext(uint64_t numRows) {
 }
 
 size_t ClpIrCursor::getNumFilteredRows() const {
-  return irDeserializer_->get_ir_unit_handler().getFilteredLogEvents()->size();
+  return filteredLogEvents_->size();
 }
 
 VectorPtr ClpIrCursor::createVector(
     memory::MemoryPool* pool,
     const TypePtr& vectorType,
     size_t vectorSize) {
-  VELOX_CHECK_EQ(
+  VELOX_CHECK_LE(
       projectedColumnIdxNodeIdsMap_.size(),
       outputColumns_.size(),
       "Resolved node-id map size ({}) must not exceed projected columns ({})",
@@ -72,7 +72,9 @@ ErrorCode ClpIrCursor::loadSplit() {
       ? NetworkAuthOption{.method = AuthMethod::None}
       : NetworkAuthOption{.method = AuthMethod::S3PresignedUrlV4};
 
-  auto irHandler = ClpIrUnitHandler{};
+  filteredLogEvents_ = std::make_shared<
+      std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>();
+  auto irHandler = ClpIrUnitHandler{filteredLogEvents_};
 
   auto projections = splitFieldsToNamesAndTypes();
   auto queryHandlerResult{QueryHandlerType::create(
@@ -86,17 +88,31 @@ ErrorCode ClpIrCursor::loadSplit() {
   }
   auto queryHandler = std::move(queryHandlerResult).value();
 
+  if (splitPath_.starts_with("http")) {
+    // Handle the case that the URL is not a S3 URL and does not need auth
+    inputSource_ = InputSource::Network;
+  }
   auto irPath = Path{.source = inputSource_, .path = splitPath_};
   irReader_ = try_create_reader(irPath, networkAuthOption);
-  if (nullptr == irReader_) {
+  irReaderZstdWrapper_ =
+      std::make_shared<::clp::streaming_compression::zstd::Decompressor>();
+  constexpr size_t cReaderBufferSize{64L * 1024L};
+  irReaderZstdWrapper_->open(*irReader_, cReaderBufferSize);
+  if (nullptr == irReaderZstdWrapper_) {
     VLOG(2) << "Failed to open kv-ir stream \"" << splitPath_
             << "\" for reading.";
     return ErrorCode::InternalError;
   }
 
   auto deserializerResult = ::clp::ffi::ir_stream::make_deserializer(
-      *irReader_, std::move(irHandler), std::move(queryHandler));
+      *irReaderZstdWrapper_, irHandler, std::move(queryHandler));
   if (!deserializerResult) {
+    if (deserializerResult.has_error()) {
+      auto error = deserializerResult.error();
+      VLOG(2) << "Failed to create deserializer for deserialization, error: "
+              << error.message();
+      return ErrorCode::InternalError;
+    }
     VLOG(2) << "Failed to create deserializer for deserialization.";
     return ErrorCode::InternalError;
   }
@@ -147,11 +163,11 @@ ClpIrCursor::splitFieldsToNamesAndTypes() const {
 
 ystdlib::error_handling::Result<void> ClpIrCursor::deserialize(
     uint64_t numRows) {
-  irDeserializer_->get_ir_unit_handler().clearFilteredLogEvents();
+  filteredLogEvents_->clear();
   uint64_t cnt{0};
   while (cnt < numRows) {
     auto deserializeResult =
-        irDeserializer_->deserialize_next_ir_unit(*irReader_);
+        irDeserializer_->deserialize_next_ir_unit(*irReaderZstdWrapper_);
     if (deserializeResult.has_error()) {
       auto error = deserializeResult.error();
       if (std::errc::result_out_of_range == error ||
@@ -201,7 +217,7 @@ VectorPtr ClpIrCursor::createVectorHelper(
       vectorType,
       vectorSize,
       std::make_unique<ClpIrVectorLoader>(
-          irDeserializer_->get_ir_unit_handler().getFilteredLogEvents(),
+          filteredLogEvents_,
           isResolved,
           std::move(projectedColumnNodeIds),
           projectedColumn.name,
