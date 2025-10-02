@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-#include <boost/url/parse.hpp>
-
 #include "clp_s/ColumnReader.hpp"
 #include "clp_s/InputConfig.hpp"
 
@@ -95,12 +93,12 @@ ErrorCode ClpIrCursor::loadSplit() {
   irReaderZstdWrapper_ =
       std::make_shared<::clp::streaming_compression::zstd::Decompressor>();
   constexpr size_t cReaderBufferSize{64L * 1024L};
-  irReaderZstdWrapper_->open(*irReader_, cReaderBufferSize);
   if (nullptr == irReaderZstdWrapper_) {
     VLOG(2) << "Failed to open kv-ir stream \"" << splitPath_
             << "\" for reading.";
     return ErrorCode::InternalError;
   }
+  irReaderZstdWrapper_->open(*irReader_, cReaderBufferSize);
 
   auto deserializerResult = ::clp::ffi::ir_stream::make_deserializer(
       *irReaderZstdWrapper_, irHandler, std::move(queryHandler));

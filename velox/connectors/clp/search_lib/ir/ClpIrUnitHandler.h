@@ -32,7 +32,10 @@ class ClpIrUnitHandler {
       std::shared_ptr<
           std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
           filteredLogEvents)
-      : filteredLogEvents_(filteredLogEvents) {}
+      : filteredLogEvents_(filteredLogEvents) {
+    VELOX_CHECK_NOT_NULL(
+        filteredLogEvents_, "filteredLogEvents cannot be null");
+  }
 
   // Destructor
   ~ClpIrUnitHandler() = default;
