@@ -13,12 +13,23 @@
 # limitations under the License.
 include_guard(GLOBAL)
 
+set(VELOX_YSTDLIB_BUILD_VERSION 9ed78cd)
+set(VELOX_YSTDLIB_BUILD_SHA256_CHECKSUM
+    65990dc2bcc4a355c2181bfe31a7800f492309d1bcd340f52a34e85047e61bc8)
+set(VELOX_YSTDLIB_SOURCE_URL
+    "https://github.com/y-scope/ystdlib-cpp/archive/${VELOX_YSTDLIB_BUILD_VERSION}.tar.gz"
+)
+
+velox_resolve_dependency_url(YSTDLIB)
+
+message(STATUS "Building ystdlib from source")
+
 FetchContent_Declare(
-  ystdlib_cpp
-  GIT_REPOSITORY https://github.com/y-scope/ystdlib-cpp.git
-  GIT_TAG 0ae886c6a7ee706a3c6e1950262b63d72f71fe63)
+  ystdlib
+  URL ${VELOX_YSTDLIB_SOURCE_URL}
+  URL_HASH ${VELOX_YSTDLIB_BUILD_SHA256_CHECKSUM}
+  OVERRIDE_FIND_PACKAGE EXCLUDE_FROM_ALL SYSTEM)
 
-FetchContent_Populate(ystdlib_cpp)
+set(ystdlib_BUILD_TESTING OFF)
 
-set(CLP_YSTDLIB_SOURCE_DIRECTORY "${ystdlib_cpp_SOURCE_DIR}")
-include_directories(${ystdlib_cpp_SOURCE_DIR}/src)
+FetchContent_MakeAvailable(ystdlib)
