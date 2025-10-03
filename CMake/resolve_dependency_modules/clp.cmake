@@ -16,7 +16,7 @@ include_guard(GLOBAL)
 FetchContent_Declare(
   clp
   GIT_REPOSITORY https://github.com/y-scope/clp.git
-  GIT_TAG 6f46f236317fe6964719a5100ddb3318521803a8)
+  GIT_TAG 67276c09acbd48dd502454288f40072c44628726)
 
 set(CLP_BUILD_CLP_REGEX_UTILS
     OFF

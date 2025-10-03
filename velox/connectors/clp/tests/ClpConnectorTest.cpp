@@ -528,7 +528,7 @@ TEST_F(ClpConnectorTest, test5FloatTimestampPushdown) {
   // the timestamp, the returned result differs slightly from the one without
   // pushdown.
   const std::shared_ptr<std::string> kqlQuery = std::make_shared<std::string>(
-      "(timestamp < 1746003070000000 and timestamp >= 1746003005123457)");
+      "(timestamp < 1746003005.127 and timestamp >= 1746003005.124)");
   auto plan =
       PlanBuilder(pool_.get())
           .startTableScan()
@@ -552,30 +552,17 @@ TEST_F(ClpConnectorTest, test5FloatTimestampPushdown) {
           getExampleFilePath("test_5.clps"),
           ClpConnectorSplit::SplitType::kArchive,
           kqlQuery)});
-  auto expected =
-      makeRowVector({// timestamp
-                     makeFlatVector<Timestamp>(
-                         {Timestamp(1746003005, 123457000),
-                          Timestamp(1746003005, 123458000),
-                          Timestamp(1746003005, 123459000),
-                          Timestamp(1746003005, 123460000),
-                          Timestamp(1746003005, 123462000),
-                          Timestamp(1746003005, 123463000),
-                          Timestamp(1746003005, 123464000),
-                          Timestamp(1746003005, 123465000),
-                          Timestamp(1746003005, 123466000),
-                          Timestamp(1746003005, 123467000)}),
-                     makeFlatVector<double>(
-                         {-0.007,
-                          123456789.1234567,
-                          123456789.000,
-                          0.00000000000000000000000000001234567891234500,
-                          -123456789.1234567,
-                          -123456789.000,
-                          -0.00000000000000000000000000001234567891234500,
-                          -0.00,
-                          1.234567891234567E9,
-                          1.234567891234567E-9})});
+  auto expected = makeRowVector({// timestamp
+                                 makeFlatVector<Timestamp>(
+                                     {Timestamp(1746003005, 124000000),
+                                      Timestamp(1746003005, 124100000),
+                                      Timestamp(1746003005, 125000000),
+                                      Timestamp(1746003005, 126000000)}),
+                                 makeFlatVector<double>(
+                                     {1.234567891234500E9,
+                                      1E16,
+                                      1.234567891234567E9,
+                                      1.234567891234567E9})});
   test::assertEqualVectors(expected, output);
 }
 
@@ -609,9 +596,7 @@ TEST_F(ClpConnectorTest, test5FormattedFloatNoPushdown) {
           kqlQuery)});
   auto expected = makeRowVector({// timestamp
                                  makeFlatVector<Timestamp>(
-                                     {Timestamp(1746003005, 123460000),
-                                      Timestamp(1746003005, 123461000),
-                                      Timestamp(1746003005, 123465000),
+                                     {Timestamp(1746003005, 123457000),
                                       Timestamp(1746003115, 0),
                                       Timestamp(1746003120, 0),
                                       Timestamp(1746003125, 0),
@@ -623,8 +608,6 @@ TEST_F(ClpConnectorTest, test5FormattedFloatNoPushdown) {
                                       Timestamp(1746003190, 0)}),
                                  makeFlatVector<double>(
                                      {1.2345678912345E-29,
-                                      0.0,
-                                      0.0,
                                       0.0,
                                       0.0,
                                       0.0,
@@ -666,9 +649,7 @@ TEST_F(ClpConnectorTest, test5FormattedFloatPushdown) {
           kqlQuery)});
   auto expected = makeRowVector({// timestamp
                                  makeFlatVector<Timestamp>(
-                                     {Timestamp(1746003005, 123460000),
-                                      Timestamp(1746003005, 123461000),
-                                      Timestamp(1746003005, 123465000),
+                                     {Timestamp(1746003005, 123457000),
                                       Timestamp(1746003115, 0),
                                       Timestamp(1746003120, 0),
                                       Timestamp(1746003125, 0),
@@ -680,8 +661,6 @@ TEST_F(ClpConnectorTest, test5FormattedFloatPushdown) {
                                       Timestamp(1746003190, 0)}),
                                  makeFlatVector<double>(
                                      {1.2345678912345E-29,
-                                      0.0,
-                                      0.0,
                                       0.0,
                                       0.0,
                                       0.0,
