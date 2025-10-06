@@ -79,9 +79,13 @@ inline auto convertToVeloxTimestamp(double timestamp) -> Timestamp {
       break;
   }
   double seconds{std::floor(timestamp)};
-  double nanoseconds{(timestamp - seconds) * Timestamp::kNanosInSecond};
+  // Due to IEEE 754 rounding, we drop nanosecond precision to ensure
+  // correctness
+  double microseconds{(timestamp - seconds) * Timestamp::kMicrosecondsInSecond};
   return Timestamp(
-      static_cast<int64_t>(seconds), static_cast<uint64_t>(nanoseconds));
+      static_cast<int64_t>(seconds),
+      static_cast<int64_t>(std::round(microseconds)) *
+          Timestamp::kNanosecondsInMicrosecond);
 }
 
 /// Converts an integer value into a Velox timestamp.
