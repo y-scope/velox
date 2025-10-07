@@ -72,10 +72,6 @@ ErrorCode ClpIrCursor::loadSplit() {
       ? NetworkAuthOption{.method = AuthMethod::None}
       : NetworkAuthOption{.method = AuthMethod::S3PresignedUrlV4};
 
-  filteredLogEvents_ = std::make_shared<
-      std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>();
-  auto irHandler = ClpIrUnitHandler{filteredLogEvents_};
-
   auto projections = splitFieldsToNamesAndTypes();
   auto queryHandlerResult{QueryHandlerType::create(
       projectionResolutionCallback_,
@@ -90,6 +86,10 @@ ErrorCode ClpIrCursor::loadSplit() {
 
   auto irPath = Path{.source = inputSource_, .path = splitPath_};
   irReader_ = try_create_reader(irPath, networkAuthOption);
+  if (nullptr == irReader_) {
+    VLOG(2) << "Failed to create IR reader";
+    return ErrorCode::InternalError;
+  }
   irReaderZstdWrapper_ =
       std::make_shared<::clp::streaming_compression::zstd::Decompressor>();
   constexpr size_t cReaderBufferSize{64L * 1024L};
@@ -100,8 +100,11 @@ ErrorCode ClpIrCursor::loadSplit() {
   }
   irReaderZstdWrapper_->open(*irReader_, cReaderBufferSize);
 
+  filteredLogEvents_ = std::make_shared<
+      std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>();
+  auto irHandler = ClpIrUnitHandler{filteredLogEvents_};
   auto deserializerResult = ::clp::ffi::ir_stream::make_deserializer(
-      *irReaderZstdWrapper_, irHandler, std::move(queryHandler));
+      *irReaderZstdWrapper_, std::move(irHandler), std::move(queryHandler));
   if (!deserializerResult) {
     if (deserializerResult.has_error()) {
       auto error = deserializerResult.error();

@@ -79,7 +79,7 @@ class ClpIrCursor final : public BaseClpCursor {
   bool ignoreCase_;
   std::shared_ptr<
       ::clp::ffi::ir_stream::Deserializer<ClpIrUnitHandler, QueryHandlerType>>
-      irDeserializer_;
+      irDeserializer_{nullptr};
   std::shared_ptr<::clp::ReaderInterface> irReader_{nullptr};
   std::shared_ptr<::clp::streaming_compression::zstd::Decompressor>
       irReaderZstdWrapper_{nullptr};
