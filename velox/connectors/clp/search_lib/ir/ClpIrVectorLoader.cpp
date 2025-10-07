@@ -85,7 +85,7 @@ void ClpIrVectorLoader::loadInternal(
         break;
       }
       case ColumnType::Float: {
-        auto floatVector = vector->asFlatVector<float>();
+        auto floatVector = vector->asFlatVector<double>();
         floatVector->set(
             vectorIndex,
             value->get_immutable_view<::clp::ffi::value_float_t>());
