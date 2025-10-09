@@ -105,14 +105,10 @@ ErrorCode ClpIrCursor::loadSplit() {
   auto irHandler = ClpIrUnitHandler{filteredLogEvents_};
   auto deserializerResult = ::clp::ffi::ir_stream::make_deserializer(
       *irReaderZstdWrapper_, std::move(irHandler), std::move(queryHandler));
-  if (!deserializerResult) {
-    if (deserializerResult.has_error()) {
-      auto error = deserializerResult.error();
-      VLOG(2) << "Failed to create deserializer for deserialization, error: "
-              << error.message();
-      return ErrorCode::InternalError;
-    }
-    VLOG(2) << "Failed to create deserializer for deserialization.";
+  if (deserializerResult.has_error()) {
+    auto error = deserializerResult.error();
+    VLOG(2) << "Failed to create deserializer for deserialization, error: "
+            << error.message();
     return ErrorCode::InternalError;
   }
   irDeserializer_ = std::make_shared<
