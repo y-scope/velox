@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "clp/streaming_compression/zstd/Decompressor.hpp"
 #include "ffi/ir_stream/Deserializer.hpp"
 #include "velox/connectors/clp/search_lib/BaseClpCursor.h"
 #include "velox/connectors/clp/search_lib/ir/ClpIrUnitHandler.h"
@@ -72,11 +73,16 @@ class ClpIrCursor final : public BaseClpCursor {
   };
   using QueryHandlerType = ::clp::ffi::ir_stream::search::QueryHandler<
       decltype(projectionResolutionCallback_)>;
+  std::shared_ptr<
+      std::vector<std::unique_ptr<::clp::ffi::KeyValuePairLogEvent>>>
+      filteredLogEvents_{nullptr};
   bool ignoreCase_;
   std::shared_ptr<
       ::clp::ffi::ir_stream::Deserializer<ClpIrUnitHandler, QueryHandlerType>>
-      irDeserializer_;
+      irDeserializer_{nullptr};
   std::shared_ptr<::clp::ReaderInterface> irReader_{nullptr};
+  std::shared_ptr<::clp::streaming_compression::zstd::Decompressor>
+      irReaderZstdWrapper_{nullptr};
   std::unordered_map<size_t, std::vector<::clp::ffi::SchemaTree::Node::id_t>>
       projectedColumnIdxNodeIdsMap_;
   size_t readerIndex_{0};

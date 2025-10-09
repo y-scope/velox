@@ -153,7 +153,7 @@ TEST_F(ClpConnectorTest, test1NoPushdown) {
   auto irOutput = getResults(
       plan,
       {makeClpSplit(
-          getExampleFilePath("test_1_ir.clps"),
+          getExampleFilePath("test_1_ir.clp.zst"),
           ClpConnectorSplit::SplitType::kIr,
           kqlQuery)});
   test::assertEqualVectors(irExpected, irOutput);
@@ -201,7 +201,7 @@ TEST_F(ClpConnectorTest, test1Pushdown) {
   auto irOutput = getResults(
       plan,
       {makeClpSplit(
-          getExampleFilePath("test_1_ir.clps"),
+          getExampleFilePath("test_1_ir.clp.zst"),
           ClpConnectorSplit::SplitType::kIr,
           kqlQuery)});
   test::assertEqualVectors(expected, irOutput);
@@ -260,7 +260,7 @@ TEST_F(ClpConnectorTest, test2NoPushdown) {
   auto irOutput = getResults(
       plan,
       {makeClpSplit(
-          getExampleFilePath("test_2_ir.clps"),
+          getExampleFilePath("test_2_ir.clp.zst"),
           ClpConnectorSplit::SplitType::kIr,
           kqlQuery)});
   test::assertEqualVectors(expected, irOutput);
@@ -317,7 +317,7 @@ TEST_F(ClpConnectorTest, test2Pushdown) {
   auto irOutput = getResults(
       plan,
       {makeClpSplit(
-          getExampleFilePath("test_2_ir.clps"),
+          getExampleFilePath("test_2_ir.clp.zst"),
           ClpConnectorSplit::SplitType::kIr,
           kqlQuery)});
   test::assertEqualVectors(expected, irOutput);
@@ -378,7 +378,7 @@ TEST_F(ClpConnectorTest, test2Hybrid) {
   auto irOutput = getResults(
       plan,
       {makeClpSplit(
-          getExampleFilePath("test_2_ir.clps"),
+          getExampleFilePath("test_2_ir.clp.zst"),
           ClpConnectorSplit::SplitType::kIr,
           kqlQuery)});
   test::assertEqualVectors(expected, irOutput);
@@ -433,7 +433,7 @@ TEST_F(ClpConnectorTest, test4IrTimestampNoPushdown) {
   auto output = getResults(
       plan,
       {makeClpSplit(
-          getExampleFilePath("test_4_ir.clps"),
+          getExampleFilePath("test_4_ir.clp.zst"),
           ClpConnectorSplit::SplitType::kIr,
           kqlQuery)});
   auto expected = makeRowVector({
@@ -445,6 +445,8 @@ TEST_F(ClpConnectorTest, test4IrTimestampNoPushdown) {
 }
 
 TEST_F(ClpConnectorTest, test4IrTimestampPushdown) {
+  // Only the second event meet the condition, the first event is a date string
+  // which is not supported yet so the value will be NULL.
   const std::shared_ptr<std::string> kqlQuery =
       std::make_shared<std::string>("(timestamp < 1756003005000000)");
   auto plan = PlanBuilder(pool_.get())
@@ -462,7 +464,7 @@ TEST_F(ClpConnectorTest, test4IrTimestampPushdown) {
   auto output = getResults(
       plan,
       {makeClpSplit(
-          getExampleFilePath("test_4_ir.clps"),
+          getExampleFilePath("test_4_ir.clp.zst"),
           ClpConnectorSplit::SplitType::kIr,
           kqlQuery)});
   auto expected = makeRowVector({
