@@ -21,6 +21,7 @@
 #include "clp_s/search/ast/EmptyExpr.hpp"
 #include "clp_s/search/ast/SearchUtils.hpp"
 #include "velox/connectors/clp/search_lib/archive/ClpArchiveCursor.h"
+#include "velox/connectors/clp/search_lib/archive/ClpArchiveJsonStringVectorLoader.h"
 #include "velox/connectors/clp/search_lib/archive/ClpArchiveVectorLoader.h"
 #include "velox/connectors/clp/search_lib/archive/ClpQueryRunner.h"
 
@@ -45,7 +46,8 @@ ClpArchiveCursor::~ClpArchiveCursor() {
 
 uint64_t ClpArchiveCursor::fetchNext(uint64_t numRows) {
   filteredRowIndices_->clear();
-  readerIndex_ = 0;
+  projectedColumnIndex_ = 0;
+  columnIndex_ = 0;
 
   if (ErrorCode::Success != errorCode_) {
     return 0;
@@ -69,9 +71,9 @@ uint64_t ClpArchiveCursor::fetchNext(uint64_t numRows) {
         continue;
       }
 
-      auto& reader =
-          archiveReader_->read_schema_table(currentSchemaId_, false, false);
-      reader.initialize_filter_with_column_map(queryRunner_.get());
+      schemaReader_ =
+          &archiveReader_->read_schema_table(currentSchemaId_, false, false);
+      schemaReader_->initialize_filter_with_column_map(queryRunner_.get());
 
       errorCode_ = ErrorCode::Success;
       currentSchemaTableLoaded_ = true;
@@ -149,7 +151,12 @@ ErrorCode ClpArchiveCursor::loadSplit() {
   projection_ = std::make_shared<Projection>(
       outputColumns_.empty() ? ReturnAllColumns : ReturnSelectedColumns, true);
   try {
-    for (auto const& column : outputColumns_) {
+    for (size_t i = 0; i < outputColumns_.size(); i++) {
+      auto const& column = outputColumns_[i];
+      if ("__json_string" == column.name) {
+        jsonStringColumnIndices_.insert(i);
+        continue;
+      }
       std::vector<std::string> descriptorTokens;
       std::string descriptorNamespace;
       if (false ==
@@ -237,9 +244,12 @@ VectorPtr ClpArchiveCursor::createVectorHelper(
     size_t vectorSize,
     const std::vector<clp_s::BaseColumnReader*>& projectedColumns) {
   if (vectorType->kind() == TypeKind::ROW) {
-    std::vector<VectorPtr> children;
     auto& rowType = vectorType->as<TypeKind::ROW>();
-    for (uint32_t i = 0; i < rowType.size(); ++i) {
+    const uint32_t numChildren = rowType.size();
+    std::vector<VectorPtr> children;
+    children.reserve(numChildren);
+
+    for (uint32_t i = 0; i < numChildren; ++i) {
       children.push_back(createVectorHelper(
           pool, rowType.childAt(i), vectorSize, projectedColumns));
     }
@@ -249,11 +259,23 @@ VectorPtr ClpArchiveCursor::createVectorHelper(
   auto vector = BaseVector::create(vectorType, vectorSize, pool);
   vector->setNulls(allocateNulls(vectorSize, pool, bits::kNull));
 
+  const bool isJsonString = jsonStringColumnIndices_.contains(columnIndex_);
+  ++columnIndex_;
+  if (isJsonString) {
+    return std::make_shared<LazyVector>(
+        pool,
+        vectorType,
+        vectorSize,
+        std::make_unique<ClpArchiveJsonStringVectorLoader>(
+            schemaReader_, filteredRowIndices_),
+        std::move(vector));
+  }
+
   VELOX_CHECK_LT(
-      readerIndex_, projectedColumns.size(), "Reader index out of bounds");
-  auto projectedColumn = projectedColumns[readerIndex_];
-  auto projectedType = outputColumns_[readerIndex_].type;
-  readerIndex_++;
+      projectedColumnIndex_, projectedColumns.size(), "Projected column index out of bounds");
+  auto *projectedColumn = projectedColumns[projectedColumnIndex_];
+  auto projectedType = outputColumns_[projectedColumnIndex_].type;
+  projectedColumnIndex_++;
   return std::make_shared<LazyVector>(
       pool,
       vectorType,
