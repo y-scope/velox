@@ -249,6 +249,7 @@ TEST_F(ClpConnectorTest, test1JsonString) {
            R"({"timestamp":"2025-04-30T08:45:45Z","requestId":"req-109","userId":"user203","method":"GET","path":"/api/products?category=books","responseTimeMs":88,"status":200})",
            R"({"timestamp":"2025-04-30T08:45:10Z","requestId":"req-102","method":"GET","path":"/public/products","responseTimeMs":18,"status":200,"userId":null})",
        }),
+       // method
        makeFlatVector<StringView>({
            "GET",
            "GET",
