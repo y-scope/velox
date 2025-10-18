@@ -101,7 +101,7 @@ VectorPtr ClpArchiveCursor::createVector(
     size_t vectorSize) {
   auto projectedColumns = getProjectedColumns();
   VELOX_CHECK_EQ(
-      projectedColumns.size(),
+      projectedColumns.size() + jsonStringColumnIndices_.size(),
       outputColumns_.size(),
       "Projected columns size {} does not match fields size {}",
       projectedColumns.size(),
@@ -202,7 +202,6 @@ ErrorCode ClpArchiveCursor::loadSplit() {
     return ErrorCode::InternalError;
   }
   projection_->resolve_columns(schemaTree);
-  archiveReader_->set_projection(projection_);
 
   archiveReader_->read_metadata();
 
@@ -272,8 +271,10 @@ VectorPtr ClpArchiveCursor::createVectorHelper(
   }
 
   VELOX_CHECK_LT(
-      projectedColumnIndex_, projectedColumns.size(), "Projected column index out of bounds");
-  auto *projectedColumn = projectedColumns[projectedColumnIndex_];
+      projectedColumnIndex_,
+      projectedColumns.size(),
+      "Projected column index out of bounds");
+  auto* projectedColumn = projectedColumns[projectedColumnIndex_];
   auto projectedType = outputColumns_[projectedColumnIndex_].type;
   projectedColumnIndex_++;
   return std::make_shared<LazyVector>(

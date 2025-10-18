@@ -207,6 +207,58 @@ TEST_F(ClpConnectorTest, test1Pushdown) {
   test::assertEqualVectors(expected, irOutput);
 }
 
+TEST_F(ClpConnectorTest, test1JsonString) {
+  const std::shared_ptr<std::string> kqlQuery = nullptr;
+  auto plan = PlanBuilder()
+                  .startTableScan()
+                  .outputType(
+                      ROW({"requestId", "__json_string", "method"},
+                          {VARCHAR(), VARCHAR(), VARCHAR()}))
+                  .tableHandle(std::make_shared<ClpTableHandle>(
+                      kClpConnectorId, "test_1"))
+                  .assignments({
+                      {"requestId",
+                       std::make_shared<ClpColumnHandle>(
+                           "requestId", "requestId", VARCHAR())},
+                      {"__json_string",
+                       std::make_shared<ClpColumnHandle>(
+                           "__json_string", "__json_string", VARCHAR())},
+                      {"method",
+                       std::make_shared<ClpColumnHandle>(
+                           "method", "method", VARCHAR())},
+                  })
+                  .endTableScan()
+                  .filter("method = 'GET'")
+                  .planNode();
+
+  auto output = getResults(
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_1.clps"),
+          ClpConnectorSplit::SplitType::kArchive,
+          kqlQuery)});
+  auto expected = makeRowVector(
+      {// requestId
+       makeFlatVector<StringView>(
+           {"req-100", "req-105", "req-107", "req-109", "req-102"}),
+       // __json_string
+       makeFlatVector<StringView>({
+           R"({"timestamp":"2025-04-30T08:45:00Z","requestId":"req-100","userId":"user201","method":"GET","path":"/api/users/1","responseTimeMs":25,"status":200})",
+           R"({"timestamp":"2025-04-30T08:45:25Z","requestId":"req-105","userId":"user204","method":"GET","path":"/api/dashboard","responseTimeMs":155,"status":200})",
+           R"({"timestamp":"2025-04-30T08:45:35Z","requestId":"req-107","userId":"user202","method":"GET","path":"/api/users/2/details","responseTimeMs":41,"status":200})",
+           R"({"timestamp":"2025-04-30T08:45:45Z","requestId":"req-109","userId":"user203","method":"GET","path":"/api/products?category=books","responseTimeMs":88,"status":200})",
+           R"({"timestamp":"2025-04-30T08:45:10Z","requestId":"req-102","method":"GET","path":"/public/products","responseTimeMs":18,"status":200,"userId":null})",
+       }),
+       makeFlatVector<StringView>({
+           "GET",
+           "GET",
+           "GET",
+           "GET",
+           "GET",
+       })});
+  test::assertEqualVectors(expected, output);
+}
+
 TEST_F(ClpConnectorTest, test2NoPushdown) {
   const std::shared_ptr<std::string> kqlQuery = nullptr;
   auto plan =
@@ -382,6 +434,43 @@ TEST_F(ClpConnectorTest, test2Hybrid) {
           ClpConnectorSplit::SplitType::kIr,
           kqlQuery)});
   test::assertEqualVectors(expected, irOutput);
+}
+
+TEST_F(ClpConnectorTest, test2JsonSring) {
+  auto kqlQuery = std::make_shared<std::string>(
+      "(event.severity: \"WARNING\" OR event.severity: \"ERROR\") AND "
+      "((event.type: \"network\" AND event.subtype: \"connection\") OR "
+      "(event.type: \"storage\" AND event.subtype: \"disk*\"))");
+  auto plan = PlanBuilder()
+                  .startTableScan()
+                  .outputType(ROW(
+                      {"timestamp", "__json_string"}, {TIMESTAMP(), VARCHAR()}))
+                  .tableHandle(std::make_shared<ClpTableHandle>(
+                      kClpConnectorId, "test_2"))
+                  .assignments(
+                      {{"timestamp",
+                        std::make_shared<ClpColumnHandle>(
+                            "timestamp", "timestamp", TIMESTAMP())},
+                       {"__json_string",
+                        std::make_shared<ClpColumnHandle>(
+                            "__json_string", "__json_string", VARCHAR())}})
+                  .endTableScan()
+                  .planNode();
+
+  auto output = getResults(
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_2.clps"),
+          ClpConnectorSplit::SplitType::kArchive,
+          kqlQuery)});
+  auto expected = makeRowVector(
+      {// timestamp
+       makeFlatVector<Timestamp>(
+           {Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds)}),
+       // __json_string
+       makeFlatVector<StringView>(
+           {R"({"timestamp":"2025-04-30T08:50:05Z","event":{"type":"storage","subtype":"disk_usage","severity":"WARNING","tags":["filesystem", "monitoring"],"details":{"mount":"/var/log","usage":{"percent":92}}}})"})});
+  test::assertEqualVectors(expected, output);
 }
 
 TEST_F(ClpConnectorTest, test3TimestampMarshalling) {
