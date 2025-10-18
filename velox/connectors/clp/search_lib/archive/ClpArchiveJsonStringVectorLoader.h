@@ -23,6 +23,7 @@
 #include "velox/vector/LazyVector.h"
 
 namespace facebook::velox::connector::clp::search_lib {
+
 /// A custom Velox VectorLoader that populates Velox vectors with serialized
 /// JSON string from CLP column readers.
 class ClpArchiveJsonStringVectorLoader : public VectorLoader {
@@ -41,4 +42,5 @@ class ClpArchiveJsonStringVectorLoader : public VectorLoader {
       vector_size_t resultSize,
       VectorPtr* result) override;
 };
+
 } // namespace facebook::velox::connector::clp::search_lib
