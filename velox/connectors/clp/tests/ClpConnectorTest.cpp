@@ -437,7 +437,7 @@ TEST_F(ClpConnectorTest, test2Hybrid) {
   test::assertEqualVectors(expected, irOutput);
 }
 
-TEST_F(ClpConnectorTest, test2JsonSring) {
+TEST_F(ClpConnectorTest, test2JsonString) {
   auto kqlQuery = std::make_shared<std::string>(
       "(event.severity: \"WARNING\" OR event.severity: \"ERROR\") AND "
       "((event.type: \"network\" AND event.subtype: \"connection\") OR "

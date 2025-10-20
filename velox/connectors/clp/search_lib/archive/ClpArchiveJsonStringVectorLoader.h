@@ -16,8 +16,6 @@
 
 #pragma once
 
-#include <simdjson.h>
-
 #include "clp_s/SchemaReader.hpp"
 #include "velox/vector/FlatVector.h"
 #include "velox/vector/LazyVector.h"
