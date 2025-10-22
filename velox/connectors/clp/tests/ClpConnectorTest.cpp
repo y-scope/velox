@@ -231,6 +231,13 @@ TEST_F(ClpConnectorTest, test1JsonString) {
                   .filter("method = 'GET'")
                   .planNode();
 
+  const auto methodVector = makeFlatVector<StringView>({
+      "GET",
+      "GET",
+      "GET",
+      "GET",
+      "GET",
+  });
   auto output = getResults(
       plan,
       {makeClpSplit(
@@ -250,14 +257,30 @@ TEST_F(ClpConnectorTest, test1JsonString) {
            R"({"timestamp":"2025-04-30T08:45:10Z","requestId":"req-102","method":"GET","path":"/public/products","responseTimeMs":18,"status":200,"userId":null})",
        }),
        // method
-       makeFlatVector<StringView>({
-           "GET",
-           "GET",
-           "GET",
-           "GET",
-           "GET",
-       })});
+       methodVector});
   test::assertEqualVectors(expected, output);
+
+  auto irOutput = getResults(
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_1_ir.clp.zst"),
+          ClpConnectorSplit::SplitType::kIr,
+          kqlQuery)});
+  auto irExpected = makeRowVector(
+      {// requestId
+       makeFlatVector<StringView>(
+           {"req-100", "req-102", "req-105", "req-107", "req-109"}),
+       // __json_string
+       makeFlatVector<StringView>({
+           R"({"method":"GET","path":"/api/users/1","requestId":"req-100","responseTimeMs":25,"status":200,"timestamp":"2025-04-30T08:45:00Z","userId":"user201"})",
+           R"({"method":"GET","path":"/public/products","requestId":"req-102","responseTimeMs":18,"status":200,"timestamp":"2025-04-30T08:45:10Z","userId":null})",
+           R"({"method":"GET","path":"/api/dashboard","requestId":"req-105","responseTimeMs":155,"status":200,"timestamp":"2025-04-30T08:45:25Z","userId":"user204"})",
+           R"({"method":"GET","path":"/api/users/2/details","requestId":"req-107","responseTimeMs":41,"status":200,"timestamp":"2025-04-30T08:45:35Z","userId":"user202"})",
+           R"({"method":"GET","path":"/api/products?category=books","requestId":"req-109","responseTimeMs":88,"status":200,"timestamp":"2025-04-30T08:45:45Z","userId":"user203"})",
+       }),
+       // method
+       methodVector});
+  test::assertEqualVectors(irExpected, irOutput);
 }
 
 TEST_F(ClpConnectorTest, test2NoPushdown) {
@@ -472,6 +495,22 @@ TEST_F(ClpConnectorTest, test2JsonString) {
        makeFlatVector<StringView>(
            {R"({"timestamp":"2025-04-30T08:50:05Z","event":{"type":"storage","subtype":"disk_usage","severity":"WARNING","tags":["filesystem", "monitoring"],"details":{"mount":"/var/log","usage":{"percent":92}}}})"})});
   test::assertEqualVectors(expected, output);
+
+  auto irOutput = getResults(
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_2_ir.clp.zst"),
+          ClpConnectorSplit::SplitType::kIr,
+          kqlQuery)});
+  auto irExpected = makeRowVector(
+      {// timestamp
+       makeFlatVector<Timestamp>(
+           {Timestamp(kTestTimestampSeconds, kTestTimestampNanoseconds)}),
+       // __json_string
+       makeFlatVector<StringView>(
+           {R"({"event":{"details":{"mount":"/var/log","usage":{"percent":92}},"severity":"WARNING","subtype":"disk_usage","tags":["filesystem","monitoring"],"type":"storage"},"timestamp":1746003005})"})});
+
+  test::assertEqualVectors(irExpected, irOutput);
 }
 
 TEST_F(ClpConnectorTest, test3TimestampMarshalling) {

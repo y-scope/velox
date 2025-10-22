@@ -15,10 +15,8 @@ velox_add_library(
   clp-s-ir-search
   STATIC
   ClpIrCursor.cpp
-  ClpIrCursor.h
-  ClpIrUnitHandler.h
-  ClpIrVectorLoader.cpp
-  ClpIrVectorLoader.h)
+  ClpIrJsonStringVectorLoader.cpp
+  ClpIrVectorLoader.cpp)
 
 velox_link_libraries(
   clp-s-ir-search

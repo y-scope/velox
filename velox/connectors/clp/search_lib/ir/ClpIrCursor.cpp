@@ -19,6 +19,7 @@
 
 #include "ffi/ir_stream/search/QueryHandler.hpp"
 #include "velox/connectors/clp/search_lib/ir/ClpIrCursor.h"
+#include "velox/connectors/clp/search_lib/ir/ClpIrJsonStringVectorLoader.h"
 #include "velox/connectors/clp/search_lib/ir/ClpIrVectorLoader.h"
 
 using namespace clp_s;
@@ -26,7 +27,8 @@ using namespace clp_s;
 namespace facebook::velox::connector::clp::search_lib {
 
 uint64_t ClpIrCursor::fetchNext(uint64_t numRows) {
-  readerIndex_ = 0;
+  columnIndex_ = 0;
+  projectedColumnIndex_ = 0;
   if (ErrorCode::Success != errorCode_) {
     return 0;
   }
@@ -59,10 +61,10 @@ VectorPtr ClpIrCursor::createVector(
     const TypePtr& vectorType,
     size_t vectorSize) {
   VELOX_CHECK_LE(
-      projectedColumnIdxNodeIdsMap_.size(),
+      projectedColumnIdxNodeIdsMap_.size() + jsonStringColumnIndices_.size(),
       outputColumns_.size(),
-      "Resolved node-id map size ({}) must not exceed projected columns ({})",
-      projectedColumnIdxNodeIdsMap_.size(),
+      "Resolved node-id map size ({}) must not exceed projected columns and json string columns ({})",
+      projectedColumnIdxNodeIdsMap_.size() + jsonStringColumnIndices_.size(),
       outputColumns_.size());
   return createVectorHelper(pool, vectorType, vectorSize);
 }
@@ -120,11 +122,15 @@ ErrorCode ClpIrCursor::loadSplit() {
 }
 
 std::vector<std::pair<std::string, search::ast::literal_type_bitmask_t>>
-ClpIrCursor::splitFieldsToNamesAndTypes() const {
+ClpIrCursor::splitFieldsToNamesAndTypes() {
   auto result = std::vector<
       std::pair<std::string, search::ast::literal_type_bitmask_t>>{};
   for (size_t i{0}; i < outputColumns_.size(); ++i) {
     auto column = outputColumns_[i];
+    if ("__json_string" == column.name) {
+      jsonStringColumnIndices_.insert(i);
+      continue;
+    }
     search::ast::literal_type_bitmask_t literalType;
     switch (column.type) {
       case ColumnType::Array:
@@ -196,17 +202,28 @@ VectorPtr ClpIrCursor::createVectorHelper(
   auto vector = BaseVector::create(vectorType, vectorSize, pool);
   vector->setNulls(allocateNulls(vectorSize, pool, bits::kNull));
   VELOX_CHECK_LT(
-      readerIndex_, outputColumns_.size(), "Reader index out of bounds");
-  auto projectedColumn = outputColumns_[readerIndex_];
+      columnIndex_, outputColumns_.size(), "column index out of bounds");
+  const bool isJsonString = jsonStringColumnIndices_.contains(columnIndex_);
+  ++columnIndex_;
+  if (isJsonString) {
+    return std::make_shared<LazyVector>(
+        pool,
+        vectorType,
+        vectorSize,
+        std::make_unique<ClpIrJsonStringVectorLoader>(filteredLogEvents_),
+        std::move(vector));
+  }
+
+  auto projectedColumn = outputColumns_[projectedColumnIndex_];
   auto projectedColumnType = projectedColumn.type;
-  auto it = projectedColumnIdxNodeIdsMap_.find(readerIndex_);
+  auto it = projectedColumnIdxNodeIdsMap_.find(projectedColumnIndex_);
   std::vector<::clp::ffi::SchemaTree::Node::id_t> projectedColumnNodeIds{};
   bool isResolved =
       it != projectedColumnIdxNodeIdsMap_.end() && !it->second.empty();
   if (isResolved) {
     projectedColumnNodeIds = it->second;
   }
-  readerIndex_++;
+  projectedColumnIndex_++;
   return std::make_shared<LazyVector>(
       pool,
       vectorType,
