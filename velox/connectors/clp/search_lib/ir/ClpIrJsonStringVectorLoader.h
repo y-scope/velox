@@ -23,6 +23,9 @@
 
 namespace facebook::velox::connector::clp::search_lib {
 
+/// VectorLoader that performs on-demand JSON serialization of IR log events.
+/// Converts KeyValuePairLogEvent instances into JSON string representations
+/// when loading lazy vectors for __json_string columns.
 class ClpIrJsonStringVectorLoader : public VectorLoader {
  public:
   ClpIrJsonStringVectorLoader(

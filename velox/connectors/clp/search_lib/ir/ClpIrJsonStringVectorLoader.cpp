@@ -27,10 +27,12 @@ void ClpIrJsonStringVectorLoader::loadInternal(
     vector_size_t resultSize,
     VectorPtr* result) {
   VELOX_CHECK_NOT_NULL(result, "result vector must not be null");
+  VELOX_CHECK_NULL(
+      hook, "ClpIrJsonStringVectorLoader doesn't support ValueHook");
 
   auto vector = *result;
   auto* stringVector = vector->asFlatVector<StringView>();
-  for (int const vectorIndex : rows) {
+  for (vector_size_t const vectorIndex : rows) {
     const auto& logEvent = filteredLogEvents_->at(vectorIndex);
     auto serializedResult = logEvent->serialize_to_json();
     if (serializedResult.has_error()) {

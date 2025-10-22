@@ -23,7 +23,7 @@
 namespace facebook::velox::connector::clp::search_lib {
 
 /// A custom Velox VectorLoader that populates Velox vectors with serialized
-/// JSON string from CLP column readers.
+/// JSON string from CLP column readers for the archive format.
 class ClpArchiveJsonStringVectorLoader : public VectorLoader {
  public:
   ClpArchiveJsonStringVectorLoader(

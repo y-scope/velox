@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <unordered_set>
+
 #include "clp/streaming_compression/zstd/Decompressor.hpp"
 #include "ffi/ir_stream/Deserializer.hpp"
 #include "velox/connectors/clp/search_lib/BaseClpCursor.h"

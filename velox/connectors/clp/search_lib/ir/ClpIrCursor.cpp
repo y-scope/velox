@@ -201,8 +201,7 @@ VectorPtr ClpIrCursor::createVectorHelper(
   }
   auto vector = BaseVector::create(vectorType, vectorSize, pool);
   vector->setNulls(allocateNulls(vectorSize, pool, bits::kNull));
-  VELOX_CHECK_LT(
-      columnIndex_, outputColumns_.size(), "column index out of bounds");
+
   const bool isJsonString = jsonStringColumnIndices_.contains(columnIndex_);
   ++columnIndex_;
   if (isJsonString) {
@@ -214,6 +213,10 @@ VectorPtr ClpIrCursor::createVectorHelper(
         std::move(vector));
   }
 
+  VELOX_CHECK_LT(
+      projectedColumnIndex_,
+      outputColumns_.size(),
+      "Projected column index out of bounds");
   auto projectedColumn = outputColumns_[projectedColumnIndex_];
   auto projectedColumnType = projectedColumn.type;
   auto it = projectedColumnIdxNodeIdsMap_.find(projectedColumnIndex_);

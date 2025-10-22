@@ -35,10 +35,12 @@ void ClpArchiveJsonStringVectorLoader::loadInternal(
     vector_size_t resultSize,
     VectorPtr* result) {
   VELOX_CHECK_NOT_NULL(result, "result vector must not be null");
+  VELOX_CHECK_NULL(
+      hook, "ClpArchiveJsonStringVectorLoader doesn't support ValueHook");
 
   auto vector = *result;
   auto* stringVector = vector->asFlatVector<StringView>();
-  for (int const vectorIndex : rows) {
+  for (vector_size_t const vectorIndex : rows) {
     auto messageIndex = filteredRowIndices_->at(vectorIndex);
     auto jsonString = schemaReader_->generate_json_string(messageIndex);
     stringVector->set(vectorIndex, StringView(jsonString));
