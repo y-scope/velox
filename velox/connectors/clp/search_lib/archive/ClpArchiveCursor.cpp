@@ -20,6 +20,7 @@
 #include "clp_s/search/EvaluateTimestampIndex.hpp"
 #include "clp_s/search/ast/EmptyExpr.hpp"
 #include "clp_s/search/ast/SearchUtils.hpp"
+#include "velox/connectors/clp/ClpColumnHandle.h"
 #include "velox/connectors/clp/search_lib/archive/ClpArchiveCursor.h"
 #include "velox/connectors/clp/search_lib/archive/ClpArchiveJsonStringVectorLoader.h"
 #include "velox/connectors/clp/search_lib/archive/ClpArchiveVectorLoader.h"
@@ -153,7 +154,7 @@ ErrorCode ClpArchiveCursor::loadSplit() {
   try {
     for (size_t i = 0; i < outputColumns_.size(); i++) {
       auto const& column = outputColumns_[i];
-      if ("__json_string" == column.name) {
+      if (ClpColumnHandle::jsonStringColumnName_ == column.name) {
         jsonStringColumnIndices_.insert(i);
         continue;
       }

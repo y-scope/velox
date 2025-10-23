@@ -18,6 +18,7 @@
 #include "clp_s/InputConfig.hpp"
 
 #include "ffi/ir_stream/search/QueryHandler.hpp"
+#include "velox/connectors/clp/ClpColumnHandle.h"
 #include "velox/connectors/clp/search_lib/ir/ClpIrCursor.h"
 #include "velox/connectors/clp/search_lib/ir/ClpIrJsonStringVectorLoader.h"
 #include "velox/connectors/clp/search_lib/ir/ClpIrVectorLoader.h"
@@ -127,7 +128,7 @@ ClpIrCursor::splitFieldsToNamesAndTypes() {
       std::pair<std::string, search::ast::literal_type_bitmask_t>>{};
   for (size_t i{0}; i < outputColumns_.size(); ++i) {
     auto column = outputColumns_[i];
-    if ("__json_string" == column.name) {
+    if (ClpColumnHandle::jsonStringColumnName_ == column.name) {
       jsonStringColumnIndices_.insert(i);
       continue;
     }
