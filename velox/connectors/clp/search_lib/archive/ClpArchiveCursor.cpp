@@ -259,9 +259,8 @@ VectorPtr ClpArchiveCursor::createVectorHelper(
   auto vector = BaseVector::create(vectorType, vectorSize, pool);
   vector->setNulls(allocateNulls(vectorSize, pool, bits::kNull));
 
-  const bool isJsonString = jsonStringColumnIndices_.contains(columnIndex_);
-  ++columnIndex_;
-  if (isJsonString) {
+  if (jsonStringColumnIndices_.contains(columnIndex_)) {
+    ++columnIndex_;
     return std::make_shared<LazyVector>(
         pool,
         vectorType,
@@ -276,8 +275,9 @@ VectorPtr ClpArchiveCursor::createVectorHelper(
       projectedColumns.size(),
       "Projected column index out of bounds");
   auto* projectedColumn = projectedColumns[projectedColumnIndex_];
-  auto projectedType = outputColumns_[projectedColumnIndex_].type;
+  auto projectedType = outputColumns_[columnIndex_].type;
   projectedColumnIndex_++;
+  columnIndex_++;
   return std::make_shared<LazyVector>(
       pool,
       vectorType,

@@ -203,9 +203,8 @@ VectorPtr ClpIrCursor::createVectorHelper(
   auto vector = BaseVector::create(vectorType, vectorSize, pool);
   vector->setNulls(allocateNulls(vectorSize, pool, bits::kNull));
 
-  const bool isJsonString = jsonStringColumnIndices_.contains(columnIndex_);
-  ++columnIndex_;
-  if (isJsonString) {
+  if (jsonStringColumnIndices_.contains(columnIndex_)) {
+    ++columnIndex_;
     return std::make_shared<LazyVector>(
         pool,
         vectorType,
@@ -218,7 +217,7 @@ VectorPtr ClpIrCursor::createVectorHelper(
       projectedColumnIndex_,
       outputColumns_.size(),
       "Projected column index out of bounds");
-  auto projectedColumn = outputColumns_[projectedColumnIndex_];
+  auto projectedColumn = outputColumns_[columnIndex_];
   auto projectedColumnType = projectedColumn.type;
   auto it = projectedColumnIdxNodeIdsMap_.find(projectedColumnIndex_);
   std::vector<::clp::ffi::SchemaTree::Node::id_t> projectedColumnNodeIds{};
@@ -228,6 +227,7 @@ VectorPtr ClpIrCursor::createVectorHelper(
     projectedColumnNodeIds = it->second;
   }
   projectedColumnIndex_++;
+  columnIndex_++;
   return std::make_shared<LazyVector>(
       pool,
       vectorType,
