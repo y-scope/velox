@@ -214,7 +214,7 @@ VectorPtr ClpIrCursor::createVectorHelper(
   }
 
   VELOX_CHECK_LT(
-      projectedColumnIndex_,
+      columnIndex_,
       outputColumns_.size(),
       "Projected column index out of bounds");
   auto projectedColumn = outputColumns_[columnIndex_];
