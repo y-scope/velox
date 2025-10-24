@@ -16,10 +16,13 @@
 
 #pragma once
 
+#include <unordered_set>
+
 #include "velox/connectors/clp/search_lib/BaseClpCursor.h"
 
 namespace clp_s {
 class ArchiveReader;
+class SchemaReader;
 } // namespace clp_s
 
 namespace clp_s::search {
@@ -54,6 +57,7 @@ class ClpArchiveCursor final : public BaseClpCursor {
 
  private:
   std::shared_ptr<clp_s::ArchiveReader> archiveReader_;
+  clp_s::SchemaReader* schemaReader_;
   int32_t currentSchemaId_{-1};
   size_t currentSchemaIndex_{0};
   bool currentSchemaTableLoaded_{false};
@@ -61,7 +65,9 @@ class ClpArchiveCursor final : public BaseClpCursor {
   std::vector<int32_t> matchedSchemas_;
   std::shared_ptr<clp_s::search::Projection> projection_;
   std::shared_ptr<ClpQueryRunner> queryRunner_;
-  size_t readerIndex_{0};
+  size_t columnIndex_{0};
+  size_t projectedColumnIndex_{0};
+  std::unordered_set<size_t> jsonStringColumnIndices_;
   std::shared_ptr<clp_s::search::SchemaMatch> schemaMatch_;
 
   const std::vector<clp_s::BaseColumnReader*>& getProjectedColumns() const;

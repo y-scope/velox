@@ -15,11 +15,9 @@ velox_add_library(
   clp-s-archive-search
   STATIC
   ClpArchiveCursor.cpp
-  ClpArchiveCursor.h
+  ClpArchiveJsonStringVectorLoader.cpp
   ClpArchiveVectorLoader.cpp
-  ClpArchiveVectorLoader.h
-  ClpQueryRunner.cpp
-  ClpQueryRunner.h)
+  ClpQueryRunner.cpp)
 
 velox_link_libraries(
   clp-s-archive-search

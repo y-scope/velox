@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <unordered_set>
+
 #include "clp/streaming_compression/zstd/Decompressor.hpp"
 #include "ffi/ir_stream/Deserializer.hpp"
 #include "velox/connectors/clp/search_lib/BaseClpCursor.h"
@@ -85,11 +87,13 @@ class ClpIrCursor final : public BaseClpCursor {
       irReaderZstdWrapper_{nullptr};
   std::unordered_map<size_t, std::vector<::clp::ffi::SchemaTree::Node::id_t>>
       projectedColumnIdxNodeIdsMap_;
-  size_t readerIndex_{0};
+  std::unordered_set<size_t> jsonStringColumnIndices_;
+  size_t columnIndex_{0};
+  size_t projectedColumnIndex_{0};
 
   std::vector<
       std::pair<std::string, clp_s::search::ast::literal_type_bitmask_t>>
-  splitFieldsToNamesAndTypes() const;
+  splitFieldsToNamesAndTypes();
 
   ystdlib::error_handling::Result<void> deserialize(uint64_t numRows);
 

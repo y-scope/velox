@@ -42,6 +42,8 @@ class ClpColumnHandle : public ColumnHandle {
     return columnType_;
   }
 
+  inline static const std::string jsonStringColumnName_ = "__json_string";
+
  private:
   const std::string columnName_;
   const std::string originalColumnName_;
