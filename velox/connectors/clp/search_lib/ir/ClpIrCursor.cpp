@@ -87,7 +87,7 @@ ErrorCode ClpIrCursor::loadSplit() {
   }
   auto queryHandler = std::move(queryHandlerResult).value();
 
-  auto irPath = Path{.source = inputSource_, .path = splitPath_};
+  auto irPath = get_path_object_for_raw_path(splitPath_);
   irReader_ = try_create_reader(irPath, networkAuthOption);
   if (nullptr == irReader_) {
     VLOG(2) << "Failed to create IR reader";
