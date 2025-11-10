@@ -26,7 +26,7 @@ on:
 jobs:
   ubuntu-release:
     name: Ubuntu release with resolve_dependency
-    runs-on: yscope-gh-runner
+    runs-on: arc-runner-set
     env:
       CCACHE_COMPRESSLEVEL: 2
       CCACHE_MAX_SIZE: 5G
@@ -41,9 +41,17 @@ jobs:
           path: velox
           persist-credentials: false
 
+      - name: Install cmake
+        run: |
+          curl -L -o cmake-3.28.3-linux-x86_64.tar.gz https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-x86_64.tar.gz
+          sudo tar -xzf cmake-3.28.3-linux-x86_64.tar.gz -C /usr/local --strip-components=1
+          rm cmake-3.28.3-linux-x86_64.tar.gz
+
       - name: Install Dependencies
         run: |
-          source scripts/setup-ubuntu.sh && install_apt_deps
+          sudo apt-get update
+          sudo apt-get install -y python3-venv
+          scripts/setup-ubuntu.sh
 
       - name: Clear CCache Statistics
         run: |
