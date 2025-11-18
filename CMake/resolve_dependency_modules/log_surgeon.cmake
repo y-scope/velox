@@ -19,6 +19,7 @@ FetchContent_Declare(
   GIT_TAG 85d4f2c09c0e55f1fb87cdc8b0f4d13fb1a733e1
   OVERRIDE_FIND_PACKAGE)
 
+set(log_surgeon_BUILD_TESTING OFF)
 FetchContent_MakeAvailable(log_surgeon)
 
 # To work around y-scope/log-surgeon#155
