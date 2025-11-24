@@ -83,6 +83,7 @@ class BaseClpCursor {
   /// query result.
   void executeQuery(
       const std::string& query,
+      const std::map<std::string, std::string>& projectionNameValue,
       const std::vector<Field>& outputColumns);
 
   /// Fetches the next set of rows from the cursor. If the split is not yet
@@ -125,6 +126,7 @@ class BaseClpCursor {
   clp_s::InputSource inputSource_;
   std::vector<Field> outputColumns_;
   std::string query_;
+  std::map<std::string, std::string> projectionNameValue_;
   std::string splitPath_;
 
  private:

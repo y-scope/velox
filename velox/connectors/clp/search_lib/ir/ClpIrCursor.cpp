@@ -225,6 +225,26 @@ VectorPtr ClpIrCursor::createVectorHelper(
       it != projectedColumnIdxNodeIdsMap_.end() && !it->second.empty();
   if (isResolved) {
     projectedColumnNodeIds = it->second;
+  } else {
+    // this is where we handle metadata projection
+    auto iterMetadata = this->projectionNameValue_.find(projectedColumn.name);
+    if (iterMetadata != this->projectionNameValue_.end()) {
+      // iterMetadata->second is your constant value (e.g. std::string)
+      const auto& value = iterMetadata->second;
+
+      // Constant vector of size `vectorSize` where every row == value
+      vector = BaseVector::createConstant(
+          vectorType,          // TypePtr
+          velox::variant(value),        // scalar value
+          vectorSize,                   // number of rows
+          pool);                        // MemoryPool*
+
+      // We can just return this directly; no need for LazyVector.
+      ++projectedColumnIndex_;
+      ++columnIndex_;
+      return vector;
+    }
+
   }
   projectedColumnIndex_++;
   columnIndex_++;

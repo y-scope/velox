@@ -127,9 +127,9 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
 
   auto pushDownQuery = clpSplit->kqlQuery_;
   if (pushDownQuery && !pushDownQuery->empty()) {
-    cursor_->executeQuery(*pushDownQuery, fields_);
+    cursor_->executeQuery(*pushDownQuery, *clpSplit->projectionNameValue_, fields_);
   } else {
-    cursor_->executeQuery("*", fields_);
+    cursor_->executeQuery("*", *clpSplit->projectionNameValue_, fields_);
   }
 }
 
