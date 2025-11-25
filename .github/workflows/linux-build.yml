@@ -16,8 +16,6 @@ name: Linux Build using GCC
 
 on:
   push:
-    branches:
-      - presto-0.293-clp-connector
     paths:
       - velox/**
       - '!velox/docs/**'
@@ -45,10 +43,16 @@ on:
 
 permissions:
   contents: read
+  # packages: write needed to publish Docker images to GitHub Container Registry (ghcr.io)
+  packages: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.repository }}-${{ github.head_ref || github.sha }}
-  cancel-in-progress: ${{github.ref != 'refs/heads/presto-0.293-clp-connector'}}
+  # Group by workflow name and git ref (branch/tag/PR) to prevent concurrent runs on same ref
+  # This prevents multiple builds from running simultaneously on the same branch
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Cancel in-progress runs when new commits are pushed to the same ref
+  # Saves CI resources by stopping outdated builds
+  cancel-in-progress: true
 
 jobs:
   linux-gcc:
