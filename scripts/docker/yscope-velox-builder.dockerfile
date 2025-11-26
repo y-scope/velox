@@ -29,7 +29,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # in container environments, causing FastFloat library build failures. Using the official
 # binary installer ensures cmake is available and dependencies build correctly in the current
 # CI containerized environment.
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-x86_64.sh \
+RUN wget --progress=dot:giga https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-x86_64.sh \
  && chmod +x cmake-3.28.3-linux-x86_64.sh \
  && ./cmake-3.28.3-linux-x86_64.sh --skip-license --prefix=/usr/local \
  && rm cmake-3.28.3-linux-x86_64.sh
@@ -76,6 +76,4 @@ RUN source /velox/.venv/bin/activate && \
 # Remove source files but keep ccache
 # The compiled binaries and source are deleted - we only need the ccache artifacts.
 # CI workflows will check out fresh source code at runtime into this same directory.
-RUN rm -rf /__w/velox/velox/*
-
-WORKDIR /__w/velox/velox
+RUN rm -rf /__w/velox/velox/* && echo "Removed source files, ccache preserved"

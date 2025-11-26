@@ -15,9 +15,15 @@ rules:
   use-trusted-publishing:
     ignore:
       - build_pyvelox.yml
+  # linux-build-base.yml uses ghcr.io/y-scope/docker-github-actions-runner:ubuntu-jammy
+  # which is our own self-maintained image - we intentionally use the floating tag to
+  # receive security and maintenance updates automatically
   unpinned-images:
     ignore:
       - linux-build-base.yml
+  # yscope-velox-builder-img.yml uses actions/checkout and other first-party GitHub actions
+  # without SHA pinning. For official GitHub-maintained actions, using version tags (e.g., @v4)
+  # allows automatic security patches while maintaining reasonable trust in GitHub's own repos.
   unpinned-uses:
     ignore:
       - yscope-velox-builder-img.yml
