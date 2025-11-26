@@ -33,23 +33,29 @@ jobs:
       contents: read
       packages: write
 
-  # Second job: run the slow velox_exec_test in parallel with other-tests
-  # This job and other-tests run in parallel after builder-image completes
-  velox-exec-test:
-    # velox_exec_test takes 15+ minutes to run (981 seconds observed), which is significantly
-    # longer than all other tests combined. Running it separately allows other tests to complete
-    # quickly while this long-running test executes in parallel.
-    #
-    # To separate additional slow tests in the future:
-    # 1. Create a new job similar to this one with -R "test_name" to run only that test
-    # 2. Update the other-tests job to exclude it using -E "test_name_1|test_name_2|..."
-    #    (use pipe | to exclude multiple tests with regex pattern)
-    name: Build and Test Velox (velox_exec_test)
+  # Build and test jobs run in parallel after builder-image completes.
+  # velox_exec_test takes 15+ minutes (significantly longer than all other tests combined),
+  # so we run it separately to allow other tests to complete quickly in parallel.
+  #
+  # To separate additional slow tests in the future:
+  # 1. Add a new matrix entry with ctest-args: '-R "test_name"'
+  # 2. Update the "other" entry to exclude it: '-E "velox_exec_test|test_name"'
+  build-and-test:
+    name: Build and Test (${{ matrix.test-group }})
     needs: builder-image
     runs-on: self-hosted
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - test-group: velox_exec_test
+            ctest-args: -R velox_exec_test
+          - test-group: other
+            ctest-args: -E velox_exec_test
+            # Increase file descriptor limit for velox_table_evolution_fuzzer_test
+            ulimit-nofile: 8192
     container:
       # Image tag is dynamically generated based on dependency hash (intentionally unpinned)
-      # Gets the image from builder-image job output (e.g., ghcr.io/y-scope/velox/...:a1b2c3d4e5f6)
       image: ${{ needs.builder-image.outputs.image-tag }}
     env:
       USE_CLANG: ${{ inputs.use-clang && 'true' || 'false' }}
@@ -71,75 +77,25 @@ jobs:
           # Tune parallelism based on runner type: self-hosted (16-core) vs GitHub-hosted (4-core)
           # MAX_HIGH_MEM_JOBS: High-memory compilation tasks (templates, large TUs)
           # MAX_LINK_JOBS: Parallel linking tasks (memory-intensive)
-          # Self-hosted runners have more cores/RAM, so can handle higher parallelism
           MAKEFLAGS: >-
             MAX_HIGH_MEM_JOBS=${{ contains(runner.labels, 'self-hosted') && '16' || '4' }}
             MAX_LINK_JOBS=${{ contains(runner.labels, 'self-hosted') && '12' || '3' }}
         run: |
           # Use Clang compiler if requested (e.g., scheduled.yml uses Clang for compiler diversity)
           # Otherwise defaults to GCC (default CC/CXX in the container)
-          if [[ "${USE_CLANG}" = "true" ]]; then export CC=/usr/bin/clang-15; export CXX=/usr/bin/clang++-15; fi
+          if [[ "${USE_CLANG}" = "true" ]]; then
+            export CC=/usr/bin/clang-15
+            export CXX=/usr/bin/clang++-15
+          fi
           make release
 
       - name: Show CCache Stats After Build
-        run: |
-          ccache -vs
+        run: ccache -vs
 
-      - name: Run velox_exec_test
+      - name: Run Tests
         run: |
-          # Run only velox_exec_test which takes ~16 minutes
-          # -R: Run tests matching regex pattern (only velox_exec_test)
-          # -j: Parallel execution using all available CPUs
+          if [[ -n "${{ matrix.ulimit-nofile }}" ]]; then
+            ulimit -n ${{ matrix.ulimit-nofile }}
+          fi
           cd _build/release && ctest -j $(getconf _NPROCESSORS_ONLN) --output-on-failure --no-tests=error \
-            -R "velox_exec_test"
-
-  # Third job: run all other tests (excluding velox_exec_test) in parallel with velox-exec-test
-  other-tests:
-    name: Build and Test Velox (other tests)
-    needs: builder-image
-    runs-on: self-hosted
-    container:
-      # Image tag is dynamically generated based on dependency hash (intentionally unpinned)
-      # Gets the same image as velox-exec-test job (both run in parallel using same image)
-      image: ${{ needs.builder-image.outputs.image-tag }}
-    env:
-      USE_CLANG: ${{ inputs.use-clang && 'true' || 'false' }}
-      # Set CCACHE_BASEDIR to checkout path so cache keys use relative paths
-      CCACHE_BASEDIR: ${{ github.workspace }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Clear CCache Statistics
-        run: |
-          # Clear ccache statistics (not the cache itself) so final stats reflect only this build
-          # The actual cached compilation results from the warmup build are preserved
-          ccache -z
-
-      - name: Build Velox
-        env:
-          # Tune parallelism based on runner type: self-hosted (16-core) vs GitHub-hosted (4-core)
-          # MAX_HIGH_MEM_JOBS: High-memory compilation tasks (templates, large TUs)
-          # MAX_LINK_JOBS: Parallel linking tasks (memory-intensive)
-          MAKEFLAGS: >-
-            MAX_HIGH_MEM_JOBS=${{ contains(runner.labels, 'self-hosted') && '16' || '4' }}
-            MAX_LINK_JOBS=${{ contains(runner.labels, 'self-hosted') && '12' || '3' }}
-        run: |
-          if [[ "${USE_CLANG}" = "true" ]]; then export CC=/usr/bin/clang-15; export CXX=/usr/bin/clang++-15; fi
-          make release
-
-      - name: Show CCache Stats After Build
-        run: |
-          ccache -vs
-
-      - name: Run Other Tests (excluding velox_exec_test)
-        run: |
-          # Increase file descriptor limit to prevent "Too many open files" errors
-          # Required by velox_table_evolution_fuzzer_test which opens many files concurrently
-          ulimit -n 8192
-          # Run all tests except velox_exec_test which takes 16+ minutes and runs in parallel
-          # -E: Exclude tests matching regex pattern (velox_exec_test runs in separate job)
-          # -j: Parallel execution using all available CPUs
-          cd _build/release && ctest -j $(getconf _NPROCESSORS_ONLN) --output-on-failure --no-tests=error \
-            -E "velox_exec_test"
+            ${{ matrix.ctest-args }}
