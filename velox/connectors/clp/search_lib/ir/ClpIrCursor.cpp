@@ -26,7 +26,6 @@
 using namespace clp_s;
 
 namespace facebook::velox::connector::clp::search_lib {
-
 uint64_t ClpIrCursor::fetchNext(uint64_t numRows) {
   columnIndex_ = 0;
   projectedColumnIndex_ = 0;
@@ -73,7 +72,7 @@ VectorPtr ClpIrCursor::createVector(
 ErrorCode ClpIrCursor::loadSplit() {
   auto networkAuthOption = inputSource_ == InputSource::Filesystem
       ? NetworkAuthOption{.method = AuthMethod::None}
-      : NetworkAuthOption{.method = AuthMethod::S3PresignedUrlV4};
+  : NetworkAuthOption{.method = AuthMethod::S3PresignedUrlV4};
 
   auto projections = splitFieldsToNamesAndTypes();
   auto queryHandlerResult{QueryHandlerType::create(
@@ -175,13 +174,13 @@ ystdlib::error_handling::Result<void> ClpIrCursor::deserialize(
       if (std::errc::result_out_of_range == error ||
           irDeserializer_->is_stream_completed()) {
         break;
-      }
+          }
       return error;
     }
     if (::clp::ffi::ir_stream::IrUnitType::LogEvent ==
         deserializeResult.value()) {
       ++cnt;
-    }
+        }
   }
   return ystdlib::error_handling::success();
 }
@@ -226,26 +225,46 @@ VectorPtr ClpIrCursor::createVectorHelper(
   if (isResolved) {
     projectedColumnNodeIds = it->second;
   } else {
-    // this is where we handle metadata projection
-    auto iterMetadata = this->projectionNameValue_.find(projectedColumn.name);
-    if (iterMetadata != this->projectionNameValue_.end()) {
-      // iterMetadata->second is your constant value (e.g. std::string)
-      const auto& value = iterMetadata->second;
+    // Handle metadata projection with std::variant
+    auto iterMetadata = projectionNameValue_.find(projectedColumn.name);
+    if (iterMetadata != projectionNameValue_.end()) {
+      const ColumnValue& columnValue = iterMetadata->second;
 
-      // Constant vector of size `vectorSize` where every row == value
-      vector = BaseVector::createConstant(
-          vectorType,          // TypePtr
-          velox::variant(value),        // scalar value
-          vectorSize,                   // number of rows
-          pool);                        // MemoryPool*
+      // Create constant vector based on the variant type
+      vector = std::visit([&](auto&& value) -> VectorPtr {
+        using T = std::decay_t<decltype(value)>;
+
+        if constexpr (std::is_same_v<T, std::string>) {
+          // String type
+          return BaseVector::createConstant(
+              vectorType,
+              velox::variant(value),
+              vectorSize,
+              pool);
+        } else if constexpr (std::is_same_v<T, int64_t>) {
+          // Integer type
+          return BaseVector::createConstant(
+              vectorType,
+              velox::variant(value),
+              vectorSize,
+              pool);
+        } else if constexpr (std::is_same_v<T, double>) {
+          // Double type
+          return BaseVector::createConstant(
+              vectorType,
+              velox::variant(value),
+              vectorSize,
+              pool);
+        }
+      }, columnValue);
 
       // We can just return this directly; no need for LazyVector.
       ++projectedColumnIndex_;
       ++columnIndex_;
       return vector;
     }
-
   }
+
   projectedColumnIndex_++;
   columnIndex_++;
   return std::make_shared<LazyVector>(
@@ -261,4 +280,4 @@ VectorPtr ClpIrCursor::createVectorHelper(
       std::move(vector));
 }
 
-} // namespace facebook::velox::connector::clp::search_lib
+}// namespace facebook::velox::connector::clp::search_lib

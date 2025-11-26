@@ -32,7 +32,7 @@ namespace facebook::velox::connector::clp::search_lib {
 
 void BaseClpCursor::executeQuery(
     const std::string& query,
-    const std::map<std::string, std::string>& projectionNameValue,
+    const std::map<std::string, ColumnValue>& projectionNameValue,
     const std::vector<Field>& outputColumns) {
   query_ = query;
   projectionNameValue_ = projectionNameValue;

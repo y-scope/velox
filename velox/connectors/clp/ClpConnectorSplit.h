@@ -20,13 +20,15 @@
 
 namespace facebook::velox::connector::clp {
 
+using ColumnValue = std::variant<std::string, int64_t, double>;
+
 struct ClpConnectorSplit : public connector::ConnectorSplit {
   ClpConnectorSplit(
       const std::string& connectorId,
       const std::string& path,
       const int type,
       std::shared_ptr<std::string> kqlQuery,
-      std::shared_ptr<std::map<std::string, std::string>> projectionNameValue)
+      std::shared_ptr<std::map<std::string, ColumnValue>> projectionNameValue)
       : connector::ConnectorSplit(connectorId),
         path_(path),
         type_(static_cast<SplitType>(type)),
@@ -46,7 +48,7 @@ struct ClpConnectorSplit : public connector::ConnectorSplit {
   const std::string path_;
   const SplitType type_;
   std::shared_ptr<std::string> kqlQuery_;
-  std::shared_ptr<std::map<std::string, std::string>> projectionNameValue_;
+  std::shared_ptr<std::map<std::string, ColumnValue>> projectionNameValue_;
 };
 
 } // namespace facebook::velox::connector::clp
