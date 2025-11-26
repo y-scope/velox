@@ -47,11 +47,9 @@ permissions:
   packages: write
 
 concurrency:
-  # Group by workflow name and git ref (branch/tag/PR) to prevent concurrent runs on same ref
-  # This prevents multiple builds from running simultaneously on the same branch
-  group: ${{ github.workflow }}-${{ github.ref }}
-  # Cancel in-progress runs when new commits are pushed to the same ref
-  # Saves CI resources by stopping outdated builds
+  # Group by workflow name and branch to prevent concurrent runs on same branch
+  # For pull_request, use head_ref (source branch) so push and PR events share the same group
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
