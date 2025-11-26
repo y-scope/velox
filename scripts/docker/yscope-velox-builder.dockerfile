@@ -63,10 +63,12 @@ WORKDIR /tmp/velox-src
 
 # Build velox once to populate ccache with compilation results.
 # CCACHE_BASEDIR is set to the source location so cache keys use relative paths.
+# Stats are cleared after warmup so CI builds show only their own cache hits.
 RUN source /opt/velox-venv/bin/activate && \
     CCACHE_BASEDIR=/tmp/velox-src make release && \
     echo "CCache statistics after warmup build:" && \
-    ccache -vs
+    ccache -vs && \
+    ccache -z
 
 # Remove warmup source files (ccache in /var/cache/ccache is preserved)
 RUN rm -rf /tmp/velox-src

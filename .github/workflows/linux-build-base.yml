@@ -66,12 +66,6 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Clear CCache Statistics
-        run: |
-          # Clear ccache statistics (not the cache itself) so final stats reflect only this build
-          # The actual cached compilation results from the warmup build are preserved
-          ccache -z
-
       - name: Build Velox
         env:
           # Tune parallelism based on runner type: self-hosted (16-core) vs GitHub-hosted (4-core)
