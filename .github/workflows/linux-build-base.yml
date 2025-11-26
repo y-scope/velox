@@ -53,6 +53,8 @@ jobs:
       image: ${{ needs.builder-image.outputs.image-tag }}
     env:
       USE_CLANG: ${{ inputs.use-clang && 'true' || 'false' }}
+      # Set CCACHE_BASEDIR to checkout path so cache keys use relative paths
+      CCACHE_BASEDIR: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -102,6 +104,8 @@ jobs:
       image: ${{ needs.builder-image.outputs.image-tag }}
     env:
       USE_CLANG: ${{ inputs.use-clang && 'true' || 'false' }}
+      # Set CCACHE_BASEDIR to checkout path so cache keys use relative paths
+      CCACHE_BASEDIR: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@v4
         with:
