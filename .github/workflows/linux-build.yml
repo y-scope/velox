@@ -47,9 +47,11 @@ permissions:
   packages: write
 
 concurrency:
-  # Group by workflow name and branch to prevent concurrent runs on same branch
-  # For pull_request, use head_ref (source branch) so push and PR events share the same group
-  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+  # Cancel duplicate runs for the same branch. Uses github.head_ref for pull_request (source branch
+  # name, e.g., "ci") and falls back to github.ref_name for push (branch name without refs/heads/).
+  # This ensures both events resolve to the same group (e.g., "Linux Build using GCC - ci").
+  # See: https://github.com/orgs/community/discussions/30794
+  group: ${{ github.workflow }} - ${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
