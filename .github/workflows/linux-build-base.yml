@@ -72,8 +72,8 @@ jobs:
           # MAX_HIGH_MEM_JOBS: High-memory compilation tasks (templates, large TUs)
           # MAX_LINK_JOBS: Parallel linking tasks (memory-intensive)
           MAKEFLAGS: >-
-            MAX_HIGH_MEM_JOBS=${{ contains(runner.labels, 'self-hosted') && '16' || '4' }}
-            MAX_LINK_JOBS=${{ contains(runner.labels, 'self-hosted') && '12' || '3' }}
+            MAX_HIGH_MEM_JOBS=${{ runner.environment == 'self-hosted' && '16' || '4' }}
+            MAX_LINK_JOBS=${{ runner.environment == 'self-hosted' && '12' || '3' }}
         run: |
           # Use Clang compiler if requested (e.g., scheduled.yml uses Clang for compiler diversity)
           # Otherwise defaults to GCC (default CC/CXX in the container)
