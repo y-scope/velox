@@ -21,7 +21,7 @@
 namespace facebook::velox::connector::clp {
 
 /// Metadata value type for projection.
-using MetadataValue = std::variant<std::string, int64_t, double>;
+using MetadataValueType = std::variant<std::string, int64_t, double>;
 
 struct ClpConnectorSplit : public connector::ConnectorSplit {
   ClpConnectorSplit(
@@ -29,7 +29,7 @@ struct ClpConnectorSplit : public connector::ConnectorSplit {
       const std::string& path,
       const int type,
       std::shared_ptr<std::string> kqlQuery,
-      std::shared_ptr<std::map<std::string, MetadataValue>>
+      std::shared_ptr<std::map<std::string, MetadataValueType>>
           metadataColumnValues)
       : connector::ConnectorSplit(connectorId),
         path_(path),
@@ -50,8 +50,10 @@ struct ClpConnectorSplit : public connector::ConnectorSplit {
   const std::string path_;
   const SplitType type_;
   std::shared_ptr<std::string> kqlQuery_;
-  /// Constant values for metadata columns.
-  std::shared_ptr<std::map<std::string, MetadataValue>> metadataColumnValues_;
+  /// Maps column names to constant values fetched from metadata database for
+  /// metadata projection.
+  std::shared_ptr<std::map<std::string, MetadataValueType>>
+      metadataColumnValues_;
 };
 
 } // namespace facebook::velox::connector::clp

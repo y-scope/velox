@@ -75,7 +75,7 @@ class BaseClpCursor {
         splitPath_(std::string(splitPath)) {}
   virtual ~BaseClpCursor() = default;
 
-  using MetadataValue = std::variant<std::string, int64_t, double>;
+  using MetadataValueType = std::variant<std::string, int64_t, double>;
 
   /// Executes a query. This function parses, validates, and prepares the given
   /// query for execution.
@@ -86,7 +86,7 @@ class BaseClpCursor {
   /// query result.
   void executeQuery(
       const std::string& query,
-      const std::map<std::string, MetadataValue>& metadataColumnValues,
+      const std::map<std::string, MetadataValueType>& metadataColumnValues,
       const std::vector<Field>& outputColumns);
 
   /// Fetches the next set of rows from the cursor. If the split is not yet
@@ -129,8 +129,9 @@ class BaseClpCursor {
   clp_s::InputSource inputSource_;
   std::vector<Field> outputColumns_;
   std::string query_;
-  /// Maps column names to constant values for metadata projection.
-  std::map<std::string, MetadataValue> metadataColumnValues_;
+  /// Maps column names to constant values fetched from metadata database for
+  /// metadata projection.
+  std::map<std::string, MetadataValueType> metadataColumnValues_;
   std::string splitPath_;
 
  private:

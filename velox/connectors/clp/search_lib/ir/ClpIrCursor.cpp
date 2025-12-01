@@ -165,8 +165,8 @@ ClpIrCursor::splitFieldsToNamesAndTypes() {
 ystdlib::error_handling::Result<void> ClpIrCursor::deserialize(
     uint64_t numRows) {
   filteredLogEvents_->clear();
-  uint64_t num_log_events{0};
-  while (num_log_events < numRows) {
+  uint64_t cnt{0};
+  while (cnt < numRows) {
     auto deserializeResult =
         irDeserializer_->deserialize_next_ir_unit(*irReaderZstdWrapper_);
     if (deserializeResult.has_error()) {
@@ -179,7 +179,7 @@ ystdlib::error_handling::Result<void> ClpIrCursor::deserialize(
     }
     if (::clp::ffi::ir_stream::IrUnitType::LogEvent ==
         deserializeResult.value()) {
-      ++num_log_events;
+      ++cnt;
     }
   }
   return ystdlib::error_handling::success();
@@ -195,7 +195,7 @@ VectorPtr ClpIrCursor::createMetadataProjectionVector(
     return nullptr;
   }
 
-  const MetadataValue& metadata_value = metadata_it->second;
+  const MetadataValueType& metadata_value = metadata_it->second;
 
   // Create constant vector from the metadata value.
   auto vector = std::visit(
@@ -248,15 +248,16 @@ VectorPtr ClpIrCursor::createVectorHelper(
   std::vector<::clp::ffi::SchemaTree::Node::id_t> projectedColumnNodeIds{};
   bool isResolved = projection_it != projectedColumnIdxNodeIdsMap_.end() &&
       !projection_it->second.empty();
+  /// IMPORTANT: When a column name exists in both metadata and data sources,
+  /// the metadata column value takes precedence.
+  auto metadata_vector = createMetadataProjectionVector(
+      projectedColumn, vectorType, vectorSize, pool);
+  if (metadata_vector != nullptr) {
+    return metadata_vector;
+  }
+
   if (isResolved) {
     projectedColumnNodeIds = projection_it->second;
-  } else {
-    // Try creating a constant vector from metadata projection.
-    auto metadata_vector = createMetadataProjectionVector(
-        projectedColumn, vectorType, vectorSize, pool);
-    if (metadata_vector != nullptr) {
-      return metadata_vector;
-    }
   }
 
   projectedColumnIndex_++;
