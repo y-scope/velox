@@ -26,7 +26,6 @@
 using namespace clp_s;
 
 namespace facebook::velox::connector::clp::search_lib {
-
 uint64_t ClpIrCursor::fetchNext(uint64_t numRows) {
   columnIndex_ = 0;
   projectedColumnIndex_ = 0;
@@ -186,6 +185,31 @@ ystdlib::error_handling::Result<void> ClpIrCursor::deserialize(
   return ystdlib::error_handling::success();
 }
 
+VectorPtr ClpIrCursor::createMetadataProjectionVector(
+    const Field& projectedColumn,
+    const TypePtr& vectorType,
+    size_t vectorSize,
+    memory::MemoryPool* pool) {
+  auto metadata_it = metadataColumnValues_.find(projectedColumn.name);
+  if (metadata_it == metadataColumnValues_.end()) {
+    return nullptr;
+  }
+
+  const MetadataValueType& metadata_value = metadata_it->second;
+
+  // Create constant vector from the metadata value.
+  auto vector = std::visit(
+      [&](auto&& value) -> VectorPtr {
+        return BaseVector::createConstant(
+            vectorType, velox::variant(value), vectorSize, pool);
+      },
+      metadata_value);
+
+  ++projectedColumnIndex_;
+  ++columnIndex_;
+  return vector;
+}
+
 VectorPtr ClpIrCursor::createVectorHelper(
     memory::MemoryPool* pool,
     const TypePtr& vectorType,
@@ -219,13 +243,23 @@ VectorPtr ClpIrCursor::createVectorHelper(
       "Projected column index out of bounds");
   auto projectedColumn = outputColumns_[columnIndex_];
   auto projectedColumnType = projectedColumn.type;
-  auto it = projectedColumnIdxNodeIdsMap_.find(projectedColumnIndex_);
+  auto projection_it =
+      projectedColumnIdxNodeIdsMap_.find(projectedColumnIndex_);
   std::vector<::clp::ffi::SchemaTree::Node::id_t> projectedColumnNodeIds{};
-  bool isResolved =
-      it != projectedColumnIdxNodeIdsMap_.end() && !it->second.empty();
-  if (isResolved) {
-    projectedColumnNodeIds = it->second;
+  bool isResolved = projection_it != projectedColumnIdxNodeIdsMap_.end() &&
+      !projection_it->second.empty();
+  /// IMPORTANT: When a column name exists in both metadata and data sources,
+  /// the metadata column value takes precedence.
+  auto metadata_vector = createMetadataProjectionVector(
+      projectedColumn, vectorType, vectorSize, pool);
+  if (metadata_vector != nullptr) {
+    return metadata_vector;
   }
+
+  if (isResolved) {
+    projectedColumnNodeIds = projection_it->second;
+  }
+
   projectedColumnIndex_++;
   columnIndex_++;
   return std::make_shared<LazyVector>(
