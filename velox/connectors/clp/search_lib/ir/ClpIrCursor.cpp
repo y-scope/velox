@@ -72,7 +72,7 @@ VectorPtr ClpIrCursor::createVector(
 ErrorCode ClpIrCursor::loadSplit() {
   auto networkAuthOption = inputSource_ == InputSource::Filesystem
       ? NetworkAuthOption{.method = AuthMethod::None}
-  : NetworkAuthOption{.method = AuthMethod::S3PresignedUrlV4};
+      : NetworkAuthOption{.method = AuthMethod::S3PresignedUrlV4};
 
   auto projections = splitFieldsToNamesAndTypes();
   auto queryHandlerResult{QueryHandlerType::create(
@@ -165,8 +165,8 @@ ClpIrCursor::splitFieldsToNamesAndTypes() {
 ystdlib::error_handling::Result<void> ClpIrCursor::deserialize(
     uint64_t numRows) {
   filteredLogEvents_->clear();
-  uint64_t cnt{0};
-  while (cnt < numRows) {
+  uint64_t num_log_events{0};
+  while (num_log_events < numRows) {
     auto deserializeResult =
         irDeserializer_->deserialize_next_ir_unit(*irReaderZstdWrapper_);
     if (deserializeResult.has_error()) {
@@ -174,15 +174,40 @@ ystdlib::error_handling::Result<void> ClpIrCursor::deserialize(
       if (std::errc::result_out_of_range == error ||
           irDeserializer_->is_stream_completed()) {
         break;
-          }
+      }
       return error;
     }
     if (::clp::ffi::ir_stream::IrUnitType::LogEvent ==
         deserializeResult.value()) {
-      ++cnt;
-        }
+      ++num_log_events;
+    }
   }
   return ystdlib::error_handling::success();
+}
+
+VectorPtr ClpIrCursor::createMetadataProjectionVector(
+    const Field& projectedColumn,
+    const TypePtr& vectorType,
+    size_t vectorSize,
+    memory::MemoryPool* pool) {
+  auto metadata_it = metadataColumnValues_.find(projectedColumn.name);
+  if (metadata_it == metadataColumnValues_.end()) {
+    return nullptr;
+  }
+
+  const MetadataValue& metadata_value = metadata_it->second;
+
+  // Create constant vector from the metadata value.
+  auto vector = std::visit(
+      [&](auto&& value) -> VectorPtr {
+        return BaseVector::createConstant(
+            vectorType, velox::variant(value), vectorSize, pool);
+      },
+      metadata_value);
+
+  ++projectedColumnIndex_;
+  ++columnIndex_;
+  return vector;
 }
 
 VectorPtr ClpIrCursor::createVectorHelper(
@@ -218,50 +243,18 @@ VectorPtr ClpIrCursor::createVectorHelper(
       "Projected column index out of bounds");
   auto projectedColumn = outputColumns_[columnIndex_];
   auto projectedColumnType = projectedColumn.type;
-  auto it = projectedColumnIdxNodeIdsMap_.find(projectedColumnIndex_);
+  auto projection_it = projectedColumnIdxNodeIdsMap_.find(projectedColumnIndex_);
   std::vector<::clp::ffi::SchemaTree::Node::id_t> projectedColumnNodeIds{};
   bool isResolved =
-      it != projectedColumnIdxNodeIdsMap_.end() && !it->second.empty();
+      projection_it != projectedColumnIdxNodeIdsMap_.end() && !projection_it->second.empty();
   if (isResolved) {
-    projectedColumnNodeIds = it->second;
+    projectedColumnNodeIds = projection_it->second;
   } else {
-    // Handle metadata projection with std::variant
-    auto iterMetadata = projectionNameValue_.find(projectedColumn.name);
-    if (iterMetadata != projectionNameValue_.end()) {
-      const ColumnValue& columnValue = iterMetadata->second;
-
-      // Create constant vector based on the variant type
-      vector = std::visit([&](auto&& value) -> VectorPtr {
-        using T = std::decay_t<decltype(value)>;
-
-        if constexpr (std::is_same_v<T, std::string>) {
-          // String type
-          return BaseVector::createConstant(
-              vectorType,
-              velox::variant(value),
-              vectorSize,
-              pool);
-        } else if constexpr (std::is_same_v<T, int64_t>) {
-          // Integer type
-          return BaseVector::createConstant(
-              vectorType,
-              velox::variant(value),
-              vectorSize,
-              pool);
-        } else if constexpr (std::is_same_v<T, double>) {
-          // Double type
-          return BaseVector::createConstant(
-              vectorType,
-              velox::variant(value),
-              vectorSize,
-              pool);
-        }
-      }, columnValue);
-
-      // We can just return this directly; no need for LazyVector.
-      ++projectedColumnIndex_;
-      ++columnIndex_;
-      return vector;
+    // Try creating a constant vector from metadata projection.
+    auto metadata_vector = createMetadataProjectionVector(
+        projectedColumn, vectorType, vectorSize, pool);
+    if (metadata_vector != nullptr) {
+      return metadata_vector;
     }
   }
 
@@ -280,4 +273,4 @@ VectorPtr ClpIrCursor::createVectorHelper(
       std::move(vector));
 }
 
-}// namespace facebook::velox::connector::clp::search_lib
+} // namespace facebook::velox::connector::clp::search_lib

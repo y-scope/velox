@@ -101,6 +101,21 @@ class ClpIrCursor final : public BaseClpCursor {
       memory::MemoryPool* pool,
       const TypePtr& vectorType,
       size_t vectorSize);
+
+  /**
+   * Creates a constant vector for metadata projection if the column is found.
+   * @param projectedColumn The column to create a vector for.
+   * @param vectorType The type of vector to create.
+   * @param vectorSize Number of rows in the vector.
+   * @param pool Memory pool for vector allocation.
+   * @return A constant vector filled with the metadata value.
+   * @return nullptr if the column is not in metadataColumnValues_.
+   */
+  VectorPtr createMetadataProjectionVector(
+      const Field& projectedColumn,
+      const TypePtr& vectorType,
+      size_t vectorSize,
+      memory::MemoryPool* pool);
 };
 
 } // namespace facebook::velox::connector::clp::search_lib

@@ -20,7 +20,8 @@
 
 namespace facebook::velox::connector::clp {
 
-using ColumnValue = std::variant<std::string, int64_t, double>;
+/// Metadata value type for projection (string, int64_t, or double).
+using MetadataValue = std::variant<std::string, int64_t, double>;
 
 struct ClpConnectorSplit : public connector::ConnectorSplit {
   ClpConnectorSplit(
@@ -28,12 +29,12 @@ struct ClpConnectorSplit : public connector::ConnectorSplit {
       const std::string& path,
       const int type,
       std::shared_ptr<std::string> kqlQuery,
-      std::shared_ptr<std::map<std::string, ColumnValue>> projectionNameValue)
+      std::shared_ptr<std::map<std::string, MetadataValue>> metadataColumnValues)
       : connector::ConnectorSplit(connectorId),
         path_(path),
         type_(static_cast<SplitType>(type)),
         kqlQuery_(std::move(kqlQuery)),
-        projectionNameValue_(std::move(projectionNameValue)) {}
+        metadataColumnValues_(std::move(metadataColumnValues)) {}
 
   [[nodiscard]] std::string toString() const override {
     return fmt::format(
@@ -48,7 +49,8 @@ struct ClpConnectorSplit : public connector::ConnectorSplit {
   const std::string path_;
   const SplitType type_;
   std::shared_ptr<std::string> kqlQuery_;
-  std::shared_ptr<std::map<std::string, ColumnValue>> projectionNameValue_;
+  /// Constant values for metadata columns.
+  std::shared_ptr<std::map<std::string, MetadataValue>> metadataColumnValues_;
 };
 
 } // namespace facebook::velox::connector::clp
