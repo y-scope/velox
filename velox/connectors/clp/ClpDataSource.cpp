@@ -126,10 +126,16 @@ void ClpDataSource::addSplit(std::shared_ptr<ConnectorSplit> split) {
   }
 
   auto pushDownQuery = clpSplit->kqlQuery_;
+  const std::map<std::string, MetadataValue> emptyMetadataMap;
+  const auto& metadataValues =
+    clpSplit->metadataColumnValues_
+      ? *clpSplit->metadataColumnValues_
+      : emptyMetadataMap;
+
   if (pushDownQuery && !pushDownQuery->empty()) {
-    cursor_->executeQuery(*pushDownQuery, *clpSplit->metadataColumnValues_, fields_);
+    cursor_->executeQuery(*pushDownQuery, metadataValues, fields_);
   } else {
-    cursor_->executeQuery("*", *clpSplit->metadataColumnValues_, fields_);
+    cursor_->executeQuery("*", metadataValues, fields_);
   }
 }
 

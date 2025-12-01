@@ -20,7 +20,7 @@
 
 namespace facebook::velox::connector::clp {
 
-/// Metadata value type for projection (string, int64_t, or double).
+/// Metadata value type for projection.
 using MetadataValue = std::variant<std::string, int64_t, double>;
 
 struct ClpConnectorSplit : public connector::ConnectorSplit {
