@@ -243,10 +243,11 @@ VectorPtr ClpIrCursor::createVectorHelper(
       "Projected column index out of bounds");
   auto projectedColumn = outputColumns_[columnIndex_];
   auto projectedColumnType = projectedColumn.type;
-  auto projection_it = projectedColumnIdxNodeIdsMap_.find(projectedColumnIndex_);
+  auto projection_it =
+      projectedColumnIdxNodeIdsMap_.find(projectedColumnIndex_);
   std::vector<::clp::ffi::SchemaTree::Node::id_t> projectedColumnNodeIds{};
-  bool isResolved =
-      projection_it != projectedColumnIdxNodeIdsMap_.end() && !projection_it->second.empty();
+  bool isResolved = projection_it != projectedColumnIdxNodeIdsMap_.end() &&
+      !projection_it->second.empty();
   if (isResolved) {
     projectedColumnNodeIds = projection_it->second;
   } else {

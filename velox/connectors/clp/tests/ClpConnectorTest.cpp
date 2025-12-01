@@ -69,14 +69,30 @@ class ClpConnectorTest : public exec::test::OperatorTestBase {
       ClpConnectorSplit::SplitType type,
       std::shared_ptr<std::string> kqlQuery) {
     auto emptyMetadataMap =
-      std::make_shared<std::map<std::string, MetadataValue>>();
+        std::make_shared<std::map<std::string, MetadataValue>>();
     return exec::Split(std::make_shared<ClpConnectorSplit>(
         kClpConnectorId,
         splitPath,
         static_cast<int>(type),
         kqlQuery,
-        emptyMetadataMap
-      ));
+        emptyMetadataMap));
+  }
+
+  /// Creates a CLP split with metadata column values for testing metadata
+  /// projection.
+  exec::Split makeClpSplitWithMetadata(
+      const std::string& splitPath,
+      ClpConnectorSplit::SplitType type,
+      std::shared_ptr<std::string> kqlQuery,
+      std::map<std::string, MetadataValue> metadataValues) {
+    auto metadataMap = std::make_shared<std::map<std::string, MetadataValue>>(
+        std::move(metadataValues));
+    return exec::Split(std::make_shared<ClpConnectorSplit>(
+        kClpConnectorId,
+        splitPath,
+        static_cast<int>(type),
+        kqlQuery,
+        metadataMap));
   }
 
   RowVectorPtr getResults(
@@ -958,6 +974,100 @@ TEST_F(ClpConnectorTest, test5HybridPushdown) {
                                      Timestamp(1746003205, 0),
                                  }),
                                  makeFlatVector<double>({1, 1, 1, 1, 1, 1})});
+  test::assertEqualVectors(expected, output);
+}
+
+/**
+ * Tests metadata projection by injecting constant values for columns that are
+ * pre-fetched from the metadata database. This test validates that:
+ * 1. String metadata values are correctly projected as constant vectors
+ * 2. Integer metadata values are correctly projected as constant vectors
+ * 3. Double metadata values are correctly projected as constant vectors
+ * 4. Metadata projection works with IR split type
+ * 5. Metadata columns are combined correctly with regular data columns
+ */
+TEST_F(ClpConnectorTest, metadataProjection) {
+  const std::shared_ptr<std::string> kqlQuery = nullptr;
+
+  // Define metadata values of different types
+  std::map<std::string, MetadataValue> metadataValues = {
+      {"source_file", std::string("/var/log/app.log")},
+      {"partition_id", static_cast<int64_t>(42)},
+      {"sampling_rate", 0.75}};
+
+  auto plan = PlanBuilder()
+                  .startTableScan()
+                  .outputType(ROW(
+                      {"requestId",
+                       "method",
+                       "source_file",
+                       "partition_id",
+                       "sampling_rate"},
+                      {VARCHAR(), VARCHAR(), VARCHAR(), BIGINT(), DOUBLE()}))
+                  .tableHandle(std::make_shared<ClpTableHandle>(
+                      kClpConnectorId, "test_1"))
+                  .assignments(
+                      {{"requestId",
+                        std::make_shared<ClpColumnHandle>(
+                            "requestId", "requestId", VARCHAR())},
+                       {"method",
+                        std::make_shared<ClpColumnHandle>(
+                            "method", "method", VARCHAR())},
+                       {"source_file",
+                        std::make_shared<ClpColumnHandle>(
+                            "source_file", "source_file", VARCHAR())},
+                       {"partition_id",
+                        std::make_shared<ClpColumnHandle>(
+                            "partition_id", "partition_id", BIGINT())},
+                       {"sampling_rate",
+                        std::make_shared<ClpColumnHandle>(
+                            "sampling_rate", "sampling_rate", DOUBLE())}})
+                  .endTableScan()
+                  .planNode();
+
+  auto output = getResults(
+      plan,
+      {makeClpSplitWithMetadata(
+          getExampleFilePath("test_1_ir.clp.zst"),
+          ClpConnectorSplit::SplitType::kIr,
+          kqlQuery,
+          metadataValues)});
+
+  auto expected = makeRowVector(
+      {// requestId (from data)
+       makeFlatVector<StringView>({
+           "req-100",
+           "req-101",
+           "req-102",
+           "req-103",
+           "req-104",
+           "req-105",
+           "req-106",
+           "req-107",
+           "req-108",
+           "req-109",
+       }),
+       // method (from data)
+       makeFlatVector<StringView>({
+           "GET",
+           "POST",
+           "GET",
+           "PUT",
+           "DELETE",
+           "GET",
+           "POST",
+           "GET",
+           "PATCH",
+           "GET",
+       }),
+       // source_file (metadata - string constant)
+       makeFlatVector<StringView>(
+           10, [](auto /* row */) { return "/var/log/app.log"; }),
+       // partition_id (metadata - int64 constant)
+       makeFlatVector<int64_t>(10, [](auto /* row */) { return 42; }),
+       // sampling_rate (metadata - double constant)
+       makeFlatVector<double>(10, [](auto /* row */) { return 0.75; })});
+
   test::assertEqualVectors(expected, output);
 }
 

@@ -29,7 +29,8 @@ struct ClpConnectorSplit : public connector::ConnectorSplit {
       const std::string& path,
       const int type,
       std::shared_ptr<std::string> kqlQuery,
-      std::shared_ptr<std::map<std::string, MetadataValue>> metadataColumnValues)
+      std::shared_ptr<std::map<std::string, MetadataValue>>
+          metadataColumnValues)
       : connector::ConnectorSplit(connectorId),
         path_(path),
         type_(static_cast<SplitType>(type)),
