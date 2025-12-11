@@ -42,7 +42,7 @@ RUN /tmp/velox-deps/setup-ubuntu.sh \
  && mv /tmp/.venv /opt/velox-venv \
  && rm -rf /tmp/velox-deps
 
-# Set up environment to use the Python venv
+# Activate the virtual environment
 ENV PATH="/opt/velox-venv/bin:${PATH}"
 ENV VIRTUAL_ENV="/opt/velox-venv"
 
