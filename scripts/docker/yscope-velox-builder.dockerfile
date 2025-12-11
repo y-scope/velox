@@ -17,9 +17,7 @@ FROM ghcr.io/y-scope/docker-github-actions-runner:ubuntu-jammy
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Copy only scripts first for dependency installation.
-# This optimizes Docker layer caching: changes to other source files won't invalidate
-# the dependency installation layer - it only rebuilds when scripts change.
+# First, copy the dependency installation scripts to optimize Docker layer caching
 COPY scripts /tmp/velox-deps/
 
 # Set timezone to avoid interactive prompts during apt installations
