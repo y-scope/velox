@@ -32,9 +32,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 # binary installer ensures cmake is available and dependencies build correctly in the current
 # CI containerized environment.
 RUN wget --progress=dot:giga https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-x86_64.sh \
- && chmod +x cmake-3.28.3-linux-x86_64.sh \
- && ./cmake-3.28.3-linux-x86_64.sh --skip-license --prefix=/usr/local \
- && rm cmake-3.28.3-linux-x86_64.sh
+   && chmod +x cmake-3.28.3-linux-x86_64.sh \
+   && ./cmake-3.28.3-linux-x86_64.sh --skip-license --prefix=/usr/local \
+   && rm cmake-3.28.3-linux-x86_64.sh
 
 # Run the setup script to install all dependencies, then move venv to /opt and clean up
 # Note: setup-ubuntu.sh creates venv at SCRIPTDIR/../.venv (i.e., /tmp/.venv)
