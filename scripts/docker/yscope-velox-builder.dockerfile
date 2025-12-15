@@ -34,8 +34,6 @@ RUN wget --progress=dot:giga https://github.com/Kitware/CMake/releases/download/
    && ./cmake-3.28.3-linux-x86_64.sh --skip-license --prefix=/usr/local \
    && rm cmake-3.28.3-linux-x86_64.sh
 
-# Run the setup script to install all dependencies, then move venv to /opt and clean up
-# Note: setup-ubuntu.sh creates venv at SCRIPTDIR/../.venv (i.e., /tmp/.venv)
 RUN /tmp/velox-deps/setup-ubuntu.sh \
  && mv /tmp/.venv /opt/velox-venv \
  && rm -rf /tmp/velox-deps
