@@ -38,9 +38,15 @@ RUN /tmp/velox-deps/setup-ubuntu.sh \
    && mv /tmp/.venv /opt/velox-venv \
    && rm -rf /tmp/velox-deps
 
-# Activate the virtual environment
-ENV PATH="/opt/velox-venv/bin:${PATH}"
+# Activate the virtual environment by setting ENV variables directly rather than using
+# `source /opt/velox-venv/bin/activate` in a RUN command. This is because activation in a RUN
+# command only persists for that single instruction - each RUN starts a fresh shell. By setting
+# PATH and VIRTUAL_ENV via ENV, these values are baked into the Docker image and persist across:
+# 1. All subsequent RUN commands in the Dockerfile
+# 2. Any containers started from the final image (e.g., CI workflows can directly run commands
+#    like `make release` or `python` without needing to activate the venv first)
 ENV VIRTUAL_ENV="/opt/velox-venv"
+ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 
 # Configure ccache settings
 # CCACHE_BASEDIR: Must be set at runtime to your source checkout path for cache hits.
@@ -61,8 +67,7 @@ WORKDIR /tmp/velox-src
 # NOTE:
 # - We set `CCACHE_BASEDIR` so cache keys use relative paths.
 # - We clear the stats after warmup so that CI builds only show their own cache hits.
-RUN source /opt/velox-venv/bin/activate \
-    && CCACHE_BASEDIR=/tmp/velox-src make release \
+RUN CCACHE_BASEDIR=/tmp/velox-src make release \
     && echo "CCache statistics after warmup build:" \
     && ccache --verbose --show-stats \
     && ccache --zero-stats
