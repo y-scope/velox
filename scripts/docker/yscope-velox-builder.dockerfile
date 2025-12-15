@@ -61,8 +61,6 @@ WORKDIR /tmp/velox-src
 # NOTE:
 # - We set `CCACHE_BASEDIR` so cache keys use relative paths.
 # - We clear the stats after warmup so that CI builds only show their own cache hits.
-COPY . /tmp/velox-src/
-WORKDIR /tmp/velox-src
 RUN source /opt/velox-venv/bin/activate \
     && CCACHE_BASEDIR=/tmp/velox-src make release \
     && echo "CCache statistics after warmup build:" \
