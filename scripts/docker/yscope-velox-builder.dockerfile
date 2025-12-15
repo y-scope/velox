@@ -35,8 +35,8 @@ RUN wget --progress=dot:giga https://github.com/Kitware/CMake/releases/download/
    && rm cmake-3.28.3-linux-x86_64.sh
 
 RUN /tmp/velox-deps/setup-ubuntu.sh \
- && mv /tmp/.venv /opt/velox-venv \
- && rm -rf /tmp/velox-deps
+   && mv /tmp/.venv /opt/velox-venv \
+   && rm -rf /tmp/velox-deps
 
 # Activate the virtual environment
 ENV PATH="/opt/velox-venv/bin:${PATH}"
