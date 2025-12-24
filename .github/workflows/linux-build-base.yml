@@ -43,7 +43,7 @@ jobs:
   build-and-test:
     name: Build and Test (${{ matrix.test-group }})
     needs: builder-image
-    runs-on: self-hosted
+    runs-on: ${{ github.repository_owner == 'y-scope' && fromJSON('["self-hosted", "x64", "ubuntu-noble"]') || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:

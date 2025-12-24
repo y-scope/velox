@@ -35,7 +35,12 @@ permissions:
 jobs:
   builder-image:
     name: Build and publish builder image
-    runs-on: [self-hosted, cores=32]
+    runs-on: >-
+      ${{
+        github.repository_owner == 'y-scope'
+        && fromJSON('["self-hosted", "x64", "cores=32", "ubuntu-noble"]')
+        || 'ubuntu-latest'
+      }}
     outputs:
       # This output is used by calling workflows to get the image tag
       image-tag: ${{ steps.image-tag.outputs.tag }}
