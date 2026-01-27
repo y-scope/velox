@@ -173,7 +173,7 @@ ErrorCode ClpArchiveCursor::loadSplit() {
         case ColumnType::String:
           columnDescriptor->set_matching_types(
               LiteralType::ClpStringT | LiteralType::VarStringT |
-              LiteralType::TimestampT);
+              LiteralType::EpochDateT);
           break;
         case ColumnType::Integer:
           columnDescriptor->set_matching_types(LiteralType::IntegerT);
@@ -189,7 +189,7 @@ ErrorCode ClpArchiveCursor::loadSplit() {
           break;
         case ColumnType::Timestamp:
           columnDescriptor->set_matching_types(
-              LiteralType::TimestampT | LiteralType::IntegerT |
+              LiteralType::EpochDateT | LiteralType::IntegerT |
               LiteralType::FloatT);
           break;
         default:

@@ -55,18 +55,18 @@ void ClpIrVectorLoader::loadInternal(
         if (value->is<std::string>()) {
           auto stringValue = value->get_immutable_view<std::string>();
           stringVector->set(vectorIndex, StringView(stringValue));
-        } else if (value->is<::clp::ffi::EightByteEncodedTextAst>()) {
+        } else if (value->is<::clp::ir::EightByteEncodedTextAst>()) {
           auto decodeResult =
-              value->get_immutable_view<::clp::ffi::EightByteEncodedTextAst>()
-                  .to_string();
+              value->get_immutable_view<::clp::ir::EightByteEncodedTextAst>()
+                  .decode_and_unparse();
           if (!decodeResult.has_value()) {
             continue;
           }
           stringVector->set(vectorIndex, StringView(decodeResult.value()));
-        } else if (value->is<::clp::ffi::FourByteEncodedTextAst>()) {
+        } else if (value->is<::clp::ir::FourByteEncodedTextAst>()) {
           auto decodeResult =
-              value->get_immutable_view<::clp::ffi::FourByteEncodedTextAst>()
-                  .to_string();
+              value->get_immutable_view<::clp::ir::FourByteEncodedTextAst>()
+                  .decode_and_unparse();
           if (!decodeResult.has_value()) {
             continue;
           }
@@ -117,18 +117,18 @@ void ClpIrVectorLoader::loadInternal(
       case ColumnType::Array: {
         auto arrayVector = std::dynamic_pointer_cast<ArrayVector>(vector);
         std::string jsonString;
-        if (value->is<::clp::ffi::EightByteEncodedTextAst>()) {
+        if (value->is<::clp::ir::EightByteEncodedTextAst>()) {
           auto decodeResult =
-              value->get_immutable_view<::clp::ffi::EightByteEncodedTextAst>()
-                  .to_string();
+              value->get_immutable_view<::clp::ir::EightByteEncodedTextAst>()
+                  .decode_and_unparse();
           if (!decodeResult.has_value()) {
             continue;
           }
           jsonString = std::move(decodeResult.value());
         } else {
           auto decodeResult =
-              value->get_immutable_view<::clp::ffi::FourByteEncodedTextAst>()
-                  .to_string();
+              value->get_immutable_view<::clp::ir::FourByteEncodedTextAst>()
+                  .decode_and_unparse();
           if (!decodeResult.has_value()) {
             continue;
           }
