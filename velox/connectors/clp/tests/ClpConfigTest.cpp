@@ -210,6 +210,7 @@ TEST_F(ClpPackageS3AuthProviderTest, readAndExportAwsAuthEnvironmentVariables) {
   const std::string cTestSecretAccessKey{"bbbbbb"};
   const std::string cTestSessionToken{"cccccc"};
 
+  // Test all properties
   std::unordered_map<std::string, std::string> configMap(
       {{"clp.storage-type", "s3"},
        {ClpConfig::kAuthProvider, "clp_package"},
@@ -227,6 +228,7 @@ TEST_F(ClpPackageS3AuthProviderTest, readAndExportAwsAuthEnvironmentVariables) {
   VELOX_CHECK(checkEnvironmentVariableEquals(
       ClpPackageS3AuthProvider::kEnvAwsSessionToken, cTestSessionToken));
 
+  // Test auth without the session token
   configMap = {
       {"clp.storage-type", "s3"},
       {ClpConfig::kAuthProvider, "clp_package"},
