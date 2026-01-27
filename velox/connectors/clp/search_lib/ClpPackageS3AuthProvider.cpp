@@ -21,9 +21,9 @@
 namespace facebook::velox::connector::clp {
 
 namespace {
-// Detects AWS S3 virtual-hosted style endpoints where bucket is in the hostname.
-// Virtual-hosted: https://<bucket>.s3.<region>.amazonaws.com (returns true)
-// Path-style: https://s3.<region>.amazonaws.com (returns false)
+// Detects AWS S3 virtual-hosted style endpoints where bucket is in the
+// hostname. Virtual-hosted: https://<bucket>.s3.<region>.amazonaws.com (returns
+// true) Path-style: https://s3.<region>.amazonaws.com (returns false)
 bool isAwsVirtualHostedStyleEndpoint(const std::string& endpoint) {
   if (endpoint.find("amazonaws.com") == std::string::npos) {
     return false;

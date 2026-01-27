@@ -241,7 +241,8 @@ TEST_F(ClpPackageS3AuthProviderTest, readAndExportAwsAuthEnvironmentVariables) {
       ClpPackageS3AuthProvider::kEnvAwsSessionToken, std::nullopt));
 }
 
-// Tests URL construction for S3-compatible storage (e.g., MinIO) using path-style URLs with bucket.
+// Tests URL construction for S3-compatible storage (e.g., MinIO) using
+// path-style URLs with bucket.
 TEST_F(ClpPackageS3AuthProviderTest, constructS3UrlForPathStyleWithBucket) {
   const std::string cTestAccessKeyId{"aaaaaa"};
   const std::string cTestBucket{"logs"};
@@ -260,11 +261,11 @@ TEST_F(ClpPackageS3AuthProviderTest, constructS3UrlForPathStyleWithBucket) {
   VELOX_CHECK(clpPackageS3AuthProvider->exportAuthEnvironmentVariables());
 
   auto url = clpPackageS3AuthProvider->constructS3Url(cTestSplitPath);
-  VELOX_CHECK_EQ(
-      url, "http://172.26.105.44:9000/logs/archives/default/abc123");
+  VELOX_CHECK_EQ(url, "http://172.26.105.44:9000/logs/archives/default/abc123");
 }
 
-// Tests URL construction for AWS S3 using virtual-hosted style URLs without bucket config.
+// Tests URL construction for AWS S3 using virtual-hosted style URLs without
+// bucket config.
 TEST_F(ClpPackageS3AuthProviderTest, constructS3UrlForAwsVirtualHostedStyle) {
   const std::string cTestAccessKeyId{"aaaaaa"};
   const std::string cTestEndPoint{"https://logs.s3.us-east-1.amazonaws.com"};
