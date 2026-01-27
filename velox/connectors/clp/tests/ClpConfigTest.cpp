@@ -309,25 +309,4 @@ TEST_F(ClpPackageS3AuthProviderTest, constructS3UrlForAwsPathStyleWithBucket) {
       url, "https://s3.us-east-1.amazonaws.com/logs/archives/default/abc123");
 }
 
-// Tests that setting bucket with AWS virtual-hosted style endpoint is rejected.
-TEST_F(ClpPackageS3AuthProviderTest, rejectBucketWithAwsVirtualHostedEndpoint) {
-  const std::string cTestAccessKeyId{"aaaaaa"};
-  const std::string cTestBucket{"logs"};
-  const std::string cTestEndPoint{"https://logs.s3.us-east-1.amazonaws.com"};
-  const std::string cTestSecretAccessKey{"bbbbbb"};
-
-  std::unordered_map<std::string, std::string> configMap(
-      {{"clp.storage-type", "s3"},
-       {ClpConfig::kAuthProvider, "clp_package"},
-       {ClpPackageS3AuthProvider::kAccessKeyId, cTestAccessKeyId},
-       {ClpPackageS3AuthProvider::kBucket, cTestBucket},
-       {ClpPackageS3AuthProvider::kEndPoint, cTestEndPoint},
-       {ClpPackageS3AuthProvider::kSecretAccessKey, cTestSecretAccessKey}});
-  auto clpPackageS3AuthProvider = buildClpPackageS3AuthProvider(configMap);
-  VELOX_ASSERT_THROW(
-      clpPackageS3AuthProvider->exportAuthEnvironmentVariables(),
-      "clp.s3-bucket should not be set when using AWS S3 virtual-hosted style "
-      "URLs");
-}
-
 } // namespace facebook::velox::connector::clp

@@ -20,27 +20,6 @@
 
 namespace facebook::velox::connector::clp {
 
-namespace {
-// Detects AWS S3 virtual-hosted style endpoints where bucket is in the
-// hostname. Virtual-hosted: https://<bucket>.s3.<region>.amazonaws.com (returns
-// true) Path-style: https://s3.<region>.amazonaws.com (returns false)
-bool isAwsVirtualHostedStyleEndpoint(const std::string& endpoint) {
-  if (endpoint.find("amazonaws.com") == std::string::npos) {
-    return false;
-  }
-
-  auto schemeEnd = endpoint.find("://");
-  if (schemeEnd == std::string::npos) {
-    return false;
-  }
-
-  // Virtual-hosted has ".s3." in hostname (bucket.s3.region.amazonaws.com)
-  // Path-style starts with "s3." (s3.region.amazonaws.com)
-  auto hostPortion = endpoint.substr(schemeEnd + 3);
-  return hostPortion.find(".s3.") != std::string::npos;
-}
-} // namespace
-
 std::string ClpPackageS3AuthProvider::constructS3Url(
     std::string_view splitPath) {
   VELOX_CHECK(!splitPath.empty(), "splitPath cannot be empty");
@@ -58,11 +37,6 @@ bool ClpPackageS3AuthProvider::exportAuthEnvironmentVariables() {
   }
 
   bucket_ = config_->get<std::string>(kBucket, "");
-  VELOX_CHECK(
-      bucket_.empty() || !isAwsVirtualHostedStyleEndpoint(endPoint_),
-      "{} should not be set when using AWS S3 virtual-hosted style URLs. "
-      "The bucket is already part of the endpoint hostname.",
-      kBucket);
 
   auto accessKeyId = config_->get<std::string>(kAccessKeyId, "");
   auto secretAccessKey = config_->get<std::string>(kSecretAccessKey, "");
