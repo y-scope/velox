@@ -23,6 +23,8 @@ namespace facebook::velox::connector::clp {
 std::string ClpPackageS3AuthProvider::constructS3Url(
     std::string_view splitPath) {
   VELOX_CHECK(!splitPath.empty(), "splitPath cannot be empty");
+  // For URLs where the bucket is already encoded in the endpoint (e.g., AWS S3
+  // virtual-hosted style: https://bucket.s3.region.amazonaws.com).
   if (bucket_.empty()) {
     return fmt::format("{}/{}", endPoint_, splitPath);
   }
