@@ -285,8 +285,31 @@ TEST_F(ClpPackageS3AuthProviderTest, constructS3UrlForAwsVirtualHostedStyle) {
       url, "https://logs.s3.us-east-1.amazonaws.com/archives/default/abc123");
 }
 
-// Tests that setting bucket with an AWS endpoint is rejected to prevent duplicate bucket in URL.
-TEST_F(ClpPackageS3AuthProviderTest, rejectBucketWithAwsEndpoint) {
+// Tests URL construction for AWS S3 using path-style URLs with bucket config.
+TEST_F(ClpPackageS3AuthProviderTest, constructS3UrlForAwsPathStyleWithBucket) {
+  const std::string cTestAccessKeyId{"aaaaaa"};
+  const std::string cTestBucket{"logs"};
+  const std::string cTestEndPoint{"https://s3.us-east-1.amazonaws.com"};
+  const std::string cTestSecretAccessKey{"bbbbbb"};
+  const std::string cTestSplitPath{"archives/default/abc123"};
+
+  std::unordered_map<std::string, std::string> configMap(
+      {{"clp.storage-type", "s3"},
+       {ClpConfig::kAuthProvider, "clp_package"},
+       {ClpPackageS3AuthProvider::kAccessKeyId, cTestAccessKeyId},
+       {ClpPackageS3AuthProvider::kBucket, cTestBucket},
+       {ClpPackageS3AuthProvider::kEndPoint, cTestEndPoint},
+       {ClpPackageS3AuthProvider::kSecretAccessKey, cTestSecretAccessKey}});
+  auto clpPackageS3AuthProvider = buildClpPackageS3AuthProvider(configMap);
+  VELOX_CHECK(clpPackageS3AuthProvider->exportAuthEnvironmentVariables());
+
+  auto url = clpPackageS3AuthProvider->constructS3Url(cTestSplitPath);
+  VELOX_CHECK_EQ(
+      url, "https://s3.us-east-1.amazonaws.com/logs/archives/default/abc123");
+}
+
+// Tests that setting bucket with AWS virtual-hosted style endpoint is rejected.
+TEST_F(ClpPackageS3AuthProviderTest, rejectBucketWithAwsVirtualHostedEndpoint) {
   const std::string cTestAccessKeyId{"aaaaaa"};
   const std::string cTestBucket{"logs"};
   const std::string cTestEndPoint{"https://logs.s3.us-east-1.amazonaws.com"};
@@ -303,7 +326,7 @@ TEST_F(ClpPackageS3AuthProviderTest, rejectBucketWithAwsEndpoint) {
   VELOX_ASSERT_THROW(
       clpPackageS3AuthProvider->exportAuthEnvironmentVariables(),
       "clp.s3-bucket should not be set when using AWS S3 virtual-hosted style "
-      "URLs (amazonaws.com)");
+      "URLs");
 }
 
 } // namespace facebook::velox::connector::clp
