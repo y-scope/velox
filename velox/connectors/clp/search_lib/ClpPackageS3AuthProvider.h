@@ -33,16 +33,12 @@ class ClpPackageS3AuthProvider : public ClpS3AuthProviderBase {
   static constexpr const char* kAccessKeyId = "clp.s3-access-key-id";
   static constexpr const char* kBucket = "clp.s3-bucket";
   static constexpr const char* kEndPoint = "clp.s3-end-point";
-  static constexpr const char* kRegion = "clp.s3-region";
   static constexpr const char* kSecretAccessKey = "clp.s3-secret-access-key";
   static constexpr const char* kSessionToken = "clp.s3-session-token";
 
   static constexpr const char* kEnvAwsAccessKeyId = "AWS_ACCESS_KEY_ID";
-  static constexpr const char* kEnvAwsDefaultRegion = "AWS_DEFAULT_REGION";
   static constexpr const char* kEnvAwsSecretAccessKey = "AWS_SECRET_ACCESS_KEY";
   static constexpr const char* kEnvAwsSessionToken = "AWS_SESSION_TOKEN";
-
-  static constexpr const char* kDefaultRegion = "us-east-1";
 
   std::string constructS3Url(std::string_view splitPath) override;
 
@@ -51,7 +47,6 @@ class ClpPackageS3AuthProvider : public ClpS3AuthProviderBase {
  private:
   std::string bucket_;
   std::string endPoint_;
-  std::string region_;
 };
 
 } // namespace facebook::velox::connector::clp

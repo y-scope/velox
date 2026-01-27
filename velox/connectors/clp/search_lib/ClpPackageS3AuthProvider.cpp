@@ -37,7 +37,11 @@ bool ClpPackageS3AuthProvider::exportAuthEnvironmentVariables() {
   }
 
   bucket_ = config_->get<std::string>(kBucket, "");
-  region_ = config_->get<std::string>(kRegion, kDefaultRegion);
+  VELOX_CHECK(
+      bucket_.empty() || endPoint_.find("amazonaws.com") == std::string::npos,
+      "{} should not be set when using AWS S3 virtual-hosted style URLs "
+      "(amazonaws.com). The bucket is already part of the endpoint hostname.",
+      kBucket);
 
   auto accessKeyId = config_->get<std::string>(kAccessKeyId, "");
   auto secretAccessKey = config_->get<std::string>(kSecretAccessKey, "");
@@ -50,7 +54,6 @@ bool ClpPackageS3AuthProvider::exportAuthEnvironmentVariables() {
 
   setEnvironmentVariable(kEnvAwsAccessKeyId, accessKeyId);
   setEnvironmentVariable(kEnvAwsSecretAccessKey, secretAccessKey);
-  setEnvironmentVariable(kEnvAwsDefaultRegion, region_);
 
   if (!sessionToken.empty()) {
     setEnvironmentVariable(kEnvAwsSessionToken, sessionToken);
