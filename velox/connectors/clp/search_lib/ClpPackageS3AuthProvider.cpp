@@ -23,16 +23,21 @@ namespace facebook::velox::connector::clp {
 std::string ClpPackageS3AuthProvider::constructS3Url(
     std::string_view splitPath) {
   VELOX_CHECK(!splitPath.empty(), "splitPath cannot be empty");
-  return fmt::format("{}/{}", this->endPoint_, splitPath);
+  if (bucket_.empty()) {
+    return fmt::format("{}/{}", endPoint_, splitPath);
+  }
+  return fmt::format("{}/{}/{}", endPoint_, bucket_, splitPath);
 }
 
 bool ClpPackageS3AuthProvider::exportAuthEnvironmentVariables() {
-  this->endPoint_ = config_->get<std::string>(kEndPoint, "");
-  VELOX_CHECK(
-      !this->endPoint_.empty(), fmt::format("{} cannot be empty", kEndPoint));
-  if ('/' == this->endPoint_.back()) {
-    this->endPoint_.pop_back();
+  endPoint_ = config_->get<std::string>(kEndPoint, "");
+  VELOX_CHECK(!endPoint_.empty(), fmt::format("{} cannot be empty", kEndPoint));
+  if ('/' == endPoint_.back()) {
+    endPoint_.pop_back();
   }
+
+  bucket_ = config_->get<std::string>(kBucket, "");
+  region_ = config_->get<std::string>(kRegion, kDefaultRegion);
 
   auto accessKeyId = config_->get<std::string>(kAccessKeyId, "");
   auto secretAccessKey = config_->get<std::string>(kSecretAccessKey, "");
@@ -42,8 +47,11 @@ bool ClpPackageS3AuthProvider::exportAuthEnvironmentVariables() {
   VELOX_CHECK(
       !secretAccessKey.empty(),
       fmt::format("{} cannot be empty", kSecretAccessKey));
+
   setEnvironmentVariable(kEnvAwsAccessKeyId, accessKeyId);
   setEnvironmentVariable(kEnvAwsSecretAccessKey, secretAccessKey);
+  setEnvironmentVariable(kEnvAwsDefaultRegion, region_);
+
   if (!sessionToken.empty()) {
     setEnvironmentVariable(kEnvAwsSessionToken, sessionToken);
   } else {

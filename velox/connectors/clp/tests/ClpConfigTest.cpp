@@ -205,16 +205,19 @@ TEST_F(ClpS3AuthProviderBaseTest, caseInsensitiveAuthProvider) {
 
 TEST_F(ClpPackageS3AuthProviderTest, readAndExportAwsAuthEnvironmentVariables) {
   const std::string cTestAccessKeyId{"aaaaaa"};
-  const std::string cTestEndPoint{"http://aaaaaa"};
+  const std::string cTestBucket{"test-bucket"};
+  const std::string cTestEndPoint{"http://localhost:9000"};
+  const std::string cTestRegion{"us-west-2"};
   const std::string cTestSecretAccessKey{"bbbbbb"};
   const std::string cTestSessionToken{"cccccc"};
 
-  // Test all properties
   std::unordered_map<std::string, std::string> configMap(
       {{"clp.storage-type", "s3"},
        {ClpConfig::kAuthProvider, "clp_package"},
        {ClpPackageS3AuthProvider::kAccessKeyId, cTestAccessKeyId},
+       {ClpPackageS3AuthProvider::kBucket, cTestBucket},
        {ClpPackageS3AuthProvider::kEndPoint, cTestEndPoint},
+       {ClpPackageS3AuthProvider::kRegion, cTestRegion},
        {ClpPackageS3AuthProvider::kSecretAccessKey, cTestSecretAccessKey},
        {ClpPackageS3AuthProvider::kSessionToken, cTestSessionToken}});
   auto clpPackageS3AuthProvider = buildClpPackageS3AuthProvider(configMap);
@@ -224,9 +227,10 @@ TEST_F(ClpPackageS3AuthProviderTest, readAndExportAwsAuthEnvironmentVariables) {
   VELOX_CHECK(checkEnvironmentVariableEquals(
       ClpPackageS3AuthProvider::kEnvAwsSecretAccessKey, cTestSecretAccessKey));
   VELOX_CHECK(checkEnvironmentVariableEquals(
+      ClpPackageS3AuthProvider::kEnvAwsDefaultRegion, cTestRegion));
+  VELOX_CHECK(checkEnvironmentVariableEquals(
       ClpPackageS3AuthProvider::kEnvAwsSessionToken, cTestSessionToken));
 
-  // Test auth without the session token
   configMap = {
       {"clp.storage-type", "s3"},
       {ClpConfig::kAuthProvider, "clp_package"},
@@ -237,6 +241,51 @@ TEST_F(ClpPackageS3AuthProviderTest, readAndExportAwsAuthEnvironmentVariables) {
   VELOX_CHECK(clpPackageS3AuthProvider->exportAuthEnvironmentVariables());
   VELOX_CHECK(checkEnvironmentVariableEquals(
       ClpPackageS3AuthProvider::kEnvAwsSessionToken, std::nullopt));
+  VELOX_CHECK(checkEnvironmentVariableEquals(
+      ClpPackageS3AuthProvider::kEnvAwsDefaultRegion,
+      ClpPackageS3AuthProvider::kDefaultRegion));
+}
+
+TEST_F(ClpPackageS3AuthProviderTest, constructS3UrlWithBucket) {
+  const std::string cTestAccessKeyId{"aaaaaa"};
+  const std::string cTestBucket{"logs"};
+  const std::string cTestEndPoint{"http://172.26.105.44:9000"};
+  const std::string cTestSecretAccessKey{"bbbbbb"};
+  const std::string cTestSplitPath{"archives/default/abc123"};
+
+  std::unordered_map<std::string, std::string> configMap(
+      {{"clp.storage-type", "s3"},
+       {ClpConfig::kAuthProvider, "clp_package"},
+       {ClpPackageS3AuthProvider::kAccessKeyId, cTestAccessKeyId},
+       {ClpPackageS3AuthProvider::kBucket, cTestBucket},
+       {ClpPackageS3AuthProvider::kEndPoint, cTestEndPoint},
+       {ClpPackageS3AuthProvider::kSecretAccessKey, cTestSecretAccessKey}});
+  auto clpPackageS3AuthProvider = buildClpPackageS3AuthProvider(configMap);
+  VELOX_CHECK(clpPackageS3AuthProvider->exportAuthEnvironmentVariables());
+
+  auto url = clpPackageS3AuthProvider->constructS3Url(cTestSplitPath);
+  VELOX_CHECK_EQ(
+      url, "http://172.26.105.44:9000/logs/archives/default/abc123");
+}
+
+TEST_F(ClpPackageS3AuthProviderTest, constructS3UrlWithoutBucket) {
+  const std::string cTestAccessKeyId{"aaaaaa"};
+  const std::string cTestEndPoint{"http://172.26.105.44:9000/logs"};
+  const std::string cTestSecretAccessKey{"bbbbbb"};
+  const std::string cTestSplitPath{"archives/default/abc123"};
+
+  std::unordered_map<std::string, std::string> configMap(
+      {{"clp.storage-type", "s3"},
+       {ClpConfig::kAuthProvider, "clp_package"},
+       {ClpPackageS3AuthProvider::kAccessKeyId, cTestAccessKeyId},
+       {ClpPackageS3AuthProvider::kEndPoint, cTestEndPoint},
+       {ClpPackageS3AuthProvider::kSecretAccessKey, cTestSecretAccessKey}});
+  auto clpPackageS3AuthProvider = buildClpPackageS3AuthProvider(configMap);
+  VELOX_CHECK(clpPackageS3AuthProvider->exportAuthEnvironmentVariables());
+
+  auto url = clpPackageS3AuthProvider->constructS3Url(cTestSplitPath);
+  VELOX_CHECK_EQ(
+      url, "http://172.26.105.44:9000/logs/archives/default/abc123");
 }
 
 } // namespace facebook::velox::connector::clp
