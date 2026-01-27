@@ -172,8 +172,7 @@ ErrorCode ClpArchiveCursor::loadSplit() {
       switch (column.type) {
         case ColumnType::String:
           columnDescriptor->set_matching_types(
-              LiteralType::ClpStringT | LiteralType::VarStringT |
-              LiteralType::TimestampT);
+              LiteralType::ClpStringT | LiteralType::VarStringT);
           break;
         case ColumnType::Integer:
           columnDescriptor->set_matching_types(LiteralType::IntegerT);
