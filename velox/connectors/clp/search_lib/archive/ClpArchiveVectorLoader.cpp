@@ -72,7 +72,7 @@ void ClpArchiveVectorLoader::populateTimestampData(
     case clp_s::NodeType::FormattedFloat:
     case clp_s::NodeType::DictionaryFloat:
     case clp_s::NodeType::Integer:
-    case clp_s::NodeType::DateString:
+    case clp_s::NodeType::DeprecatedDateString:
       supportedNodeType = true;
       break;
     default:
@@ -215,7 +215,7 @@ void ClpArchiveVectorLoader::loadInternal(
       } else if (
           nullptr !=
           dynamic_cast<clp_s::DateStringColumnReader*>(columnReader_)) {
-        populateTimestampData<clp_s::NodeType::DateString>(
+        populateTimestampData<clp_s::NodeType::DeprecatedDateString>(
             rows, timestampVector);
       } else if (
           nullptr != dynamic_cast<clp_s::FloatColumnReader*>(columnReader_)) {
@@ -261,8 +261,8 @@ template void
 ClpArchiveVectorLoader::populateTimestampData<clp_s::NodeType::Integer>(
     RowSet rows,
     FlatVector<facebook::velox::Timestamp>* vector);
-template void
-ClpArchiveVectorLoader::populateTimestampData<clp_s::NodeType::DateString>(
+template void ClpArchiveVectorLoader::populateTimestampData<
+    clp_s::NodeType::DeprecatedDateString>(
     RowSet rows,
     FlatVector<facebook::velox::Timestamp>* vector);
 template void
