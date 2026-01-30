@@ -24,11 +24,10 @@ COPY scripts /tmp/velox-deps/
 ENV TZ=Etc/UTC
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install CMake 3.28.3 using official binary installer
-# NOTE: setup-ubuntu.sh installs cmake via pip, but pip-installed cmake is not reliably found
-# in container environments, causing FastFloat library build failures. Using the official
-# binary installer ensures cmake is available and dependencies build correctly in the current
-# CI containerized environment.
+# Install CMake 3.28.3 using its install script
+# NOTE: `scripts/setup-ubuntu.sh` installs CMake via pip, but sometimes the pip-installed CMake
+# doesn't show up on the path in container environments (causing, for example, FastFloat library
+# build 1failures). Using CMake's install script avoids this issue.
 RUN wget --progress=dot:giga https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-x86_64.sh \
    && chmod +x cmake-3.28.3-linux-x86_64.sh \
    && ./cmake-3.28.3-linux-x86_64.sh --skip-license --prefix=/usr/local \
