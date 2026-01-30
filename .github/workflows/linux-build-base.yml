@@ -24,8 +24,6 @@ on:
         type: boolean
 
 jobs:
-  # First job: build or retrieve the Docker builder image
-  # This image contains all dependencies and pre-populated ccache for fast builds
   builder-image:
     name: Build builder image
     uses: ./.github/workflows/yscope-velox-builder-img.yml
@@ -33,15 +31,16 @@ jobs:
       contents: read
       packages: write
 
-  # Build and test jobs run in parallel after builder-image completes.
-  # velox_exec_test takes 15+ minutes (significantly longer than all other tests combined),
+  # Build and run tests after `builder-image` completes.
+  #
+  # NOTE: `velox_exec_test` takes 15+ minutes (significantly longer than all other tests combined),
   # so we run it separately to allow other tests to complete quickly in parallel.
   #
   # To separate additional slow tests in the future:
   # 1. Add a new matrix entry with ctest-args: '-R "test_name"'
   # 2. Update the "other" entry to exclude it: '-E "velox_exec_test|test_name"'
   build-and-test:
-    name: Build and Test (${{ matrix.test-group }})
+    name: Build and test (${{ matrix.test-group }})
     needs: builder-image
     runs-on: >-
       ${{
@@ -57,14 +56,15 @@ jobs:
             ctest-args: -R velox_exec_test
           - test-group: other
             ctest-args: -E velox_exec_test
-            # Increase file descriptor limit for velox_table_evolution_fuzzer_test
+
+            # Increase file descriptor limit for `velox_table_evolution_fuzzer_test`
             ulimit-nofile: 8192
     container:
-      # Image tag is dynamically generated based on dependency hash (intentionally unpinned)
-      image: ${{ needs.builder-image.outputs.image-tag }}
+      image: ${{ needs.builder-image.outputs.image-ref }}
     env:
       USE_CLANG: ${{ inputs.use-clang && 'true' || 'false' }}
-      # Set CCACHE_BASEDIR to checkout path so cache keys use relative paths
+
+      # Set `CCACHE_BASEDIR` so cache keys use relative paths
       CCACHE_BASEDIR: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@v4
@@ -73,22 +73,20 @@ jobs:
 
       - name: Build Velox
         env:
-          # Tune parallelism based on runner type: self-hosted (16-core) vs GitHub-hosted (4-core)
+          # Tune parallelism based on runner type: Self-hosted (16-core) vs GitHub-hosted (4-core)
           # MAX_HIGH_MEM_JOBS: High-memory compilation tasks (templates, large TUs)
           # MAX_LINK_JOBS: Parallel linking tasks (memory-intensive)
           MAKEFLAGS: >-
             MAX_HIGH_MEM_JOBS=${{ runner.environment == 'self-hosted' && '16' || '4' }}
             MAX_LINK_JOBS=${{ runner.environment == 'self-hosted' && '12' || '3' }}
         run: |
-          # Use Clang compiler if requested (e.g., scheduled.yml uses Clang for compiler diversity)
-          # Otherwise defaults to GCC (default CC/CXX in the container)
           if [ "${USE_CLANG}" = "true" ]; then
             export CC=/usr/bin/clang-15
             export CXX=/usr/bin/clang++-15
           fi
           make release
 
-      - name: Show CCache Stats After Build
+      - name: Show CCache stats after build
         run: ccache -vs
 
       - name: Run Tests
@@ -96,5 +94,9 @@ jobs:
           if [ -n "${{ matrix.ulimit-nofile }}" ]; then
             ulimit -n ${{ matrix.ulimit-nofile }}
           fi
-          cd _build/release && ctest -j $(getconf _NPROCESSORS_ONLN) --output-on-failure --no-tests=error \
-            ${{ matrix.ctest-args }}
+          cd _build/release \
+            && ctest \
+              -j $(getconf _NPROCESSORS_ONLN) \
+              --output-on-failure \
+              --no-tests=error \
+              ${{ matrix.ctest-args }}

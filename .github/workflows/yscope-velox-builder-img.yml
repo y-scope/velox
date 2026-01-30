@@ -18,12 +18,11 @@ on:
   # Called by other workflows (e.g., linux-build-base.yml) to get the builder image
   workflow_call:
     outputs:
-      image-tag:
-        description: Fully qualified Docker image tag (ghcr.io/owner/repo/image:hash)
-        value: ${{ jobs.builder-image.outputs.image-tag }}
-  # Allow manual trigger via GitHub Actions UI for rebuilding the image on-demand
+      image-ref:
+        description: Fully qualified Docker image reference (e.g., ghcr.io/owner/repo/image:hash)
+        value: ${{ jobs.builder-image.outputs.image-ref }}
   workflow_dispatch: {}
-  # Automatically rebuild image when dependency installation scripts change
+
   push:
     paths:
       - scripts/**
@@ -42,36 +41,31 @@ jobs:
           || 'ubuntu-latest'
       }}
     outputs:
-      # This output is used by calling workflows to get the image tag
-      image-tag: ${{ steps.image-tag.outputs.tag }}
+      image-ref: ${{ steps.image-ref.outputs.ref }}
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
-      - name: Calculate dependency hash
+      - name: Hash the dependency scripts
         id: deps-hash
         run: |
-          # Use hashFiles for deterministic hashing of dependency files
-          # Only hash scripts/** to avoid rebuilding when workflow logic changes
           HASH="${{ hashFiles('scripts/**') }}"
-          # Take first 12 characters for shorter tag (e.g., "a1b2c3d4e5f6")
-          SHORT_HASH="${HASH:0:12}"
-          echo "hash=${SHORT_HASH}" >> "$GITHUB_OUTPUT"
-          echo "Dependency hash: ${SHORT_HASH}"
 
-      - name: Set image tag
-        id: image-tag
+          # Truncate to 7 characters (Git's default short hash length)
+          SHORT_HASH="${HASH:0:7}"
+          echo "hash=${SHORT_HASH}" >> "$GITHUB_OUTPUT"
+
+      - name: Set image ref
+        id: image-ref
         env:
           DEPS_HASH: ${{ steps.deps-hash.outputs.hash }}
         run: |
-          # GHCR requires lowercase repository names (owner/repo)
-          # Example: "y-scope/velox" -> "y-scope/velox"
-          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          # Final tag format: ghcr.io/y-scope/velox/y-scope-velox-builder:a1b2c3d4e5f6
-          TAG="ghcr.io/${REPO_LOWER}/y-scope-velox-builder:${DEPS_HASH}"
-          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
-          echo "Image tag: ${TAG}"
+          # Docker doesn't support repository names with uppercase characters, so we convert the
+          # name to lowercase here.
+          REPO_LOWER=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')
+          REF="ghcr.io/${REPO_LOWER}/y-scope-velox-builder:${DEPS_HASH}"
+          echo "ref=${REF}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -84,12 +78,10 @@ jobs:
         id: check-image
         continue-on-error: true
         env:
-          IMAGE_TAG: ${{ steps.image-tag.outputs.tag }}
+          IMAGE_REF: ${{ steps.image-ref.outputs.ref }}
         run: |
-          # Use docker manifest inspect to check remote registry without pulling
-          # This is more efficient than docker pull for existence checks
-          # If image with this hash already exists, we can skip the ~60min rebuild
-          if docker manifest inspect "${IMAGE_TAG}" > /dev/null 2>&1; then
+          # NOTE: For existence checks, this is more efficient than `docker pull`.
+          if docker manifest inspect "${IMAGE_REF}" > /dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
             echo "Image already exists, skipping build"
           else
@@ -97,9 +89,6 @@ jobs:
             echo "Image does not exist, will build"
           fi
 
-      # Only run the following steps if image doesn't exist (conditional on exists == 'false')
-      # Docker Buildx is required for docker/build-push-action to build and push images
-      # It provides advanced build features like multi-stage builds and efficient layer caching
       - name: Set up Docker Buildx
         if: steps.check-image.outputs.exists == 'false'
         uses: docker/setup-buildx-action@v3
@@ -111,4 +100,5 @@ jobs:
           context: .
           file: scripts/docker/yscope-velox-builder.dockerfile
           push: true
-          tags: ${{ steps.image-tag.outputs.tag }}
+          # NOTE: `tags` expects a full image reference (e.g., ghcr.io/owner/repo:hash), not just the tag portion
+          tags: ${{ steps.image-ref.outputs.ref }}
