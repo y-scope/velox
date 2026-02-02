@@ -131,7 +131,7 @@ ErrorCode ClpArchiveCursor::loadSplit() {
     archiveReader_->open(
         get_path_object_for_raw_path(splitPath_), networkAuthOption);
   } catch (std::exception& e) {
-    VLOG(2) << "Failed to open archive file: " << e.what();
+    VLOG(2) << "Failed to open archive file: " << splitPath_ << ": " << e.what();
     return ErrorCode::InternalError;
   }
 
