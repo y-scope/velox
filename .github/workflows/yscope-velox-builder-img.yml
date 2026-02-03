@@ -90,10 +90,11 @@ jobs:
           fi
 
       - name: Extract GitHub metadata
+        id: meta
         if: steps.check-image.outputs.exists == 'false'
         uses: docker/metadata-action@v5
         with:
-          images: ${{steps.image-tag.outputs.tag}}
+          images: ${{ steps.image-ref.outputs.ref }}
 
       - name: Set up Docker Buildx
         if: steps.check-image.outputs.exists == 'false'
@@ -108,3 +109,4 @@ jobs:
           push: true
           # NOTE: `tags` expects a full image reference (e.g., ghcr.io/owner/repo:hash), not just the tag portion
           tags: ${{ steps.image-ref.outputs.ref }}
+          labels: ${{ steps.meta.outputs.labels }}
