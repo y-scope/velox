@@ -57,14 +57,12 @@ ENV CCACHE_MAXSIZE=5G
 # by CI builds (which run in /__w/velox/velox/)
 ENV CCACHE_NOHASHDIR=true
 
-# Copy velox source for warmup build to populate ccache
-COPY . /tmp/velox-src/
-WORKDIR /tmp/velox-src
-
 # Build velox once to warm up ccache
 # NOTE:
 # - We set `CCACHE_BASEDIR` so cache keys use relative paths.
 # - We clear the stats after warmup so that CI builds only show their own cache hits.
+COPY . /tmp/velox-src/
+WORKDIR /tmp/velox-src
 RUN CCACHE_BASEDIR=/tmp/velox-src make release \
     && echo "CCache statistics after warmup build:" \
     && ccache --verbose --show-stats \
