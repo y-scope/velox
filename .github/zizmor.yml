@@ -22,9 +22,3 @@ rules:
   unpinned-images:
     ignore:
       - linux-build-base.yml
-  # yscope-velox-builder-img.yml uses actions/checkout and other first-party GitHub actions
-  # without SHA pinning. For official GitHub-maintained actions, using version tags (e.g., @v4)
-  # allows automatic security patches while maintaining reasonable trust in GitHub's own repos.
-  unpinned-uses:
-    ignore:
-      - yscope-velox-builder-img.yml
