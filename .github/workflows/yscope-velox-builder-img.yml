@@ -92,7 +92,7 @@ jobs:
       - name: Extract GitHub metadata
         id: meta
         if: steps.check-image.outputs.exists == 'false'
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
         with:
           images: ${{ steps.image-ref.outputs.ref }}
 
