@@ -40,11 +40,10 @@ RUN /tmp/velox-deps/setup-ubuntu.sh \
 
 # Activate the virtual environment.
 #
-# NOTE: We set `ENV` variables directly rather than using `source /opt/velox-venv/bin/activate`
-# in a RUN command since activation in a RUN command only persists for that single instruction
-# (each RUN starts a fresh shell). By setting PATH and VIRTUAL_ENV via ENV, these values are
-# baked into the Docker image and persist across all subsequent RUN commands and any containers
-# started from the final image.
+# NOTE: We set `ENV` variables directly rather than using `source /opt/velox-venv/bin/activate` in
+# a `RUN` command since the latter only persists for that single instruction (each `RUN` starts a
+# fresh shell), whereas the former persists across all subsequent `RUN` commands and in containers
+# that use the image.
 ENV VIRTUAL_ENV="/opt/velox-venv"
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 
