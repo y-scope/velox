@@ -53,6 +53,7 @@ ENV CCACHE_DIR=/var/cache/ccache
 # Disable compression to trade disk space for speed in CI builds
 ENV CCACHE_COMPRESSLEVEL=0
 ENV CCACHE_MAXSIZE=5G
+
 # Ignore working directory in cache keys so warmup cache (built in /tmp/velox-src/) is reused
 # by CI builds (which run in /__w/velox/velox/)
 ENV CCACHE_NOHASHDIR=true
