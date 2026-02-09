@@ -107,6 +107,8 @@ jobs:
           context: .
           file: scripts/docker/yscope-velox-builder.dockerfile
           push: true
-          # NOTE: `tags` expects a full image reference (e.g., ghcr.io/owner/repo:hash), not just the tag portion
+
+          # NOTE: `tags` expects a full image reference (e.g., ghcr.io/owner/repo:hash), not just
+          # the part after the colon (':').
           tags: ${{ steps.image-ref.outputs.ref }}
           labels: ${{ steps.meta.outputs.labels }}
