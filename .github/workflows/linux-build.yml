@@ -47,8 +47,8 @@ permissions:
   # Necessary to publish Docker images to GitHub's container registry (ghcr.io)
   packages: write
 
-# For PRs: Groups by branch name, so pushing to the same PR cancels previous runs.
-# For pushes to main: Groups by commit SHA, so every merge is tested independently.
+# For PRs: Group by branch name, so pushing to the same PR cancels previous runs.
+# For pushes to main: Group by commit SHA, so every merge is tested independently.
 concurrency:
   group: ${{ github.workflow }}-${{ github.repository }}-${{ github.head_ref || github.sha }}
   cancel-in-progress: true
