@@ -64,8 +64,9 @@ jobs:
           # Docker doesn't support repository names with uppercase characters, so we convert the
           # name to lowercase here.
           REPO_LOWER=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')
-          REF="ghcr.io/${REPO_LOWER}/y-scope-velox-builder:${DEPS_HASH}"
-          echo "ref=${REF}" >> "$GITHUB_OUTPUT"
+          IMAGE="ghcr.io/${REPO_LOWER}/y-scope-velox-builder"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+          echo "ref=${IMAGE}:${DEPS_HASH}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
@@ -94,7 +95,7 @@ jobs:
         if: steps.check-image.outputs.exists == 'false'
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
         with:
-          images: ${{ steps.image-ref.outputs.ref }}
+          images: ${{ steps.image-ref.outputs.image }}
 
       - name: Set up Docker Buildx
         if: steps.check-image.outputs.exists == 'false'
