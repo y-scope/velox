@@ -702,6 +702,54 @@ TEST_F(ClpConnectorTest, test5FloatTimestampPushdown) {
   test::assertEqualVectors(expected, output);
 }
 
+TEST_F(ClpConnectorTest, test5FloatTimestampPushdown) {
+  // Test filtering rows with a timestamp parsed from a date string and floats
+  // in various formats.
+  const std::shared_ptr<std::string> kqlQuery = std::make_shared<std::string>(
+      R"(timestamp < timestamp("1746003070000", "\L") and timestamp >= timestamp("1746003005124", "\L")");
+  auto plan =
+      PlanBuilder(pool_.get())
+          .startTableScan()
+          .outputType(ROW({"timestamp", "floatValue"}, {TIMESTAMP(), DOUBLE()}))
+          .tableHandle(
+              std::make_shared<ClpTableHandle>(kClpConnectorId, "test_5"))
+          .assignments(
+              {{"timestamp",
+                std::make_shared<ClpColumnHandle>(
+                    "timestamp", "timestamp", TIMESTAMP())},
+               {"floatValue",
+                std::make_shared<ClpColumnHandle>(
+                    "floatValue", "floatValue", DOUBLE())}})
+          .endTableScan()
+          .orderBy({"\"timestamp\" ASC"}, false)
+          .planNode();
+
+  auto output = getResults(
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_5.v0.5.0.clps"),
+          ClpConnectorSplit::SplitType::kArchive,
+          kqlQuery)});
+  auto expected = makeRowVector({// timestamp
+                                 makeFlatVector<Timestamp>(
+                                     {Timestamp(1746003005, 124000000),
+                                      Timestamp(1746003005, 124100000),
+                                      Timestamp(1746003005, 125000000),
+                                      Timestamp(1746003005, 126000000),
+                                      Timestamp(1746003005, 127000000),
+                                      Timestamp(1746003060, 0),
+                                      Timestamp(1746003065, 0)}),
+                                 makeFlatVector<double>(
+                                     {1.2345678912345E9,
+                                      1E16,
+                                      1.234567891234567E9,
+                                      1.234567891234567E9,
+                                      -1.234567891234567E-9,
+                                      1234567891.234567,
+                                      -1234567891.234567})});
+  test::assertEqualVectors(expected, output);
+}
+
 TEST_F(ClpConnectorTest, test5FormattedFloatNoPushdown) {
   // Test floats of only FormattedFloat type
   const std::shared_ptr<std::string> kqlQuery = nullptr;
