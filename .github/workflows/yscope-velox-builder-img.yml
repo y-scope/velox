@@ -1,0 +1,115 @@
+# Copyright (c) Facebook, Inc. and its affiliates.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Build Velox Builder Image
+
+on:
+  # Called by other workflows (e.g., linux-build-base.yml) to get the builder image
+  workflow_call:
+    outputs:
+      image-ref:
+        description: Fully qualified Docker image reference (e.g., ghcr.io/owner/repo/image:hash)
+        value: ${{ jobs.builder-image.outputs.image-ref }}
+  workflow_dispatch: {}
+
+  push:
+    paths:
+      - scripts/**
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  builder-image:
+    name: Build and publish builder image
+    runs-on: >-
+      ${{
+          github.repository_owner == 'y-scope'
+          && fromJSON('["self-hosted", "x64", "cores=32", "ubuntu-noble"]')
+          || 'ubuntu-latest'
+      }}
+    outputs:
+      image-ref: ${{ steps.image-ref.outputs.ref }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      - name: Hash the dependency scripts
+        id: deps-hash
+        run: |
+          HASH="${{ hashFiles('scripts/**') }}"
+
+          # Truncate to 7 characters (Git's default short hash length)
+          SHORT_HASH="${HASH:0:7}"
+          echo "hash=${SHORT_HASH}" >> "$GITHUB_OUTPUT"
+
+      - name: Set image ref
+        id: image-ref
+        env:
+          DEPS_HASH: ${{ steps.deps-hash.outputs.hash }}
+        run: |
+          # Docker doesn't support repository names with uppercase characters, so we convert the
+          # name to lowercase here.
+          REPO_LOWER=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')
+          IMAGE="ghcr.io/${REPO_LOWER}/y-scope-velox-builder"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+          echo "ref=${IMAGE}:${DEPS_HASH}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check if image exists
+        id: check-image
+        continue-on-error: true
+        env:
+          IMAGE_REF: ${{ steps.image-ref.outputs.ref }}
+        run: |
+          # NOTE: For existence checks, this is more efficient than `docker pull`.
+          if docker manifest inspect "${IMAGE_REF}" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Image already exists, skipping build"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Image does not exist, will build"
+          fi
+
+      - name: Extract GitHub metadata
+        id: meta
+        if: steps.check-image.outputs.exists == 'false'
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
+        with:
+          images: ${{ steps.image-ref.outputs.image }}
+
+      - name: Set up Docker Buildx
+        if: steps.check-image.outputs.exists == 'false'
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - name: Build and push builder image
+        if: steps.check-image.outputs.exists == 'false'
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          file: scripts/docker/yscope-velox-builder.dockerfile
+          push: true
+
+          # NOTE: `tags` expects a full image reference (e.g., ghcr.io/owner/repo:hash), not just
+          # the part after the colon (':').
+          tags: ${{ steps.image-ref.outputs.ref }}
+          labels: ${{ steps.meta.outputs.labels }}
