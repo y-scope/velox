@@ -576,8 +576,8 @@ TEST_F(ClpConnectorTest, test4IrTimestampNoPushdown) {
 TEST_F(ClpConnectorTest, test4IrTimestampPushdown) {
   // Only the second event meet the condition, the first event is a date string
   // which is not supported yet so the value will be NULL.
-  const std::shared_ptr<std::string> kqlQuery =
-      std::make_shared<std::string>(R"(timestamp < timestamp("1756003005000000", "\L"))");
+  const std::shared_ptr<std::string> kqlQuery = std::make_shared<std::string>(
+      R"(timestamp < timestamp("1756003005000000", "\L"))");
   auto plan = PlanBuilder(pool_.get())
                   .startTableScan()
                   .outputType(ROW({"timestamp"}, {TIMESTAMP()}))
