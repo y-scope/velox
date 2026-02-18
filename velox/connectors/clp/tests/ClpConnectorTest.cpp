@@ -702,7 +702,7 @@ TEST_F(ClpConnectorTest, test5FloatTimestampPushdown) {
   test::assertEqualVectors(expected, output);
 }
 
-TEST_F(ClpConnectorTest, test5FloatTimestampPushdown) {
+TEST_F(ClpConnectorTest, test5v050FloatTimestampPushdown) {
   // Test filtering rows with a timestamp parsed from a date string and floats
   // in various formats.
   const std::shared_ptr<std::string> kqlQuery = std::make_shared<std::string>(
