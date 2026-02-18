@@ -494,8 +494,8 @@ else()
 endif()
 velox_resolve_dependency(glog)
 
-velox_set_source(fmt)
-velox_resolve_dependency(fmt 9.0.0)
+set(fmt_SOURCE BUNDLED)
+velox_resolve_dependency(fmt 11.2.0)
 
 if(VELOX_ENABLE_COMPRESSION_LZ4)
   find_package(lz4 REQUIRED)
