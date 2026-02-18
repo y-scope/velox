@@ -24,45 +24,79 @@ on:
         type: boolean
 
 jobs:
-  ubuntu-release:
-    name: Ubuntu release with resolve_dependency
-    runs-on: yscope-gh-runner
+  builder-image:
+    name: Build builder image
+    uses: ./.github/workflows/yscope-velox-builder-img.yml
+    permissions:
+      contents: read
+      packages: write
+
+  # Build and run tests after `builder-image` completes.
+  #
+  # NOTE: `velox_exec_test` takes 15+ minutes (significantly longer than all other tests combined),
+  # so we run it separately to allow other tests to complete quickly in parallel.
+  #
+  # To separate additional slow tests in the future:
+  # 1. Add a new matrix entry with ctest-args: '-R "test_name"'
+  # 2. Update the "other" entry to exclude it: '-E "velox_exec_test|test_name"'
+  build-and-test:
+    name: Build and test (${{ matrix.test-group }})
+    needs: builder-image
+    runs-on: >-
+      ${{
+          github.repository_owner == 'y-scope'
+          && fromJSON('["self-hosted", "x64", "ubuntu-noble"]')
+          || 'ubuntu-latest'
+      }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - test-group: velox_exec_test
+            ctest-args: -R velox_exec_test
+          - test-group: other
+            ctest-args: -E velox_exec_test
+
+            # Increase file descriptor limit for `velox_table_evolution_fuzzer_test`
+            ulimit-nofile: 8192
+    container:
+      image: ${{ needs.builder-image.outputs.image-ref }}
     env:
-      CCACHE_COMPRESSLEVEL: 2
-      CCACHE_MAX_SIZE: 5G
       USE_CLANG: ${{ inputs.use-clang && 'true' || 'false' }}
-    defaults:
-      run:
-        shell: bash
-        working-directory: velox
+
+      # Set `CCACHE_BASEDIR` so cache keys use relative paths
+      CCACHE_BASEDIR: ${{ github.workspace }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          path: velox
           persist-credentials: false
 
-      - name: Install Dependencies
-        run: |
-          source scripts/setup-ubuntu.sh && install_apt_deps
-
-      - name: Clear CCache Statistics
-        run: |
-          ccache -sz
-
-      - name: Build Artifact
+      - name: Build Velox
         env:
-          VELOX_DEPENDENCY_SOURCE: BUNDLED
-          Boost_SOURCE: SYSTEM
-          ICU_SOURCE: SYSTEM
-          MAKEFLAGS: MAX_HIGH_MEM_JOBS=4 MAX_LINK_JOBS=3
+          # Tune parallelism based on runner type: Self-hosted (16-core) vs GitHub-hosted (4-core)
+          # MAX_HIGH_MEM_JOBS: High-memory compilation tasks (templates, large TUs)
+          # MAX_LINK_JOBS: Parallel linking tasks (memory-intensive)
+          MAKEFLAGS: >-
+            MAX_HIGH_MEM_JOBS=${{ runner.environment == 'self-hosted' && '16' || '4' }}
+            MAX_LINK_JOBS=${{ runner.environment == 'self-hosted' && '12' || '3' }}
         run: |
-          if [[ "${USE_CLANG}" = "true" ]]; then export CC=/usr/bin/clang-15; export CXX=/usr/bin/clang++-15; fi
+          if [ "${USE_CLANG}" = "true" ]; then
+            export CC=/usr/bin/clang-15
+            export CXX=/usr/bin/clang++-15
+          fi
           make release
 
-      - name: CCache after
-        run: |
-          ccache -vs
+      - name: Show CCache stats after build
+        run: ccache -vs
 
       - name: Run Tests
         run: |
-          cd _build/release && ctest -j $(getconf _NPROCESSORS_ONLN) --output-on-failure --no-tests=error
+          if [ -n "${{ matrix.ulimit-nofile }}" ]; then
+            ulimit -n ${{ matrix.ulimit-nofile }}
+          fi
+          cd _build/release \
+            && ctest \
+              -j $(getconf _NPROCESSORS_ONLN) \
+              --output-on-failure \
+              --no-tests=error \
+              ${{ matrix.ctest-args }}
