@@ -580,8 +580,8 @@ TEST_F(ClpConnectorTest, test4IrTimestampNoPushdown) {
 TEST_F(ClpConnectorTest, test4IrTimestampPushdown) {
   // Only the second event meet the condition, the first event is a date string
   // which is not supported yet so the value will be NULL.
-  const std::shared_ptr<std::string> kqlQuery =
-      std::make_shared<std::string>("(timestamp < 1756003005000000)");
+  const std::shared_ptr<std::string> kqlQuery = std::make_shared<std::string>(
+      R"(timestamp < timestamp("1756003005000000", "\L"))");
   auto plan =
       PlanBuilder(pool_.get())
           .startTableScan()
@@ -661,11 +661,9 @@ TEST_F(ClpConnectorTest, test5FloatTimestampNoPushdown) {
 
 TEST_F(ClpConnectorTest, test5FloatTimestampPushdown) {
   // Test filtering rows with a timestamp parsed from a date string and floats
-  // in various formats. Because KQL doesn’t automatically interpret the unit of
-  // the timestamp, the returned result differs slightly from the one without
-  // pushdown.
+  // in various formats.
   const std::shared_ptr<std::string> kqlQuery = std::make_shared<std::string>(
-      "(timestamp < 1746003005.127 and timestamp >= 1746003005.124)");
+      R"(timestamp < timestamp("1746003005.127") and timestamp >= timestamp("1746003005.124")");
   auto plan =
       PlanBuilder(pool_.get())
           .startTableScan()
