@@ -16,7 +16,7 @@ include_guard(GLOBAL)
 FetchContent_Declare(
   log_surgeon
   GIT_REPOSITORY https://github.com/y-scope/log-surgeon.git
-  GIT_TAG 85d4f2c09c0e55f1fb87cdc8b0f4d13fb1a733e1
+  GIT_TAG eebf857962f8fc022bfa5de8d00e10ee4ac36bb8
   OVERRIDE_FIND_PACKAGE)
 
 set(log_surgeon_BUILD_TESTING OFF)
