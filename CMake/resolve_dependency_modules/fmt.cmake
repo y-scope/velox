@@ -13,7 +13,7 @@
 # limitations under the License.
 include_guard(GLOBAL)
 
-set(VELOX_FMT_VERSION 10.1.1)
+set(VELOX_FMT_VERSION 11.2.0)
 set(VELOX_FMT_BUILD_SHA256_CHECKSUM
     78b8c0a72b1c35e4443a7e308df52498252d1cefc2b08c9a97bc9ee6cfe61f8b)
 set(VELOX_FMT_SOURCE_URL
