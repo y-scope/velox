@@ -15,9 +15,3 @@ rules:
   use-trusted-publishing:
     ignore:
       - build_pyvelox.yml
-
-  unpinned-images:
-    ignore:
-      # linux-build-base.yml builds and publishes a container image which we then use immediately;
-      # so we need to use the images dynamically generated (i.e., unpinned) tag.
-      - linux-build-base.yml
