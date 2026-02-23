@@ -582,7 +582,7 @@ endif()
 velox_resolve_dependency(glog)
 
 velox_set_source(fmt)
-velox_resolve_dependency(fmt 9.0.0)
+velox_resolve_dependency(fmt 11.2.0)
 
 if(VELOX_ENABLE_COMPRESSION_LZ4)
   find_package(lz4 REQUIRED)
@@ -637,12 +637,12 @@ if(${VELOX_ENABLE_CLP_CONNECTOR})
   velox_set_source(spdlog)
   velox_resolve_dependency(spdlog)
 
+  velox_set_source(ystdlib)
+  velox_resolve_dependency(ystdlib)
+
   # Dependencies that depend on other dependencies
   velox_set_source(log_surgeon)
   velox_resolve_dependency(log_surgeon)
-
-  velox_set_source(ystdlib)
-  velox_resolve_dependency(ystdlib)
 
   set(clp_SOURCE BUNDLED)
   velox_resolve_dependency(clp)
