@@ -45,22 +45,18 @@ class ClpConnectorTest : public exec::test::OperatorTestBase {
 
   void SetUp() override {
     OperatorTestBase::SetUp();
-    connector::registerConnectorFactory(
-        std::make_shared<connector::clp::ClpConnectorFactory>());
-    auto clpConnector =
-        connector::getConnectorFactory(
-            connector::clp::ClpConnectorFactory::kClpConnectorName)
-            ->newConnector(
-                kClpConnectorId,
-                std::make_shared<config::ConfigBase>(
-                    std::unordered_map<std::string, std::string>{}));
+    connector::clp::ClpConnectorFactory factory;
+    auto clpConnector = factory.newConnector(
+        kClpConnectorId,
+        std::make_shared<const config::ConfigBase>(
+            std::unordered_map<std::string, std::string>{}),
+        nullptr,
+        nullptr);
     connector::registerConnector(clpConnector);
   }
 
   void TearDown() override {
     connector::unregisterConnector(kClpConnectorId);
-    connector::unregisterConnectorFactory(
-        connector::clp::ClpConnectorFactory::kClpConnectorName);
     OperatorTestBase::TearDown();
   }
 
