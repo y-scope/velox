@@ -18,6 +18,9 @@ endif()
 add_subdirectory(parser)
 add_subdirectory(tz)
 add_subdirectory(fbhive)
+if(VELOX_ENABLE_CLP_CONNECTOR)
+  add_subdirectory(fbclp)
+endif()
 
 velox_add_library(
   velox_type
