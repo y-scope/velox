@@ -29,5 +29,3 @@ velox_link_libraries(
   clp-s-search
   PUBLIC clp-s-archive-search
   PUBLIC clp-s-ir-search)
-
-target_compile_features(clp-s-search PRIVATE cxx_std_20)

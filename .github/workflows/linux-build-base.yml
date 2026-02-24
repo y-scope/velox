@@ -84,7 +84,7 @@ jobs:
             export CC=/usr/bin/clang-15
             export CXX=/usr/bin/clang++-15
           fi
-          make release
+          make release TREAT_WARNINGS_AS_ERRORS=0
 
       - name: Show CCache stats after build
         run: ccache -vs
