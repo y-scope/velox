@@ -64,6 +64,7 @@ target_link_libraries(
   velox_temp_path
   velox_vector_test_lib
   velox_link_libs
+  velox_hive_connector
   Folly::folly
   ${TEST_LINK_LIBS}
   GTest::gtest

@@ -71,6 +71,7 @@ target_link_libraries(
   velox_dwio_parquet_reader_test
   velox_dwio_parquet_common
   velox_dwio_parquet_reader_benchmark_lib
+  velox_hive_connector
   velox_link_libs
 )
 
