@@ -20,12 +20,10 @@ velox_add_library(
   ClpPackageS3AuthProvider.h
   ClpS3AuthProviderBase.cpp
   ClpS3AuthProviderBase.h
-  ClpTimestampsUtils.h)
+  ClpTimestampsUtils.h
+)
 
 add_subdirectory(archive)
 add_subdirectory(ir)
 
-velox_link_libraries(
-  clp-s-search
-  PUBLIC clp-s-archive-search
-  PUBLIC clp-s-ir-search)
+velox_link_libraries(clp-s-search PUBLIC clp-s-archive-search PUBLIC clp-s-ir-search)

@@ -17,7 +17,8 @@ FetchContent_Declare(
   log_surgeon
   GIT_REPOSITORY https://github.com/y-scope/log-surgeon.git
   GIT_TAG 193e1f91eb137bb935a7f44b13cc8dd945a8d742
-  OVERRIDE_FIND_PACKAGE)
+  OVERRIDE_FIND_PACKAGE
+)
 
 set(log_surgeon_BUILD_TESTING OFF)
 FetchContent_MakeAvailable(log_surgeon)
