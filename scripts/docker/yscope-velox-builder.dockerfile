@@ -21,31 +21,17 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ENV TZ=Etc/UTC
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install CMake 3.28.3 using its install script
-# NOTE: `scripts/setup-ubuntu.sh` installs CMake via pip, but sometimes the pip-installed CMake
-# doesn't show up on the path in container environments (causing, for example, FastFloat library
-# build failures). Using CMake's install script avoids this issue.
-RUN curl --fail --location --show-error --silent --remote-name \
-        https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-x86_64.sh \
-    && chmod +x cmake-3.28.3-linux-x86_64.sh \
-    && ./cmake-3.28.3-linux-x86_64.sh --skip-license --prefix=/usr/local \
-    && rm cmake-3.28.3-linux-x86_64.sh
+# Copy dependency installation scripts and CMake modules together so that setup-common.sh's
+# relative path resolution (SCRIPT_DIR/../CMake/...) works correctly (after rarely-changing
+# layers for better caching)
+COPY scripts /tmp/velox-deps/scripts/
+COPY CMake/resolve_dependency_modules /tmp/velox-deps/CMake/resolve_dependency_modules/
 
-# Copy dependency installation scripts (after rarely-changing layers for better caching)
-COPY scripts /tmp/velox-deps/
+ENV UV_TOOL_BIN_DIR=/usr/local/bin
+ENV UV_INSTALL_DIR=/usr/local/bin
 
-RUN /tmp/velox-deps/setup-ubuntu.sh \
-    && mv /tmp/.venv /opt/velox-venv \
+RUN /tmp/velox-deps/scripts/setup-ubuntu.sh \
     && rm -rf /tmp/velox-deps
-
-# Activate the virtual environment.
-#
-# NOTE: We set `ENV` variables directly rather than using `source /opt/velox-venv/bin/activate` in
-# a `RUN` command since the latter only persists for that single instruction (each `RUN` starts a
-# fresh shell), whereas the former persists across all subsequent `RUN` commands and in containers
-# that use the image.
-ENV VIRTUAL_ENV="/opt/velox-venv"
-ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 
 ENV CCACHE_DIR=/var/cache/ccache
 
@@ -63,7 +49,7 @@ ENV CCACHE_NOHASHDIR=true
 # - We clear the stats after warmup so that CI builds only show their own cache hits.
 COPY . /tmp/velox-src/
 WORKDIR /tmp/velox-src
-RUN CCACHE_BASEDIR=/tmp/velox-src make release \
+RUN CCACHE_BASEDIR=/tmp/velox-src make release TREAT_WARNINGS_AS_ERRORS=0 \
     && echo "CCache statistics after warmup build:" \
     && ccache --verbose --show-stats \
     && ccache --zero-stats

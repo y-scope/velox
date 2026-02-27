@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-#include "clp_s/TimestampPattern.hpp"
-
 #include "velox/connectors/clp/ClpConnector.h"
 #include "velox/connectors/clp/ClpDataSource.h"
 
@@ -28,10 +26,8 @@ ClpConnector::ClpConnector(
 
 std::unique_ptr<DataSource> ClpConnector::createDataSource(
     const RowTypePtr& outputType,
-    const std::shared_ptr<ConnectorTableHandle>& tableHandle,
-    const std::unordered_map<
-        std::string,
-        std::shared_ptr<connector::ColumnHandle>>& columnHandles,
+    const ConnectorTableHandlePtr& tableHandle,
+    const connector::ColumnHandleMap& columnHandles,
     ConnectorQueryCtx* connectorQueryCtx) {
   return std::make_unique<ClpDataSource>(
       outputType,
@@ -43,20 +39,16 @@ std::unique_ptr<DataSource> ClpConnector::createDataSource(
 
 std::unique_ptr<DataSink> ClpConnector::createDataSink(
     RowTypePtr inputType,
-    std::shared_ptr<ConnectorInsertTableHandle> connectorInsertTableHandle,
+    ConnectorInsertTableHandlePtr connectorInsertTableHandle,
     ConnectorQueryCtx* connectorQueryCtx,
     CommitStrategy commitStrategy) {
   VELOX_NYI("createDataSink for ClpConnector is not implemented!");
 }
 
 ClpConnectorFactory::ClpConnectorFactory()
-    : ConnectorFactory(kClpConnectorName) {
-  clp_s::TimestampPattern::init();
-}
+    : ConnectorFactory(kClpConnectorName) {}
 
 ClpConnectorFactory::ClpConnectorFactory(const char* connectorName)
-    : ConnectorFactory(connectorName) {
-  clp_s::TimestampPattern::init();
-}
+    : ConnectorFactory(connectorName) {}
 
 } // namespace facebook::velox::connector::clp
