@@ -260,6 +260,14 @@ ClpArchiveVectorLoader::populateTimestampData<clp_s::NodeType::Float>(
     RowSet rows,
     FlatVector<facebook::velox::Timestamp>* vector);
 template void
+ClpArchiveVectorLoader::populateTimestampData<clp_s::NodeType::FormattedFloat>(
+    RowSet rows,
+    FlatVector<facebook::velox::Timestamp>* vector);
+template void
+ClpArchiveVectorLoader::populateTimestampData<clp_s::NodeType::DictionaryFloat>(
+    RowSet rows,
+    FlatVector<facebook::velox::Timestamp>* vector);
+template void
 ClpArchiveVectorLoader::populateTimestampData<clp_s::NodeType::Integer>(
     RowSet rows,
     FlatVector<facebook::velox::Timestamp>* vector);
