@@ -693,16 +693,22 @@ TEST_F(ClpConnectorTest, test5FloatTimestampPushdown) {
            {Timestamp(1746003005, 124000000),
             Timestamp(1746003005, 124100000),
             Timestamp(1746003005, 125000000),
-            Timestamp(1746003005, 126000000)}),
+            Timestamp(1746003005, 126000000),
+            Timestamp(1746003005, 127000000),
+            Timestamp(1746003060, 0),
+            Timestamp(1746003065, 0)}),
        makeFlatVector<double>(
-           {1.234567891234500E9,
+           {1.2345678912345E9,
             1E16,
             1.234567891234567E9,
-            1.234567891234567E9})});
+            1.234567891234567E9,
+            -1.234567891234567E-9,
+            1234567891.234567,
+            -1234567891.234567})});
   test::assertEqualVectors(expected, output);
 }
 
-TEST_F(ClpConnectorTest, test5v050FloatTimestampPushdown) {
+TEST_F(ClpConnectorTest, test5NewTimestampFormatFloatTimestampPushdown) {
   // Test filtering rows with a timestamp parsed from a date string and floats
   // in various formats.
   const std::shared_ptr<std::string> kqlQuery = std::make_shared<std::string>(
@@ -730,23 +736,24 @@ TEST_F(ClpConnectorTest, test5v050FloatTimestampPushdown) {
           getExampleFilePath("test_5.v0.5.0.clps"),
           ClpConnectorSplit::SplitType::kArchive,
           kqlQuery)});
-  auto expected = makeRowVector({// timestamp
-                                 makeFlatVector<Timestamp>(
-                                     {Timestamp(1746003005, 124000000),
-                                      Timestamp(1746003005, 124100000),
-                                      Timestamp(1746003005, 125000000),
-                                      Timestamp(1746003005, 126000000),
-                                      Timestamp(1746003005, 127000000),
-                                      Timestamp(1746003060, 0),
-                                      Timestamp(1746003065, 0)}),
-                                 makeFlatVector<double>(
-                                     {1.2345678912345E9,
-                                      1E16,
-                                      1.234567891234567E9,
-                                      1.234567891234567E9,
-                                      -1.234567891234567E-9,
-                                      1234567891.234567,
-                                      -1234567891.234567})});
+  auto expected = makeRowVector(
+      {// timestamp
+       makeFlatVector<Timestamp>(
+           {Timestamp(1746003005, 124000000),
+            Timestamp(1746003005, 124100000),
+            Timestamp(1746003005, 125000000),
+            Timestamp(1746003005, 126000000),
+            Timestamp(1746003005, 127000000),
+            Timestamp(1746003060, 0),
+            Timestamp(1746003065, 0)}),
+       makeFlatVector<double>(
+           {1.2345678912345E9,
+            1E16,
+            1.234567891234567E9,
+            1.234567891234567E9,
+            -1.234567891234567E-9,
+            1234567891.234567,
+            -1234567891.234567})});
   test::assertEqualVectors(expected, output);
 }
 
