@@ -92,8 +92,9 @@ void ClpArchiveVectorLoader::populateTimestampData(
     if (clp_s::NodeType::Timestamp == Type) {
       auto reader{static_cast<clp_s::TimestampColumnReader*>(columnReader_)};
       vector->set(
-        vectorIndex,
-        convertNanosecondEpochToVeloxTimestamp(reader->get_encoded_time(message_index)));
+          vectorIndex,
+          convertNanosecondEpochToVeloxTimestamp(
+              reader->get_encoded_time(message_index)));
     } else if (clp_s::NodeType::Float == Type) {
       auto reader = static_cast<clp_s::FloatColumnReader*>(columnReader_);
       vector->set(
@@ -217,10 +218,12 @@ void ClpArchiveVectorLoader::loadInternal(
     }
     case ColumnType::Timestamp: {
       auto timestampVector = vector->asFlatVector<Timestamp>();
-      if (nullptr != dynamic_cast<clp_s::TimestampColumnReader*>(columnReader_)) {
+      if (nullptr !=
+          dynamic_cast<clp_s::TimestampColumnReader*>(columnReader_)) {
         populateTimestampData<clp_s::NodeType::Timestamp>(
-          rows, timestampVector);
-      } else if (nullptr != dynamic_cast<clp_s::Int64ColumnReader*>(columnReader_)) {
+            rows, timestampVector);
+      } else if (
+          nullptr != dynamic_cast<clp_s::Int64ColumnReader*>(columnReader_)) {
         populateTimestampData<clp_s::NodeType::Integer>(rows, timestampVector);
       } else if (
           nullptr !=

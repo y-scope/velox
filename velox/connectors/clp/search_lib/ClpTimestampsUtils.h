@@ -126,7 +126,8 @@ inline auto convertToVeloxTimestamp(int64_t timestamp) -> Timestamp {
 ///
 /// @param timestamp the input timestamp as an integer
 /// @return the corresponding Velox timestamp
-inline auto convertNanosecondEpochToVeloxTimestamp(clp_s::epochtime_t timestamp) -> Timestamp {
+inline auto convertNanosecondEpochToVeloxTimestamp(clp_s::epochtime_t timestamp)
+    -> Timestamp {
   int64_t seconds{timestamp / Timestamp::kNanosInSecond};
   int64_t nanoseconds{timestamp % Timestamp::kNanosInSecond};
   if (nanoseconds < 0) {
