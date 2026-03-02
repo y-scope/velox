@@ -580,6 +580,10 @@ TEST_F(ClpConnectorTest, test4IrTimestampNoPushdown) {
 TEST_F(ClpConnectorTest, test4IrTimestampPushdown) {
   // Only the second event meet the condition, the first event is a date string
   // which is not supported yet so the value will be NULL.
+  // This test can not use the `timestamp()` literal, since the integer
+  // timestamps are in microsecond precision, and we currently assume all IR
+  // timestamps are millisecond precision when comparing against timestamp
+  // literals.
   const std::shared_ptr<std::string> kqlQuery =
       std::make_shared<std::string>("(timestamp < 1756003005000000)");
   auto plan =
@@ -661,11 +665,9 @@ TEST_F(ClpConnectorTest, test5FloatTimestampNoPushdown) {
 
 TEST_F(ClpConnectorTest, test5FloatTimestampPushdown) {
   // Test filtering rows with a timestamp parsed from a date string and floats
-  // in various formats. Because KQL doesn’t automatically interpret the unit of
-  // the timestamp, the returned result differs slightly from the one without
-  // pushdown.
+  // in various formats.
   const std::shared_ptr<std::string> kqlQuery = std::make_shared<std::string>(
-      "(timestamp < 1746003005.127 and timestamp >= 1746003005.124)");
+      R"(timestamp < timestamp("1746003070000", "\L") and timestamp >= timestamp("1746003005124", "\L"))");
   auto plan =
       PlanBuilder(pool_.get())
           .startTableScan()
@@ -695,12 +697,67 @@ TEST_F(ClpConnectorTest, test5FloatTimestampPushdown) {
            {Timestamp(1746003005, 124000000),
             Timestamp(1746003005, 124100000),
             Timestamp(1746003005, 125000000),
-            Timestamp(1746003005, 126000000)}),
+            Timestamp(1746003005, 126000000),
+            Timestamp(1746003005, 127000000),
+            Timestamp(1746003060, 0),
+            Timestamp(1746003065, 0)}),
        makeFlatVector<double>(
-           {1.234567891234500E9,
+           {1.2345678912345E9,
             1E16,
             1.234567891234567E9,
-            1.234567891234567E9})});
+            1.234567891234567E9,
+            -1.234567891234567E-9,
+            1234567891.234567,
+            -1234567891.234567})});
+  test::assertEqualVectors(expected, output);
+}
+
+TEST_F(ClpConnectorTest, test5NewTimestampFormatFloatTimestampPushdown) {
+  // Test filtering rows with a timestamp parsed from a date string and floats
+  // in various formats.
+  const std::shared_ptr<std::string> kqlQuery = std::make_shared<std::string>(
+      R"(timestamp < timestamp("1746003070000", "\L") and timestamp >= timestamp("1746003005124", "\L"))");
+  auto plan =
+      PlanBuilder(pool_.get())
+          .startTableScan()
+          .outputType(ROW({"timestamp", "floatValue"}, {TIMESTAMP(), DOUBLE()}))
+          .tableHandle(
+              std::make_shared<ClpTableHandle>(kClpConnectorId, "test_5"))
+          .assignments(
+              {{"timestamp",
+                std::make_shared<ClpColumnHandle>(
+                    "timestamp", "timestamp", TIMESTAMP())},
+               {"floatValue",
+                std::make_shared<ClpColumnHandle>(
+                    "floatValue", "floatValue", DOUBLE())}})
+          .endTableScan()
+          .orderBy({"\"timestamp\" ASC"}, false)
+          .planNode();
+
+  auto output = getResults(
+      plan,
+      {makeClpSplit(
+          getExampleFilePath("test_5.v0.5.0.clps"),
+          ClpConnectorSplit::SplitType::kArchive,
+          kqlQuery)});
+  auto expected = makeRowVector(
+      {// timestamp
+       makeFlatVector<Timestamp>(
+           {Timestamp(1746003005, 124000000),
+            Timestamp(1746003005, 124100000),
+            Timestamp(1746003005, 125000000),
+            Timestamp(1746003005, 126000000),
+            Timestamp(1746003005, 127000001),
+            Timestamp(1746003060, 0),
+            Timestamp(1746003065, 0)}),
+       makeFlatVector<double>(
+           {1.2345678912345E9,
+            1E16,
+            1.234567891234567E9,
+            1.234567891234567E9,
+            -1.234567891234567E-9,
+            1234567891.234567,
+            -1234567891.234567})});
   test::assertEqualVectors(expected, output);
 }
 
