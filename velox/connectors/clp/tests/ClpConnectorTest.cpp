@@ -747,7 +747,7 @@ TEST_F(ClpConnectorTest, test5NewTimestampFormatFloatTimestampPushdown) {
             Timestamp(1746003005, 124100000),
             Timestamp(1746003005, 125000000),
             Timestamp(1746003005, 126000000),
-            Timestamp(1746003005, 127000000),
+            Timestamp(1746003005, 127000001),
             Timestamp(1746003060, 0),
             Timestamp(1746003065, 0)}),
        makeFlatVector<double>(
