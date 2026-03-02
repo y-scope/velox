@@ -94,7 +94,7 @@ void ClpArchiveVectorLoader::populateTimestampData(
       vector->set(
           vectorIndex,
           convertNanosecondEpochToVeloxTimestamp(
-              reader->get_encoded_time(message_index)));
+              reader->get_encoded_time(messageIndex)));
     } else if (clp_s::NodeType::Float == Type) {
       auto reader = static_cast<clp_s::FloatColumnReader*>(columnReader_);
       vector->set(
