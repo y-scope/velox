@@ -581,7 +581,7 @@ TEST_F(ClpConnectorTest, test4IrTimestampPushdown) {
   // Only the second event meet the condition, the first event is a date string
   // which is not supported yet so the value will be NULL.
   const std::shared_ptr<std::string> kqlQuery = std::make_shared<std::string>(
-      R"(timestamp < timestamp("1756003005000000", "\L"))");
+      R"(timestamp < timestamp("1756003005000", "\L"))");
   auto plan =
       PlanBuilder(pool_.get())
           .startTableScan()
@@ -663,7 +663,7 @@ TEST_F(ClpConnectorTest, test5FloatTimestampPushdown) {
   // Test filtering rows with a timestamp parsed from a date string and floats
   // in various formats.
   const std::shared_ptr<std::string> kqlQuery = std::make_shared<std::string>(
-      R"(timestamp < timestamp("1746003070000", "\L") and timestamp >= timestamp("1746003005124", "\L")");
+      R"(timestamp < timestamp("1746003070000", "\L") and timestamp >= timestamp("1746003005124", "\L"))");
   auto plan =
       PlanBuilder(pool_.get())
           .startTableScan()
@@ -712,7 +712,7 @@ TEST_F(ClpConnectorTest, test5NewTimestampFormatFloatTimestampPushdown) {
   // Test filtering rows with a timestamp parsed from a date string and floats
   // in various formats.
   const std::shared_ptr<std::string> kqlQuery = std::make_shared<std::string>(
-      R"(timestamp < timestamp("1746003070000", "\L") and timestamp >= timestamp("1746003005124", "\L")");
+      R"(timestamp < timestamp("1746003070000", "\L") and timestamp >= timestamp("1746003005124", "\L"))");
   auto plan =
       PlanBuilder(pool_.get())
           .startTableScan()
