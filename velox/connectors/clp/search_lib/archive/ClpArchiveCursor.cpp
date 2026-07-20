@@ -77,7 +77,7 @@ uint64_t ClpArchiveCursor::fetchNext(uint64_t numRows) {
 
       schemaReader_ =
           &archiveReader_->read_schema_table(currentSchemaId_, false, false);
-      schemaReader_->initialize_filter_with_column_map(queryRunner_.get());
+      schemaReader_->initialize_filter_with_column_map(*queryRunner_);
 
       errorCode_ = ErrorCode::Success;
       currentSchemaTableLoaded_ = true;
@@ -214,7 +214,10 @@ ErrorCode ClpArchiveCursor::loadSplit() {
   }
   projection_->resolve_columns(schemaTree);
 
-  archiveReader_->read_metadata();
+  if (auto const result = archiveReader_->read_metadata(); result.has_error()) {
+    VLOG(2) << "Failed to read archive metadata: " << result.error().message();
+    return ErrorCode::InternalError;
+  }
 
   matchedSchemas_.clear();
   for (auto schemaId : archiveReader_->get_schema_ids()) {
